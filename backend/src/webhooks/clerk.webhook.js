@@ -128,7 +128,7 @@ async function handleUserCreated(data) {
       mongoDoc = await Admin.create({
         clerkUserId,
         email,
-        name: unsafe_metadata.name,
+        avatar: unsafe_metadata.avatar,
       });
       break;
 
