@@ -6,7 +6,7 @@ import { Patient } from "../models/Patient.model.js";
 import { Pharmacy } from "../models/Pharmacy.model.js";
 import { Admin } from "../models/Admin.model.js";
 import { ROLES, STATUS } from "../utils/constants.js";
-import {ENV} from "../utils/env.js";
+import {ENV} from "../config/env.js";
 
 const router = express.Router();
 
