@@ -2,7 +2,7 @@ import pkg from "cloudinary";
 const { v2: cloudinary } = pkg;
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
-import {ENV} from "./env.js";
+import { ENV } from "./env.js";
 
 cloudinary.config({
   cloud_name: ENV.CLOUDINARY_CLOUD_NAME,
@@ -73,11 +73,16 @@ export const uploadAvatar = multer({
 export const deleteFromCloudinary = async (url) => {
   try {
     if (!url) return;
-    
-    const parts = url.split("/");
-    const filename = parts[parts.length - 1].split(".")[0];
-    const folder = parts[parts.length - 2];
-    const publicId = `${folder}/${filename}`;
+    // Find the upload segment and extract everything after it (excluding version)
+    const uploadIndex = url.indexOf("/upload/");
+    if (uploadIndex === -1) return;
+
+    // Extract path after /upload/ and remove version prefix (v1234567890/)
+    const pathAfterUpload = url.slice(uploadIndex + 8);
+    const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
+
+    // Remove file extension to get publicId
+    const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
     await cloudinary.uploader.destroy(publicId);
   } catch (error) {
     console.error("Cloudinary delete error:", error.message);

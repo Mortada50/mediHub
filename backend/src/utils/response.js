@@ -23,14 +23,16 @@ export const sendError = (
 };
 
 export const sendPaginated = (res, data, total, page, limit) => {
+  const safePage = Math.max(Number(page) || 1, 1);
+  const safeLimit = Math.max(Number(limit) || 1, 1);
   return res.status(200).json({
     success: true,
     data,
     pagination: {
       total,
-      page: Number(page),
-      limit: Number(limit),
-      pages: Math.ceil(total / limit),
+       page: safePage,
+      limit: safeLimit,
+      pages: Math.ceil(total / safeLimit),
     },
   });
 };

@@ -22,7 +22,20 @@ export const loadUser = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return sendError(res, "تعذر تحميل بيانات المستخدم", 401);
+   
+    if (error.clerkError === true) {
+      const status = error.status || error.response?.status;
+
+      if (status === 401 || status === 404) {
+        return sendError(res, "تعذر تحميل بيانات المستخدم", 401);
+      }
+
+      if (status === 429 || status >= 500) {
+        return next(error);
+      }
+    }
+
+    return next(error);
   }
 };
 
