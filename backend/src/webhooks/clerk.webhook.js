@@ -145,10 +145,10 @@ async function handleUserCreated(data) {
       role,
       status,
       mongoId: mongoDoc._id.toString(),
-       avatar: role === ROLES.ADMIN ? unsafe_metadata.avatar : "",
+     
     },
    
-    unsafeMetadata: {},
+    unsafeMetadata: {}
   });
 
   console.log(`User created: [${role}] ${email} → status: ${status}`);
