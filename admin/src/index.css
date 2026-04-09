@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
 @font-face {
     font-family: 'Bein';
@@ -15,6 +15,19 @@
     font-weight: 700;
 }
 
+@theme {
+    --color-primary: #2B9C8E;
+    --color-background: #F8FAFB;
+    --color-background-white: #ffffff;
+    --color-background-primary: #eaf5f4;
+    --color-background-secondary: #55B1A5;
+    --color-text: #2F3541;
+    --color-text-secondary: #555555;
+    --color-border-primary: #E8E8E8;
+
+}
+
+
 * {
     font-family: 'Bein', sans-serif;
 }
@@ -22,4 +35,5 @@
 body {
     direction: rtl;
     text-align: right;
+    background-color: var(--color-background);
 }
