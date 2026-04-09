@@ -12,13 +12,14 @@ import UsersManagementPage from "./pages/UsersManagementPage";
 import ChatsPage from "./pages/ChatsPage";
 import LoginPage from "./pages/LoginPage";
 import ArticlesManagementPage from "./pages/ArticlesManagementPage";
+import PageLoader from "./components/PageLoader";
 
 
 function App() {
 
    const { isSignedIn, isLoaded } = useAuth();
 
-   if (!isLoaded) return <h1>Loading...</h1>;
+   if (!isLoaded) return <PageLoader />;
 
   return (
     <Routes>
