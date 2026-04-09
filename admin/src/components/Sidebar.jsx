@@ -73,7 +73,6 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
       {/* ── Navigation ── */}
       <nav className="flex-1 py-4 flex flex-col gap-1 px-1.5">
         {NAV_ITEMS.map(({ icon: Icon, label, path }) => {
-
           const isActive = location.pathname === path;
           return (
             <Link
@@ -83,13 +82,11 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
               className={
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600  hover:bg-background-primary hover:text-primary transition-colors duration-150` +
                 (isActive
-                  ? " bg-background-primary text-primary font-normal"
+                  ? "bg-background-primary text-primary font-normal"
                   : "text-text-secondary")
               }>
               <Icon className="size-5 shrink-0 " />
-              {isOpen && (
-                <span className="whitespace-nowrap">{label}</span>
-              )}
+              {isOpen && <span className="whitespace-nowrap">{label}</span>}
             </Link>
           );
         })}
@@ -98,6 +95,7 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
       {/* ── Logout ── */}
       <div className="px-1.5 pb-6">
         <button
+          onClick={() => signOut()}
           style={{ justifyContent: isOpen ? "flex-start" : "center" }}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150">
           <LogOut className="size-5 shrink-0" />

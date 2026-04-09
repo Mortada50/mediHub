@@ -10,6 +10,8 @@ import MedicationManagementPage from "./pages/MedicationManagementPage";
 import PharmacyManagementPage from "./pages/PharmacyManagementPage";
 import UsersManagementPage from "./pages/UsersManagementPage";
 import ChatsPage from "./pages/ChatsPage";
+import LoginPage from "./pages/LoginPage";
+import ArticlesManagementPage from "./pages/ArticlesManagementPage";
 
 
 function App() {
@@ -45,7 +47,10 @@ function App() {
         />
         <Route path="users-management" element={<UsersManagementPage />} />
         <Route path="chats" element={<ChatsPage />} />
-        <Route path="articles-management" element={<ChatsPage />} />
+        <Route
+          path="articles-management"
+          element={<ArticlesManagementPage />}
+        />
       </Route>
     </Routes>
   );
