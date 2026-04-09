@@ -1,94 +1,91 @@
-import React from 'react'
+import React from "react";
 
-import {Mail, Lock, LoaderIcon, AlertCircle} from "lucide-react";
+import { Mail, Lock, LoaderIcon, AlertCircle } from "lucide-react";
 
-import loginLogo from '../assets/login-logo.png'
+import loginLogo from "../assets/login-logo.png";
 
-import { useSignIn } from '@clerk/clerk-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useSignIn } from "@clerk/clerk-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 function LoginPage() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
 
-
-  const {signIn, isLoaded, setActive} = useSignIn();
+  const { signIn, isLoaded, setActive } = useSignIn();
   const navigate = useNavigate();
 
   const validate = () => {
     const e = {};
-    
-    if (!email || !email.trim()){
-       e.email = "الإيميل مطلوب";
-      } else if (!email.includes("@")){ 
-        e.email = "إيميل غير صالح";
-      }else if (!password) e.password = "كلمة المرور مطلوبة";
+
+    if (!email || !email.trim()) {
+      e.email = "الإيميل مطلوب";
+    } else if (!email.includes("@")) {
+      e.email = "إيميل غير صالح";
+    }
+    if (!password) {
+      e.password = "كلمة المرور مطلوبة";
+    }
 
     setError(e);
 
     return Object.keys(e).length === 0;
   };
 
-  const  handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!isLoaded) return;
     setError({});
     setLoading(true);
 
-    if(!validate()) {
+    if (!validate()) {
       setLoading(false);
       return;
-    } ;
+    }
     try {
       const result = await signIn.create({
         identifier: email,
-        password: password
+        password: password,
       });
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         navigate("/dashboard");
       }
-
     } catch (err) {
       const e = {};
       const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
-       if ( msg?.includes("account") ) e.email = "البريد الإلكتروني غير موجود";
-       else if (msg?.includes("Identifier")) e.email = "البريد الإلكتروني غير صالح";
-     else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
+      if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
+      else if (msg?.includes("Identifier"))
+        e.email = "البريد الإلكتروني غير صالح";
+      else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
 
-     setError(e);
-     
-     
-      
-    }finally {
+      setError(e);
+    } finally {
       setLoading(false);
     }
   };
 
-  
-  
-
   return (
     <div className="flex min-h-screen">
       {/* RIGHT SIDE */}
-      <div className="w-147 bg-white felx-1 flex flex-col items-center justify-center">
+      <div className="w-147 bg-white flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <h1 className="text-primary font-black text-4xl">مرحبا بعودتك''</h1>
           <p className="text-primary">سجل الان الى حسابك</p>
         </div>
 
-        {error.unKnown && <div className='bg-red-100 w-[368] h-[55px] rounded-lg flex items-center px-3 mt-2'>
-          <AlertCircle className="size-[16px] text-red-600" />
-          <span className="text-sm text-gray-600 mr-2">{error.unKnown}</span>
-        </div>}
+        {error.unKnown && (
+          <div className="bg-red-100 w-[368px] h-[55px] rounded-lg flex items-center px-3 mt-2">
+            <AlertCircle className="size-[16px] text-red-600" />
+            <span className="text-sm text-gray-600 mr-2">{error.unKnown}</span>
+          </div>
+        )}
 
         {/* LOGIN FORM */}
         <div className="flex flex-col gap-5 mt-8">
@@ -119,7 +116,7 @@ function LoginPage() {
               <input
                 type="password"
                 placeholder="كلمة المرور"
-                className={`h-[55px] w-[368px] -ml-1 bg-background-primary rounded-r-lg py-2 px-4 focus:outline-none placeholder:text-sm ${error.password ? "border-red-400" : "border-transparent"}`}
+                className={`h-[55px] w-[368px] -ml-1 border bg-background-primary rounded-r-lg py-2 px-4 focus:outline-none placeholder:text-sm ${error.password ? "border-red-400" : "border-transparent"}`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -133,7 +130,9 @@ function LoginPage() {
               {error.password && (
                 <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
                   <AlertCircle className="size-[16px] text-red-600" />
-                  <span className="text-sm text-gray-600">{error.password}</span>
+                  <span className="text-sm text-gray-600">
+                    {error.password}
+                  </span>
                 </div>
               )}
               <a href="#" className="text-primary hover:underline">
@@ -160,4 +159,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage
+export default LoginPage;
