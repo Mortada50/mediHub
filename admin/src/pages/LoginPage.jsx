@@ -11,7 +11,6 @@ import { useNavigate } from "react-router";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
 
@@ -135,7 +134,7 @@ function LoginPage() {
                   </span>
                 </div>
               )}
-              <a href="#" className="text-primary hover:underline">
+              <a className="cursor-pointer text-primary hover:underline" onClick={() => navigate("/forget-password")}>
                 نسيت كلمة المرور؟
               </a>
             </div>

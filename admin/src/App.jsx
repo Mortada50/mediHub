@@ -1,7 +1,6 @@
 import React from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Navigate, Route, Routes } from "react-router";
-
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
 import AdmissionsRegistrationPage from "./pages/AdmissionsRegistrationPage";
@@ -13,6 +12,7 @@ import ChatsPage from "./pages/ChatsPage";
 import LoginPage from "./pages/LoginPage";
 import ArticlesManagementPage from "./pages/ArticlesManagementPage";
 import PageLoader from "./components/PageLoader";
+import ForgetPasswordPage from "./pages/ForgetPasswordPage";
 
 
 function App() {
@@ -27,10 +27,17 @@ function App() {
         path="/login"
         element={isSignedIn ? <Navigate to={"/dashboard"} /> : <LoginPage />}
       />
+      
+
+      <Route
+        path= "/forget-password"
+        element={!isSignedIn ? <ForgetPasswordPage /> : <Navigate to={"/dashboard"} />}
+      />
+      
 
       <Route
         path="/"
-        element={isSignedIn ? <DashboardLayout /> : <Navigate to={"/login"} />}>
+        element={isSignedIn ? <DashboardLayout /> : localStorage.getItem("url") ? <Navigate to={"/forget-password"} /> : <Navigate to={"/login"} />}>
         <Route index element={<Navigate to={"dashboard"} />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route
