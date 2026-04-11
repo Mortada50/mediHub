@@ -2,37 +2,44 @@ import React, { useState, useEffect } from "react";
 
 import { useSignIn, useAuth } from "@clerk/clerk-react";
 
-
-import { AlertCircle, ArrowRight, Mail, Lock, CheckIcon, Eye, EyeOff, LoaderIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Mail,
+  Lock,
+  CheckIcon,
+  Eye,
+  EyeOff,
+  LoaderIcon,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 
 import loginLogo from "../assets/login-logo.png";
 
 function ForgetPasswordPage() {
-  const {signIn, isLoaded} = useSignIn();
-  const {signOut} = useAuth();
-  
-  
+  const { signIn, isLoaded } = useSignIn();
+  const { signOut } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPass, setShowPass] = useState({
     newPassword: false,
     confirmNewPassword: false,
-  })
+  });
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [error, setError] = useState({});
   const [verCode, setVerCode] = useState(["", "", "", "", "", ""]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(localStorage.getItem("url") === "/forget-password") {
+    if (localStorage.getItem("url") === "/forget-password") {
       localStorage.removeItem("url");
       setStep(4);
     }
-  }, [])
+  }, []);
 
   // ── OTP Input Handler ──
   const handleOtp = (i, val) => {
@@ -48,7 +55,6 @@ function ForgetPasswordPage() {
       document.getElementById(`otp-${i - 1}`)?.focus();
     }
   };
-
 
   const validateStep3 = () => {
     const e = {};
@@ -76,7 +82,7 @@ function ForgetPasswordPage() {
     const p = password;
     if (!p) return 0;
     let score = 0;
-    if (p.length >= 8) score++ ;
+    if (p.length >= 8) score++;
     if (/[A-Z]/.test(p)) score++;
     if (/[0-9]/.test(p)) score++;
     if (/[^A-Za-z0-9]/.test(p)) score++;
@@ -85,27 +91,24 @@ function ForgetPasswordPage() {
   const strength = passwordStrength();
   const strengthClass =
     strength <= 1
-      ? {color: "text-red-600" , msg:"كلمة مرور ضعيفة"}
+      ? { color: "text-red-600", msg: "كلمة مرور ضعيفة" }
       : strength <= 2
-        ? {color: "text-orange-600", msg:"كلمة مرور متوسطة"}
-        : {color: "text-green-600", msg:"كلمة مرور قوية"};
-
+        ? { color: "text-orange-600", msg: "كلمة مرور متوسطة" }
+        : { color: "text-green-600", msg: "كلمة مرور قوية" };
 
   const handleStep1 = async () => {
-    
     setError({});
 
-    if(!isLoaded) return;
+    if (!isLoaded) return;
 
     setLoading(true);
 
-    if(!validateStep1()) {
+    if (!validateStep1()) {
       setLoading(false);
-      return ;
+      return;
     }
 
     try {
-
       await signIn.create({
         strategy: "reset_password_email_code",
         identifier: email,
@@ -113,99 +116,91 @@ function ForgetPasswordPage() {
 
       setStep(2);
     } catch (err) {
-
-       const e = {};
+      const e = {};
       const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
       if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
       else if (msg?.includes("Identifier"))
         e.email = "البريد الإلكتروني غير صالح";
-      
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
 
       setError(e);
-
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
-
-
-
   };
 
   const handleStep2 = async () => {
-      setError({});
+    setError({});
 
-     if(!isLoaded) return;
+    if (!isLoaded) return;
 
-     setLoading(true);
-      const code = verCode.join("");
-      
-     try {
+    setLoading(true);
+    const code = verCode.join("");
+
+    try {
       const result = await signIn.attemptFirstFactor({
-      strategy: "reset_password_email_code",
-      code: code,
-    });
-    if (result.status === "needs_new_password") setStep(3);
-     } catch (err) {
+        strategy: "reset_password_email_code",
+        code: code,
+      });
+      if (result.status === "needs_new_password") setStep(3);
+    } catch (err) {
       const e = {};
-      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
-      if(msg.includes("expired")) e.code = "انتهت صلاحية كود التحقق";
-      else if(msg.includes("Invalid") || msg.includes("Incorrect")) e.code = "كود التحقق غير صالح";
+      const msg =
+        err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "";
+      const normalizedMsg = msg.toLowerCase();
+      if (normalizedMsg.includes("expired")) e.code = "انتهت صلاحية كود التحقق";
+      else if (
+        normalizedMsg.includes("invalid") ||
+        normalizedMsg.includes("incorrect")
+      )
+        e.code = "كود التحقق غير صالح";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
-    
-      setError(e) 
-      
-     }finally{
-      setLoading(false); 
-     }
+
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStep3 = async () => {
+    setError({});
 
-     setError({});
-
-    if(!isLoaded) return;
+    if (!isLoaded) return;
 
     setLoading(true);
 
-    if(!validateStep3()) {
+    if (!validateStep3()) {
       setLoading(false);
-      return ;
+      return;
     }
 
     try {
-      
-     const result = await signIn.resetPassword({
+      const result = await signIn.resetPassword({
         password: password,
       });
-      
-      
-      if(result.status === "complete"){
-        
-        localStorage.setItem("url", "/forget-password");
-        await signOut()
-        
-      }
 
-      
+      if (result.status === "complete") {
+        localStorage.setItem("url", "/forget-password");
+        await signOut();
+      }
     } catch (err) {
       const e = {};
-      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
-     if (
-       msg.toLowerCase().includes("breach") ||
-       msg.toLowerCase().includes("data breach")
-     ) {
-       e.password = "كلمة المرور هذه تم اختراقها سابقاً، استخدم كلمة مرور أخر";
-     } else if (msg.toLowerCase().includes("password")) {
-       e.password = "كلمة المرور غير صالحة";
-     } else {
-       e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
-     }
-     console.log(err);
-     
-      
-    }finally{
-      setLoading(false)
+      const msg =
+        err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "";
+      const normalizedMsg = msg.toLowerCase();
+      if (
+        normalizedMsg.includes("breach") ||
+        normalizedMsg.includes("data breach")
+      ) {
+        e.password = "كلمة المرور هذه تم اختراقها سابقاً، استخدم كلمة مرور أخر";
+      } else if (normalizedMsg.includes("password")) {
+        e.password = "كلمة المرور غير صالحة";
+      } else {
+        e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
+      }
+      setError(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -242,7 +237,7 @@ function ForgetPasswordPage() {
                 <input
                   type="email"
                   placeholder="البريد الإلكتروني"
-                  className={`h-[55px] w-[368px] -ml-1 bg-background-primary rounded-r-lg py-2 px-4 border focus:outline-none placeholder:text-sm ${false ? "border-red-400" : "border-transparent"}`}
+                  className={`h-[55px] w-[368px] -ml-1 bg-background-primary rounded-r-lg py-2 px-4 border focus:outline-none placeholder:text-sm ${error.email ? "border-red-400" : "border-transparent"}`}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -311,7 +306,7 @@ function ForgetPasswordPage() {
                 {error.code && (
                   <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
                     <AlertCircle className="size-[16px] text-red-600" />
-                    <span className="text-sm text-gray-600">الكود خطاء</span>
+                    <span className="text-sm text-gray-600">{error.code}</span>
                   </div>
                 )}
               </div>
@@ -365,8 +360,8 @@ function ForgetPasswordPage() {
                   className={`h-[55px] w-full md:w-[368px] -ml-1 border bg-background-primary rounded-r-lg py-2 px-4 focus:outline-none placeholder:text-sm ${error.password ? "border-red-400" : "border-transparent"}`}
                   value={password}
                   onChange={(e) => {
-                    setPassword(e.target.value)
-                    setError({})
+                    setPassword(e.target.value);
+                    setError({});
                   }}
                 />
                 {showPass.newPassword ? (
@@ -385,7 +380,7 @@ function ForgetPasswordPage() {
                   />
                 )}
                 <div className="flex items-center justify-center size-[55px] rounded-[8px] bg-primary">
-                  <Lock className="size-[25px text-white" />
+                  <Lock className="size-[25px] text-white" />
                 </div>
               </div>
 
@@ -483,8 +478,8 @@ function ForgetPasswordPage() {
                 <span
                   className="text-primary text-xs font-normal cursor-pointer"
                   onClick={() => {
-                    navigate("/login")
-                    }}>
+                    navigate("/login");
+                  }}>
                   إضغط هنا
                 </span>
               </p>
@@ -502,7 +497,3 @@ function ForgetPasswordPage() {
 }
 
 export default ForgetPasswordPage;
-
-
-
-
