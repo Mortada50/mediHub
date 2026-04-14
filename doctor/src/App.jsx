@@ -18,16 +18,16 @@ function App() {
    
    if (!isLoaded) return <PageLoader />;
 
-   const status = user.publicMetadata.status;
+   const status = user?.publicMetadata?.status;
     
 
   return (
     <Routes>
       <Route
         path="/login"
-        element={ 
+        element={
           isSignedIn ? (
-            status === "pending" || status === "reject" ? (
+            status === "pending" || status === "rejected" ? (
               <PendingRejectPage />
             ) : (
               <Navigate to={"/dashboard"} />
@@ -44,9 +44,23 @@ function App() {
           !isSignedIn ? <ForgetPasswordPage /> : <Navigate to={"/dashboard"} />
         }
       />
-      <Route path="/doctor-registration" element={ !isSignedIn ? <RegisterPage /> : <Navigate to={"/dashboard"} /> } />
-      
-      <Route path="/pending-page" element={ isSignedIn && (status === "pending" || status === "reject") ? <PendingRejectPage /> : <Navigate  to={"/login"} /> } />
+      <Route
+        path="/doctor-registration"
+        element={
+          !isSignedIn ? <RegisterPage /> : <Navigate to={"/dashboard"} />
+        }
+      />
+
+      <Route
+        path="/pending-page"
+        element={
+          isSignedIn && (status === "pending" || status === "rejected") ? (
+            <PendingRejectPage />
+          ) : (
+            <Navigate to={"/login"} />
+          )
+        }
+      />
 
       <Route
         path="/"

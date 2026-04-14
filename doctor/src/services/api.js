@@ -9,9 +9,6 @@ export async function uploadLicense(file) {
   const endpoint = "/upload/doctor-license";
 
 
-  const res = await publicApi.post(endpoint, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  
-  });
+  const res = await publicApi.post(endpoint, formData);
   return res.data.data.url;
 }

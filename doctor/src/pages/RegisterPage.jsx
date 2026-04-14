@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Mail,
   Lock,
@@ -23,6 +23,10 @@ import { useNavigate } from "react-router";
 import { uploadLicense } from "../services/api.js";
 
 function RegisterPage() {
+
+  const [licensePreviewUrl, setLicensePreviewUrl] = useState(null);
+
+ 
   const { isLoaded, signUp, setActive } = useSignUp();
   const navigate = useNavigate();
 
@@ -53,6 +57,16 @@ function RegisterPage() {
     newPassword: false,
     confirmNewPassword: false,
   });
+//  for removing image url from memory wen user change more than one image
+  useEffect(() => {
+    if (form.license) {
+      const url = URL.createObjectURL(form.license);
+      setLicensePreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setLicensePreviewUrl(null);
+    }
+  }, [form.license]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
   const onChange = (e) => set(e.target.name, e.target.value);
@@ -633,7 +647,7 @@ function RegisterPage() {
                 ) : (
                   <div className="relative w-full rounded-xl overflow-hidden border-2 border-primary/20 group">
                     <img
-                      src={URL.createObjectURL(form.license)}
+                      src={licensePreviewUrl}
                       alt="license preview"
                       className="w-full max-h-[200px] object-cover"
                     />
@@ -762,12 +776,12 @@ function RegisterPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 pb-6">
                 <p className="text-sm text-gray-500">
                   لم يصلك الكود؟{" "}
-                  <button className="text-primary text-xs font-normal cursor-pointer hover:underline"
-                    onClick={() =>{ 
+                  <button
+                    className="text-primary text-xs font-normal cursor-pointer hover:underline"
+                    onClick={() => {
                       setVerCode(["", "", "", "", "", ""]);
-                      handleStep2()
-                    }}
-                  >
+                      handleStep2();
+                    }}>
                     أعد الارسال
                   </button>
                 </p>

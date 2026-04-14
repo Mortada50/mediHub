@@ -1,14 +1,14 @@
 import loginLogo from "../assets/login-logo.png";
 import { LogOut, Clock } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
 
-// Mock user data - replace with real props or context
-const user = {
-  name: "محمد مهيوب عبده محمد",
-  email: "mohammedmahioh@gamil.com",
-  accountType: "دكتور",
-};
 
 function Pending() {
+  const { user } = useUser();
+  const name = user?.unsafeMetadata?.fullName || user?.fullName || "";
+  const email = user?.primaryEmailAddress?.emailAddress || "";
+  const accountType = user?.publicMetadata?.role === "doctor" ? "دكتور" : "";
+  
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}
@@ -35,7 +35,7 @@ function Pending() {
             <div className="flex items-center justify-start gap-2">
               <span className="text-primary text-sm shrink-0">الاسم:</span>
               <span className="text-gray-400 text-sm sm:text-base font-medium truncate">
-                {user.name}
+                {name}
               </span>
             </div>
 
@@ -46,7 +46,7 @@ function Pending() {
                 البريد الإلكتروني:
               </span>
               <span className="text-gray-400 text-sm truncate" dir="ltr">
-                {user.email}
+                {email}
               </span>
             </div>
 
@@ -55,7 +55,7 @@ function Pending() {
             <div className="flex items-center justify-start gap-2">
               <span className="text-primary text-sm shrink-0">نوع الحساب:</span>
               <span className="text-gray-400 text-sm sm:text-base font-medium">
-                {user.accountType}
+                {accountType}
               </span>
             </div>
           </div>
