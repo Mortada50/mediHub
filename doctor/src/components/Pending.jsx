@@ -1,14 +1,25 @@
 import loginLogo from "../assets/login-logo.png";
-import { LogOut, Clock } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { LogOut, Clock, Frown, MessageCircle, Pencil } from "lucide-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 
 
 function Pending() {
   const { user } = useUser();
+  const {signOut} = useAuth();
   const name = user?.unsafeMetadata?.fullName || user?.fullName || "";
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const accountType = user?.publicMetadata?.role === "doctor" ? "دكتور" : "";
+  const status = user?.publicMetadata?.status;
   
+  let title = "حسابك قيد المراجعة"
+  let discription = "شكراً لتسجيلك | فريق الادارة يراجع بياناتك للموافقة على طلبك";
+  
+  if(status === "rejected"){
+     title = "تم رفض طلبك"
+     discription = "نأسف | لم يتم قبول حسابك بعد مراجعة الإدارة";
+
+  }
+
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}
@@ -16,17 +27,27 @@ function Pending() {
         {/* Card */}
         <div className="w-full max-w-[420px] bg-white border border-gray-100 rounded-2xl shadow-sm px-6 sm:px-8 py-8 flex flex-col items-center gap-6">
           {/* Clock Icon */}
-          <div className="flex items-center justify-center size-[72px] sm:size-[80px] rounded-full border-[3px] border-primary text-primary">
-            <Clock className="size-8 sm:size-9" strokeWidth={1.5} />
+          <div
+            className={`flex items-center justify-center size-[72px] sm:size-[80px] rounded-full border-[3px] ${status === "pending" ? "border-primary" : "border-red-500"} text-primary`}>
+            {status === "rejected" ? (
+              <Frown
+                className="text-red-500 size-8 sm:size-9"
+                strokeWidth={1.5}
+              />
+            ) : (
+              <Clock className="size-8 sm:size-9" strokeWidth={1.5} />
+            )}
           </div>
 
           {/* Title & Subtitle */}
           <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-primary font-black text-2xl sm:text-3xl">
-              حسابك قيد المراجعة
+            <h1
+              className={`${status === "pending" ? "text-primary" : "text-red-500"} font-black text-2xl sm:text-3xl`}>
+              {title}
             </h1>
-            <p className="text-primary font-normal text-sm sm:text-base leading-relaxed">
-              شكراً لتسجيلك | فريق الادارة يراجع بياناتك للموافقة على طلبك
+            <p
+              className={`${status === "pending" ? "text-primary" : "text-red-500"} font-normal text-sm sm:text-base leading-relaxed`}>
+              {discription}
             </p>
           </div>
 
@@ -61,13 +82,32 @@ function Pending() {
           </div>
 
           {/* Logout Button */}
-          <button
-            type="button"
-            // onClick={}
-            className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
-            <LogOut className="size-5 group-hover:text-white transition-colors duration-200" />
-            تسجيل الخروج
-          </button>
+          {status === "pendin" ? (
+            <button
+              type="button"
+              onClick={() => signOut()}
+              className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
+              <LogOut className="size-5 group-hover:text-white transition-colors duration-200" />
+              العوده لتسجيل الدخول
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                //  onClick={}
+                className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
+                <MessageCircle className="size-5 group-hover:text-white transition-colors duration-200" />
+                التواصل مع الإدارة
+              </button>
+              <button
+                type="button"
+                //  onClick={}
+                className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
+                <Pencil className="size-5 group-hover:text-white transition-colors duration-200" />
+                تعديل البيانات
+              </button>
+            </>
+          )}
         </div>
       </div>
 
