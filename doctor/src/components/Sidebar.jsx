@@ -1,31 +1,17 @@
 import React from "react";
 import {
   LayoutDashboard,
-  Users,
   LogOut,
   PanelRightIcon,
-  Stethoscope,
-  Pill,
-  Syringe,
-  ClipboardCheck,
   MessageCircle,
-  FileText
+  FileText,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "@clerk/clerk-react";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard" },
-  { icon: Stethoscope, label: "إدارة الأطباء", path: "/doctors-management" },
-  { icon: Pill, label: "إدارة الصيدليات", path: "/pharmacy-management" },
-  { icon: Syringe, label: "إدارة الأدوية", path: "/medication-management" },
-  { icon: FileText , label: "إدارة المقالات", path: "/articles-management" },
-  { icon: Users, label: "إدارة المستخدمين", path: "/users-management" },
-  {
-    icon: ClipboardCheck,
-    label: "إدارة الطلبات والتسجيل",
-    path: "/admissions-registration",
-  },
+  { icon: FileText, label: "إدارة المقالات", path: "/articles-management" },
   { icon: MessageCircle, label: "الرسائل", path: "/chats" },
 ];
 
@@ -33,8 +19,7 @@ export const SIDEBAR_OPEN_WIDTH = 230;
 export const SIDEBAR_CLOSED_WIDTH = 80;
 
 function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
-
-  const { isSignedIn, isLoaded, signOut } = useAuth();
+  // const { isSignedIn, isLoaded, signOut } = useAuth();
 
   const location = useLocation();
 
@@ -81,8 +66,8 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
               style={{ justifyContent: isOpen ? "flex-start" : "center" }}
               className={
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600  hover:bg-background-primary hover:text-primary transition-colors duration-150
-                ${isActive
-                  ? "bg-background-primary text-primary font-normal"
+               ${ isActive
+                  ? "bg-background-primary text-primary font-normal "
                   : "text-text-secondary"}`
               }>
               <Icon className="size-5 shrink-0 " />
@@ -95,7 +80,7 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
       {/* ── Logout ── */}
       <div className="px-1.5 pb-6">
         <button
-          onClick={() => signOut()}
+          // onClick={() => signOut()}
           style={{ justifyContent: isOpen ? "flex-start" : "center" }}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150">
           <LogOut className="size-5 shrink-0" />
