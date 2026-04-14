@@ -154,6 +154,7 @@ function ForgetPasswordPage() {
         normalizedMsg.includes("incorrect")
       )
         e.code = "كود التحقق غير صالح";
+        // todo: put the unKnown error in the UI
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
 
       setError(e);
@@ -289,6 +290,7 @@ function ForgetPasswordPage() {
                   <div className="felx justify-center">
                     {verCode.map((val, i) => (
                       <input
+                        dir="ltr"
                         key={i}
                         id={`otp-${i}`}
                         className={`text-primary size-[26px]  text-2xl md:size-[52px] ml-1 text-center font-black border border-gray-500  focus:border-primary  rounded-[6px] outline-0 transition-colors ${val ? "border-primary" : ""}`}
@@ -386,8 +388,8 @@ function ForgetPasswordPage() {
 
               <div
                 className={`flex-1 flex items-center ${error.password ? "justify-between" : "justify-end"} text-sm`}>
-                {error.password ||
-                  (strengthClass && (
+                {error.password ||strengthClass ?
+                    (
                     <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
                       {error.password && (
                         <AlertCircle className="size-[16px] text-red-600" />
@@ -401,7 +403,7 @@ function ForgetPasswordPage() {
                             : ""}
                       </span>
                     </div>
-                  ))}
+                  ): ""}
               </div>
             </div>
 
