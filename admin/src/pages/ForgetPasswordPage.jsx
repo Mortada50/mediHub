@@ -279,7 +279,7 @@ function ForgetPasswordPage() {
               <div className="bg-warning-primary w-full md:w-[368px] h-[55px] rounded-lg flex items-center px-3 mt-2">
                 <AlertCircle className="size-[16px] text-yellow-600" />
                 <span className="text-sm text-gray-600 mr-2">
-                  تم إرسال كود التحقق الى: {email ? email : "mortada@gmail.com"}
+                  تم إرسال كود التحقق الى: {email ? email : ""}
                 </span>
               </div>
               <div>
@@ -287,10 +287,9 @@ function ForgetPasswordPage() {
                   <p className="text-xs text-gray-500">
                     ادخل الكود المكون من 6 ارقام
                   </p>
-                  <div className="felx justify-center">
+                  <div className="flex justify-center" dir="ltr">
                     {verCode.map((val, i) => (
                       <input
-                        dir="ltr"
                         key={i}
                         id={`otp-${i}`}
                         className={`text-primary size-[26px]  text-2xl md:size-[52px] ml-1 text-center font-black border border-gray-500  focus:border-primary  rounded-[6px] outline-0 transition-colors ${val ? "border-primary" : ""}`}
@@ -327,11 +326,11 @@ function ForgetPasswordPage() {
                 {/* TODO: CHECK THIS OUT (if the user cleck resend so many time ?) */}
                 <p className="font-normal text-sm text-gray-500">
                   لم يصلك الكود؟{" "}
-                  <span
+                  <button
                     className="text-primary text-xs font-normal cursor-pointer"
                     onClick={() => handleStep1()}>
                     أعد الارسال
-                  </span>
+                  </button>
                 </p>
               </div>
             </div>
@@ -388,22 +387,23 @@ function ForgetPasswordPage() {
 
               <div
                 className={`flex-1 flex items-center ${error.password ? "justify-between" : "justify-end"} text-sm`}>
-                {error.password ||strengthClass ?
-                    (
-                    <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
-                      {error.password && (
-                        <AlertCircle className="size-[16px] text-red-600" />
-                      )}
-                      <span
-                        className={`text-sm ${error.password ? "text-gray-600" : strengthClass.color} `}>
-                        {error.password
-                          ? error.password
-                          : password
-                            ? strengthClass.msg
-                            : ""}
-                      </span>
-                    </div>
-                  ): ""}
+                {error.password || strengthClass ? (
+                  <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
+                    {error.password && (
+                      <AlertCircle className="size-[16px] text-red-600" />
+                    )}
+                    <span
+                      className={`text-sm ${error.password ? "text-gray-600" : strengthClass.color} `}>
+                      {error.password
+                        ? error.password
+                        : password
+                          ? strengthClass.msg
+                          : ""}
+                    </span>
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
 
@@ -414,7 +414,7 @@ function ForgetPasswordPage() {
                 <input
                   type={showPass.confirmNewPassword ? "text" : "password"}
                   placeholder="تأكيد كلمة المرور الجديدة"
-                  className={`h-[55px] w-full  md:w-[368px] -ml-1 border bg-background-primary rounded-r-lg py-2 px-4 focus:outline-none placeholder:text-sm ${error.password ? "border-red-400" : "border-transparent"}`}
+                  className={`h-[55px] w-full  md:w-[368px] -ml-1 border bg-background-primary rounded-r-lg py-2 px-4 focus:outline-none placeholder:text-sm ${error.confirmPassword ? "border-red-400" : "border-transparent"}`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -477,13 +477,13 @@ function ForgetPasswordPage() {
               </h1>
               <p className="text-sm text-gray-600 mt-1">
                 العودة لتسجيل الدخول؟
-                <span
+                <button
                   className="text-primary text-xs font-normal cursor-pointer"
                   onClick={() => {
                     navigate("/login");
                   }}>
                   إضغط هنا
-                </span>
+                </button>
               </p>
             </div>
           </div>
