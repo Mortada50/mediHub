@@ -141,17 +141,18 @@ function LoginPage() {
                   </span>
                 </div>
               )}
-              <a
+              <button
+                type="button"
                 className="cursor-pointer text-primary hover:underline text-sm"
                 onClick={() => navigate("/forget-password")}>
                 نسيت كلمة المرور؟
-              </a>
+              </button>
             </div>
           </div>
 
           {/* SUBMIT */}
           <button
-            type="submit"
+            type="button"
             disabled={loading}
             onClick={handleLogin}
             className="bg-primary w-full text-white py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed">
@@ -164,7 +165,7 @@ function LoginPage() {
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
             <button
-              type="submit"
+              type="button"
               disabled={loading}
               onClick={() => navigate("/doctor-registration")}
               className="bg-white w-full text-primary py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed border border-primary hover:bg-primary hover:text-white ">

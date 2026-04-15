@@ -2,9 +2,15 @@ import { publicApi } from "./axios.js";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://medihub-backend-m32h.onrender.com/api";
+
+
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+if (!baseURL) {
+  throw new Error(
+    "Missing VITE_API_BASE_URL. Please set it in your environment variables.",
+  );
+}
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -32,14 +38,21 @@ const useApi = () => {
 
   const request = async (method, url, data = null, config = {}) => {
     const token = await getToken();
+    if (!token) {
+      return Promise.reject({
+        message: "Unauthenticated request",
+        status: 401,
+        data: null,
+      });
+    }
     return apiClient({
       method,
       url,
       data,
       ...config,
       headers: {
-        Authorization: `Bearer ${token}`,
         ...config.headers,
+        Authorization: `Bearer ${token}`,
       },
     });
   };
