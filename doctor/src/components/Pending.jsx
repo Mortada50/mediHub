@@ -1,6 +1,8 @@
 import loginLogo from "../assets/login-logo.png";
 import { LogOut, Clock, Frown, MessageCircle, Pencil } from "lucide-react";
 import { useUser, useAuth } from "@clerk/clerk-react";
+import {useProfile} from "../hooks/useProfile"
+import PageLoader from "./PageLoader.jsx";
 
 
 function Pending() {
@@ -20,6 +22,13 @@ function Pending() {
 
   }
 
+  const {data, isError, isLoading, error} = useProfile();
+
+  if(isLoading) return <PageLoader />
+ if(isError) console.log(error);
+ 
+  console.log(data);
+  
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}

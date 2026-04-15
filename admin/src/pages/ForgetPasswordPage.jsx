@@ -287,10 +287,10 @@ function ForgetPasswordPage() {
                   <p className="text-xs text-gray-500">
                     ادخل الكود المكون من 6 ارقام
                   </p>
-                  <div className="felx justify-center">
+                  <div className="felx justify-center" dir="ltr">
                     {verCode.map((val, i) => (
                       <input
-                        dir="ltr"
+                        
                         key={i}
                         id={`otp-${i}`}
                         className={`text-primary size-[26px]  text-2xl md:size-[52px] ml-1 text-center font-black border border-gray-500  focus:border-primary  rounded-[6px] outline-0 transition-colors ${val ? "border-primary" : ""}`}

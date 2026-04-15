@@ -28,7 +28,7 @@ function App() {
         element={
           isSignedIn ? (
             status === "pending" || status === "rejected" ? (
-              <PendingRejectPage />
+              <Navigate to={"/pending-page"} />
             ) : (
               <Navigate to={"/dashboard"} />
             )
@@ -65,7 +65,7 @@ function App() {
       <Route
         path="/"
         element={
-          isSignedIn ? (
+          isSignedIn && (status === "active" || status === "suspend") ? (
             <DashboardLayout />
           ) : localStorage.getItem("url") ? (
             <Navigate to={"/forget-password"} />
