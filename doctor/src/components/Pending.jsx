@@ -1,11 +1,12 @@
 import loginLogo from "../assets/login-logo.png";
 import { LogOut, Clock, Frown, MessageCircle, Pencil } from "lucide-react";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import {useProfile} from "../hooks/useProfile"
 import PageLoader from "./PageLoader.jsx";
+import {useNavigate} from "react-router"
 
 
 function Pending() {
+  const navigate = useNavigate();
   const { user } = useUser();
   const {signOut} = useAuth();
   const name = user?.unsafeMetadata?.fullName || user?.fullName || "";
@@ -22,14 +23,12 @@ function Pending() {
 
   }
 
-  const {data, isError, isLoading, error} = useProfile();
-
-  if(isLoading) return <PageLoader />
- if(isError) console.log(error);
- 
-  console.log(data);
+  const reload = async () => {
+    
+    await user.reload();
+  }
   
-  return (
+  return reload() &&(
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}
       <div className="flex-1 bg-white flex flex-col items-center justify-center px-4 sm:px-8 py-12 lg:py-0">
@@ -91,7 +90,7 @@ function Pending() {
           </div>
 
           {/* Logout Button */}
-          {status === "pendin" ? (
+          {status === "pending" ? (
             <button
               type="button"
               onClick={() => signOut()}
@@ -103,14 +102,16 @@ function Pending() {
             <>
               <button
                 type="button"
-                //  onClick={}
+                 onClick={() => window.open("https://wa.me/967781093536")}
                 className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
                 <MessageCircle className="size-5 group-hover:text-white transition-colors duration-200" />
                 التواصل مع الإدارة
               </button>
               <button
                 type="button"
-                //  onClick={}
+                onClick={() =>
+                  navigate("/doctor-registration", { state: { update: true } })
+                }
                 className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
                 <Pencil className="size-5 group-hover:text-white transition-colors duration-200" />
                 تعديل البيانات

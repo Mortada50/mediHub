@@ -47,7 +47,7 @@ function App() {
       <Route
         path="/doctor-registration"
         element={
-          !isSignedIn ? <RegisterPage /> : <Navigate to={"/dashboard"} />
+          !isSignedIn || (isSignedIn && status === "rejected") ? <RegisterPage /> : <Navigate to={"/dashboard"} />
         }
       />
 
