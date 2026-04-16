@@ -36,11 +36,12 @@
     const {
       userProfile,
       isProfileError,
-      error: profileError,
+      profileError,
       isProfileLoading,
       isUpdatingProfile,
       profileUpdateMutation,
       profileUpdatedSuccess,
+      profileUpdateError,
     } = useProfile(update);
 
     const [licensePreviewUrl, setLicensePreviewUrl] = useState(null);
@@ -215,11 +216,11 @@
           });
 
           setStep(3);
-        }else{
-          profileUpdateMutation({ ...form, license: licenseUrl });
-          if (profileUpdatedSuccess){
-            navigate("/pending-page");
-          }
+        } else {
+          profileUpdateMutation(
+            { ...form, license: licenseUrl },
+            { onSuccess: () => navigate("/pending-page") }
+          );
         }
       } catch (err) {
         const e = {};
@@ -302,11 +303,12 @@
       }
     }, [update, userProfile]);
 
+    // useEffect(() => {
+    //   if (profileUpdatedSuccess) navigate("/pending-page");
+    // }, [profileUpdatedSuccess, navigate]);
+
     if (update && isProfileLoading) return <PageLoader />;
     if (isProfileError) return <div>{profileError?.message}</div>;
-    if( profileUpdatedSuccess) {
-      navigate("/pending-page")
-    }
 
     return (
       <div className="flex min-h-screen flex-col lg:flex-row">
@@ -369,7 +371,7 @@
                     name="gender"
                     value={form.gender}
                     onChange={onChange}>
-                    <option value="" disabled selected>
+                    <option value="" disabled>
                       اختر الجنس
                     </option>
                     <option value="ذكر">ذكر</option>
@@ -623,7 +625,7 @@
                       className={`h-[55px] w-full text-primary bg-background-primary rounded-lg py-2 px-4 border focus:outline-none text-sm ${
                         error.city ? "border-red-400" : "border-transparent"
                       }`}>
-                      <option value="" disabled selected>
+                      <option value="" disabled>
                         اختر المدينة
                       </option>
                       {yemenGovernorates.map((c, i) => (

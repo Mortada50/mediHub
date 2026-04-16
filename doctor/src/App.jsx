@@ -47,7 +47,11 @@ function App() {
       <Route
         path="/doctor-registration"
         element={
-          !isSignedIn || (isSignedIn && status === "rejected") ? <RegisterPage /> : <Navigate to={"/dashboard"} />
+          !isSignedIn || (isSignedIn && status === "rejected") ? (
+            <RegisterPage />
+          ) : (
+            <Navigate to={"/dashboard"} />
+          )
         }
       />
 
@@ -65,7 +69,7 @@ function App() {
       <Route
         path="/"
         element={
-          isSignedIn && (status === "active" || status === "suspend") ? (
+          isSignedIn && (status === "active" || status === "suspended") ? (
             <DashboardLayout />
           ) : localStorage.getItem("url") ? (
             <Navigate to={"/forget-password"} />

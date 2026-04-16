@@ -5,7 +5,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { userRole, mongoId, userStatus, clerkUser } = req;
     let profile;
-    
+
     const {
       fullName,
       gender,
@@ -37,17 +37,16 @@ export const updateProfile = async (req, res) => {
       speciality,
       qualifications,
       clinicName,
-      city,
-      area,
-      street,
       phone,
+      address: { city, area, street },
     };
-    
+
     let doctor = await Doctor.findById(mongoId);
-    
-    if(!doctor) return sendError(res, "هذا الطبيب غير موجود", 404);
-    // replace bettwen pending and rejected in if condiation
+
+    if (!doctor) return sendError(res, "هذا الطبيب غير موجود", 404);
+
     if (userStatus === "rejected") {
+      
       profile.status = "pending";
 
       const { license } = req.body;
@@ -63,12 +62,17 @@ export const updateProfile = async (req, res) => {
       console.log(userStatus);
     }
 
-   Object.assign(doctor, profile);
-   await doctor.save();
-   
-    sendSuccess(res, doctor, "تم تعديل بيانات الطبيب بنجاح")
-   
+    Object.assign(doctor, profile);
+    // Ensure nested subdoc is marked modified
+    doctor.address = { ...doctor.address?.toObject?.(), ...profile.address };
+    await doctor.save();
+
+    sendSuccess(res, doctor, "تم تعديل بيانات الطبيب بنجاح");
   } catch (error) {
-    sendError(res, "خطاء في تعديل بيانات الطبيب" ,error);
+    console.error("updateProfile error:", error);
+    if (error?.name === "ValidationError") {
+      return sendError(res, error.message, 400);
+    }
+    sendError(res, "خطأ في تعديل بيانات الطبيب", 500);
   }
 };

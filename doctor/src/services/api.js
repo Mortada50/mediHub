@@ -4,9 +4,7 @@ import axios from "axios";
 
 
 
-const baseURL = "http://localhost:3000/api" 
-// import.meta.env.VITE_API_BASE_URL;
-console.log(baseURL);
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(

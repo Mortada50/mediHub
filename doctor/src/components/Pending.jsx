@@ -3,6 +3,7 @@ import { LogOut, Clock, Frown, MessageCircle, Pencil } from "lucide-react";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import PageLoader from "./PageLoader.jsx";
 import {useNavigate} from "react-router"
+import { useEffect } from "react";
 
 
 function Pending() {
@@ -23,12 +24,18 @@ function Pending() {
 
   }
 
-  const reload = async () => {
+  // const reload = async () => {
     
-    await user.reload();
-  }
+  //   await user.reload();
+  // }
   
-  return reload() &&(
+  // return reload() &&(
+
+  useEffect(() => {
+    user?.reload?.();
+  }, [user?.id]);
+
+  return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}
       <div className="flex-1 bg-white flex flex-col items-center justify-center px-4 sm:px-8 py-12 lg:py-0">

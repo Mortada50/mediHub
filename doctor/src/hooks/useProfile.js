@@ -6,7 +6,12 @@ export const useProfile = (state = false) => {
 
   const queryClient = useQueryClient();
 
-  const {data: userProfile, isLoading, isError} = useQuery({
+  const {
+    data: userProfile,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
     enabled: state,
@@ -28,8 +33,10 @@ export const useProfile = (state = false) => {
     userProfile,
     isProfileLoading: isLoading,
     isProfileError: isError,
+    profileError: error,
     profileUpdateMutation: profileUpdateMutation.mutate,
-    isUpdatingProfile: profileUpdateMutation.isPending,
-    profileUpdatedSuccess: profileUpdateMutation.isSuccess
+    isUpdatingProfile: profileUpdateMutation.isLoading,
+    profileUpdatedSuccess: profileUpdateMutation.isSuccess,
+    profileUpdateError: profileUpdateMutation.error,
   };
 }
