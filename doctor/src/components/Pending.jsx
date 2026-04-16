@@ -4,6 +4,7 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import PageLoader from "./PageLoader.jsx";
 import {useNavigate} from "react-router"
 import { useEffect } from "react";
+// import { useEffect } from "react";
 
 
 function Pending() {
@@ -28,14 +29,15 @@ function Pending() {
     
   //   await user.reload();
   // }
-  
   // return reload() &&(
-
+  
+  console.log(user);
+  
   useEffect(() => {
-    user?.reload?.();
-  }, [user?.id]);
-
-  return (
+      user?.reload?.();
+    }, [user?.id]);
+    
+    return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* RIGHT SIDE - Content */}
       <div className="flex-1 bg-white flex flex-col items-center justify-center px-4 sm:px-8 py-12 lg:py-0">

@@ -14,9 +14,11 @@ import PendingRejectPage from "./pages/PendingRejectPage";
 function App() {
    const { isSignedIn, isLoaded } = useAuth();
 
-   const {user} = useUser();
+   const {user, isLoaded: userLoaded} = useUser();
    
-   if (!isLoaded) return <PageLoader />;
+   
+   
+   if (!isLoaded || !userLoaded) return <PageLoader />;
 
    const status = user?.publicMetadata?.status;
     

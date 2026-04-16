@@ -28,6 +28,23 @@
   import { uploadLicense } from "../services/api.js";
   import PageLoader from "../components/PageLoader.jsx";
 
+
+  const INITIAL = {
+    fullName: "",
+    gender: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    speciality: "",
+    qualifications: "",
+    clinicName: "",
+    phone: "",
+    city: "",
+    area: "",
+    street: "",
+    license: null,
+  };
+
   function RegisterPage() {
     const location = useLocation();
 
@@ -49,21 +66,7 @@
     const { isLoaded, signUp, setActive } = useSignUp();
     const navigate = useNavigate();
 
-    const INITIAL = {
-      fullName: "",
-      gender: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      speciality: "",
-      qualifications: "",
-      clinicName: "",
-      phone: "",
-      city: "",
-      area: "",
-      street: "",
-      license: null,
-    };
+    
 
     const [step, setStep] = useState(1);
     const [form, setForm] = useState(INITIAL);
@@ -258,8 +261,11 @@
         const result = await signUp.attemptEmailAddressVerification({ code });
 
         if (result.status === "complete") {
-          await setActive({ session: result.createdSessionId });
-          navigate("/pending-page");
+          await setActive({
+            session: result.createdSessionId,
+            redirectUrl: "/pending-page",
+          });
+         
         }
       } catch (err) {
         const e = {};
