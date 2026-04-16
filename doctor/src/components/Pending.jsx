@@ -11,7 +11,7 @@ function Pending() {
   const navigate = useNavigate();
   const { user } = useUser();
   const {signOut} = useAuth();
-  const name = user?.unsafeMetadata?.fullName || user?.fullName || "";
+  const name = user?.publicMetadata?.fullName || user?.fullName || "";
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const accountType = user?.publicMetadata?.role === "doctor" ? "دكتور" : "";
   const status = user?.publicMetadata?.status;

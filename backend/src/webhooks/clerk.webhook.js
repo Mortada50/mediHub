@@ -69,6 +69,7 @@ async function handleUserCreated(data) {
   const { id: clerkUserId, email_addresses, unsafe_metadata } = data;
   const email = email_addresses?.[0]?.email_address;
   const role = unsafe_metadata?.role;
+  const fullName=unsafe_metadata?.fullName
 
   if (!email || !role) {
     throw new Error(`Incomplete data: email=${email}, role=${role}`);
@@ -141,13 +142,13 @@ async function handleUserCreated(data) {
   const status = role === ROLES.PATIENT || role === ROLES.ADMIN ? STATUS.ACTIVE : STATUS.PENDING;
 
   await clerkClient.users.updateUser(clerkUserId, {
+    unsafeMetadata: {},
     publicMetadata: {
       role,
       status,
       mongoId: mongoDoc._id.toString(),
-      fullName: unsafeMetadata.fullName
+      fullName,
     },
-    unsafeMetadata: {},
   });
 
 
