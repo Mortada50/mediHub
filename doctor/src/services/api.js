@@ -85,5 +85,10 @@ export const useProfileApi = () => {
     return data.data;
   };
 
-  return { getProfile };
+  const updateProfile = async (profile) => {
+    const { data } = await api.put("/doctor/update-profile", profile);
+    return data;
+  }
+
+  return { getProfile, updateProfile };
 };

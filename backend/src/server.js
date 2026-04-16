@@ -10,6 +10,7 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import webhookRoutes from "./webhooks/clerk.webhook.js";
 import authRoutes from "./routes/auth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import doctorRoutes from "./routes/doctor.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -37,6 +38,7 @@ app.use("/api", generalLimiter);
 // ───── API Routes ─────
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/doctor", doctorRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Hello mediHub" });
