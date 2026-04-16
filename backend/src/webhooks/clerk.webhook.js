@@ -141,13 +141,14 @@ async function handleUserCreated(data) {
   const status = role === ROLES.PATIENT || role === ROLES.ADMIN ? STATUS.ACTIVE : STATUS.PENDING;
 
   await clerkClient.users.updateUser(clerkUserId, {
-  unsafeMetadata: {},        
-  publicMetadata: {
-    role,
-    status,
-    mongoId: mongoDoc._id.toString(),
-  },
-});
+    publicMetadata: {
+      role,
+      status,
+      mongoId: mongoDoc._id.toString(),
+      fullName: unsafeMetadata.fullName
+    },
+    unsafeMetadata: {},
+  });
 
 
   console.log(`User created: [${role}] ${email} → status: ${status}`);
