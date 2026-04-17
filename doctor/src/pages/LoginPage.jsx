@@ -48,7 +48,7 @@ function LoginPage() {
       }
     } catch (err) {
       const e = {};
-      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
+      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "";
       if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
       else if (msg?.includes("Identifier")) e.email = "البريد الإلكتروني غير صالح";
       else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";

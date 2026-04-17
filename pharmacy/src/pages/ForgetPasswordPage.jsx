@@ -117,7 +117,7 @@ function ForgetPasswordPage() {
       setStep(2);
     } catch (err) {
       const e = {};
-      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
+      const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "";
       if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
       else if (msg?.includes("Identifier"))
         e.email = "البريد الإلكتروني غير صالح";

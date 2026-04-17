@@ -66,7 +66,7 @@ const useApi = () => {
   };
 };
 
-// upload doctor license
+// upload pharmacy license
 export async function uploadLicense(file) {
   const formData = new FormData();
   formData.append("license", file);

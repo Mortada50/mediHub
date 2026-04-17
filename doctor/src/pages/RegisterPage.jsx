@@ -229,7 +229,7 @@
       } catch (err) {
         const e = {};
         const msg =
-          err.errors?.[0]?.longMessage || err.errors?.[0]?.message || err.message;
+          err.errors?.[0]?.longMessage || err.errors?.[0]?.message || err.message || "";
         const normalizedMsg = msg.toLowerCase();
         if (normalizedMsg?.includes("email"))
           e.email = "هذا البريد الإلكتروني مستخدم بالفعل";

@@ -42,7 +42,7 @@ function Pending() {
         <div className="w-full max-w-[420px] bg-white border border-gray-100 rounded-2xl shadow-sm px-6 sm:px-8 py-8 flex flex-col items-center gap-6">
           {/* Clock Icon */}
           <div
-            className={`flex items-center justify-center size-[72px] sm:size-[80px] rounded-full border-[3px] ${status === "pending" ? "border-primary" : "border-red-500"} text-primary`}>
+            className={`flex items-center justify-center size-[72px] sm:size-[80px] rounded-full border-[3px] ${status === "rejected" ? "border-red-500" : "border-primary"} text-primary`}>
             {status === "rejected" ? (
               <Frown
                 className="text-red-500 size-8 sm:size-9"
@@ -56,11 +56,11 @@ function Pending() {
           {/* Title & Subtitle */}
           <div className="flex flex-col items-center gap-2 text-center">
             <h1
-              className={`${status === "pending" ? "text-primary" : "text-red-500"} font-black text-2xl sm:text-3xl`}>
+              className={`${status === "rejected" ? "text-red-500" : "text-primary"} font-black text-2xl sm:text-3xl`}>
               {title}
             </h1>
             <p
-              className={`${status === "pending" ? "text-primary" : "text-red-500"} font-normal text-sm sm:text-base leading-relaxed`}>
+              className={`${status === "rejected" ? "text-red-500" : "text-primary"} font-normal text-sm sm:text-base leading-relaxed`}>
               {discription}
             </p>
           </div>
@@ -96,15 +96,7 @@ function Pending() {
           </div>
 
           {/* Logout Button */}
-          {status === "pending" ? (
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
-              <LogOut className="size-5 group-hover:text-white transition-colors duration-200" />
-              العوده لتسجيل الدخول
-            </button>
-          ) : (
+          {status === "rejected" ? (
             <>
               <button
                 type="button"
@@ -125,6 +117,14 @@ function Pending() {
                 تعديل البيانات
               </button>
             </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => signOut()}
+              className="w-full h-[50px] border-2 border-primary text-primary rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-colors duration-200 cursor-pointer group">
+              <LogOut className="size-5 group-hover:text-white transition-colors duration-200" />
+              العوده لتسجيل الدخول
+            </button>
           )}
         </div>
       </div>
