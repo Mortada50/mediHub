@@ -1,7 +1,4 @@
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 
 @font-face {
   font-family: 'Bein';
@@ -24,7 +21,8 @@
   --color-text: #2F3541;
   --color-text-secondary: #555555;
   --color-border-primary: #E8E8E8;
-  --color-warning-primary: #ffc107;
+  --color-warning-background: #fff3cd;
+    --color-text-warning-primary: #856404;
 
 }
 

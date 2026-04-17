@@ -14,6 +14,7 @@
   } from "lucide-react";
   import loginLogo from "../assets/login-logo.png";
   import StepsBar from "../components/StepsBar";
+  
   import InputsError from "../components/InputsError";
 
   import { SPECIALITIES } from "../utils/constant.js";
@@ -324,7 +325,7 @@
           <div className="sticky top-0 z-10 bg-white pb-4 shrink-0">
             <div className="flex flex-col items-start gap-2">
               <h1 className="text-primary font-black text-2xl sm:text-3xl lg:text-4xl">
-               {update ? "تعديل بياناتك الطبية" : "تسجيل طبيب جديد" } 
+                {update ? "تعديل بياناتك الطبية''" : "تسجيل طبيب جديد''"}
               </h1>
               <p className="text-primary font-normal text-base lg:text-lg">
                 أكمل بياناتك للحصول على موافقة الإدارة
@@ -686,7 +687,6 @@
                   </p>
 
                   <input
-                  
                     type="file"
                     accept="image/png, image/jpeg, image/jpg"
                     id="licenseUpload"
@@ -699,7 +699,6 @@
 
                   {!form.license ? (
                     <label
-                     
                       htmlFor="licenseUpload"
                       className={`w-full min-h-[120px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors duration-200 hover:border-primary hover:bg-primary/5 ${
                         error.license
@@ -731,13 +730,14 @@
                         className="w-full max-h-[200px] object-cover"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
-                       {!loading && <label
-                          
-                          htmlFor="licenseUpload"
-                          className="flex items-center gap-1 bg-white text-primary text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer hover:bg-primary hover:text-white transition-colors duration-150">
-                          <Pencil className="size-4" />
-                          تغيير
-                        </label>}
+                        {!loading && (
+                          <label
+                            htmlFor="licenseUpload"
+                            className="flex items-center gap-1 bg-white text-primary text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer hover:bg-primary hover:text-white transition-colors duration-150">
+                            <Pencil className="size-4" />
+                            تغيير
+                          </label>
+                        )}
                         <button
                           disabled={loading || isUpdatingProfile}
                           type="button"
@@ -769,8 +769,10 @@
                     className="flex-1 h-[50px] bg-primary text-white rounded-md font-black text-lg flex items-center justify-center disabled:cursor-not-allowed hover:bg-primary/90 transition-colors duration-150 cursor-pointer">
                     {loading || isUpdatingProfile ? (
                       <LoaderIcon className="size-7 animate-spin" />
+                    ) : update ? (
+                      "حفظ التغيرات"
                     ) : (
-                       update ? "حفظ التغيرات" : "إنشاء الحساب"
+                      "إنشاء الحساب"
                     )}
                   </button>
                 </div>
@@ -798,9 +800,9 @@
                 </h1>
 
                 {/* تنبيه الإرسال */}
-                <div className="bg-warning-primary w-full h-[55px] rounded-lg flex items-center px-3">
-                  <AlertCircle className="size-[16px] text-yellow-600 shrink-0" />
-                  <span className="text-sm text-gray-600 mr-2 truncate">
+                <div className="bg-warning-background w-full h-[55px] rounded-lg flex items-center px-3">
+                  <AlertCircle className="size-[16px] text-text-warning-primary shrink-0" />
+                  <span className="text-sm text-text-warning-primary mr-2 truncate">
                     تم إرسال كود التحقق الى: {form.email}
                   </span>
                 </div>
@@ -860,6 +862,7 @@
                   <p className="text-sm text-gray-500">
                     لم يصلك الكود؟{" "}
                     <button
+                      disabled={loading}
                       className="text-primary text-xs font-normal cursor-pointer hover:underline"
                       onClick={() => {
                         setVerCode(["", "", "", "", "", ""]);
@@ -871,6 +874,7 @@
                   <p className="text-sm text-gray-500">
                     لديك حساب؟{" "}
                     <button
+                      disabled={loading}
                       onClick={() => navigate("/login")}
                       className="text-primary text-xs font-normal cursor-pointer hover:underline">
                       اضغط هنا

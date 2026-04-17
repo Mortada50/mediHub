@@ -327,6 +327,7 @@ function ForgetPasswordPage() {
                 <p className="font-normal text-sm text-gray-500">
                   لم يصلك الكود؟{" "}
                   <button
+                    disabled={loading}
                     className="text-primary text-xs font-normal cursor-pointer"
                     onClick={() => handleStep1()}>
                     أعد الارسال
@@ -478,6 +479,7 @@ function ForgetPasswordPage() {
               <p className="text-sm text-gray-600 mt-1">
                 العودة لتسجيل الدخول؟
                 <button
+                  disabled={loading}
                   className="text-primary text-xs font-normal cursor-pointer"
                   onClick={() => {
                     navigate("/login");

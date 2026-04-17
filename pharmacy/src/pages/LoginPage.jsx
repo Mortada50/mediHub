@@ -50,7 +50,8 @@ function LoginPage() {
       const e = {};
       const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message;
       if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
-      else if (msg?.includes("Identifier")) e.email = "البريد الإلكتروني غير صالح";
+      else if (msg?.includes("Identifier"))
+        e.email = "البريد الإلكتروني غير صالح";
       else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
       setError(e);
@@ -142,8 +143,8 @@ function LoginPage() {
                 </div>
               )}
               <button
-                type="button"
                 disabled={loading}
+                type="button"
                 className="cursor-pointer text-primary hover:underline text-sm"
                 onClick={() => navigate("/forget-password")}>
                 نسيت كلمة المرور؟
@@ -159,6 +160,22 @@ function LoginPage() {
             className="bg-primary w-full text-white py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed">
             {loading ? <LoaderIcon className="size-7 animate-spin" /> : "دخول"}
           </button>
+          <div className="flex flex-col gap-5 py-4">
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="flex-shrink mx-4 text-gray-400 text-sm font-light">
+                أو
+              </span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => navigate("/doctor-registration")}
+              className="bg-white w-full text-primary py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed border border-primary hover:bg-primary hover:text-white ">
+              سجل الان
+            </button>
+          </div>
         </div>
       </div>
 

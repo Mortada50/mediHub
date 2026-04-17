@@ -142,6 +142,7 @@ function LoginPage() {
                 </div>
               )}
               <button
+                disabled={loading}
                 type="button"
                 className="cursor-pointer text-primary hover:underline text-sm"
                 onClick={() => navigate("/forget-password")}>
@@ -161,7 +162,9 @@ function LoginPage() {
           <div className="flex flex-col gap-5 py-4">
             <div className="flex items-center">
               <div className="flex-grow border-t border-gray-300"></div>
-              <span className="flex-shrink mx-4 text-gray-400 text-sm font-light">أو</span>
+              <span className="flex-shrink mx-4 text-gray-400 text-sm font-light">
+                أو
+              </span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
             <button
