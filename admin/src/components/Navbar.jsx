@@ -16,11 +16,11 @@ function Navbar() {
       <img
         src={logo}
         alt="Logo"
-        className="w-36 h-[66px] object-contain mr-12.5 "
+        className="w-36 h-[66px] object-contain mr-12.5"
       />
 
       {/* Actions */}
-      <div className="flex items-center gap-4 ml-12.5 ">
+      <div className="flex items-center gap-4 ml-12.5">
         <img
           src={user?.publicMetadata?.avatar || profile}
           alt="Profile"

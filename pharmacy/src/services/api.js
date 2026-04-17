@@ -66,12 +66,12 @@ const useApi = () => {
   };
 };
 
-// upload pharmacy license
+// upload doctor license
 export async function uploadLicense(file) {
   const formData = new FormData();
   formData.append("license", file);
 
-  const endpoint = "/upload/doctor-license";
+  const endpoint = "/upload/pharmacy-license";
 
   const res = await publicApi.post(endpoint, formData);
   return res.data.data.url;
@@ -86,7 +86,7 @@ export const useProfileApi = () => {
   };
 
   const updateProfile = async (profile) => {
-    const { data } = await api.put("/doctor/update-profile", profile);
+    const { data } = await api.put("/pharmacy/update-profile", profile);
     return data;
   }
 

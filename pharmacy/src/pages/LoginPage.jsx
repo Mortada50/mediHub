@@ -50,7 +50,8 @@ function LoginPage() {
       const e = {};
       const msg = err.errors?.[0]?.longMessage || err.errors?.[0]?.message || "";
       if (msg?.includes("account")) e.email = "البريد الإلكتروني غير موجود";
-      else if (msg?.includes("Identifier")) e.email = "البريد الإلكتروني غير صالح";
+      else if (msg?.includes("Identifier"))
+        e.email = "البريد الإلكتروني غير صالح";
       else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
       setError(e);
@@ -170,7 +171,7 @@ function LoginPage() {
             <button
               type="button"
               disabled={loading}
-              onClick={() => navigate("/doctor-registration")}
+              onClick={() => navigate("/pharmacy-registration")}
               className="bg-white w-full text-primary py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed border border-primary hover:bg-primary hover:text-white ">
               سجل الان
             </button>

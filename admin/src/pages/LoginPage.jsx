@@ -61,10 +61,8 @@ function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-
       {/* RIGHT SIDE - Form */}
       <div className="w-full lg:w-147 bg-white flex flex-col items-center justify-center px-4 sm:px-8 lg:px-16 py-10 lg:py-0">
-
         {/* HEADER */}
         <div className="flex flex-col items-center gap-2 mb-6 sm:mb-8">
           <h1 className="text-primary font-black text-2xl sm:text-3xl lg:text-4xl">
@@ -85,10 +83,11 @@ function LoginPage() {
 
         {/* LOGIN FORM */}
         <div className="flex flex-col gap-5 w-full max-w-[422px]">
-
           {/* EMAIL */}
           <div className="flex flex-col gap-1">
-            <p className="mr-2 text-primary text-sm sm:text-base">البريد الإلكتروني</p>
+            <p className="mr-2 text-primary text-sm sm:text-base">
+              البريد الإلكتروني
+            </p>
             <div className="flex items-center">
               <input
                 type="email"
@@ -113,7 +112,9 @@ function LoginPage() {
 
           {/* PASSWORD */}
           <div className="flex flex-col gap-1">
-            <p className="mr-2 text-primary text-sm sm:text-base">كلمة المرور</p>
+            <p className="mr-2 text-primary text-sm sm:text-base">
+              كلمة المرور
+            </p>
             <div className="flex items-center">
               <input
                 type="password"
@@ -131,19 +132,20 @@ function LoginPage() {
             <div
               className={`flex-1 flex items-center ${
                 error.password ? "justify-between" : "justify-end"
-              } text-sm`}
-            >
+              } text-sm`}>
               {error.password && (
                 <div className="text-sm mt-1 flex items-center justify-start gap-1 pr-1">
                   <AlertCircle className="size-[16px] text-red-600" />
-                  <span className="text-sm text-gray-600">{error.password}</span>
+                  <span className="text-sm text-gray-600">
+                    {error.password}
+                  </span>
                 </div>
               )}
               <button
                 type="button"
+                disabled={loading}
                 className="cursor-pointer text-primary hover:underline text-sm"
-                onClick={() => navigate("/forget-password")}
-              >
+                onClick={() => navigate("/forget-password")}>
                 نسيت كلمة المرور؟
               </button>
             </div>
@@ -154,11 +156,9 @@ function LoginPage() {
             type="button"
             disabled={loading}
             onClick={handleLogin}
-            className="bg-primary w-full text-white py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed"
-          >
+            className="bg-primary w-full text-white py-2 px-4 rounded-md cursor-pointer h-[50px] font-black text-lg flex items-center justify-center disabled:cursor-not-allowed">
             {loading ? <LoaderIcon className="size-7 animate-spin" /> : "دخول"}
           </button>
-
         </div>
       </div>
 
@@ -170,7 +170,6 @@ function LoginPage() {
           className="w-[300px] xl:w-[500px]"
         />
       </div>
-
     </div>
   );
 }

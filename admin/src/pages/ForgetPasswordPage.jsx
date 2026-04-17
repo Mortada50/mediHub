@@ -276,9 +276,9 @@ function ForgetPasswordPage() {
                 تفقد بريدك الإلكتروني
               </h1>
 
-              <div className="bg-warning-primary w-full md:w-[368px] h-[55px] rounded-lg flex items-center px-3 mt-2">
-                <AlertCircle className="size-[16px] text-yellow-600" />
-                <span className="text-sm text-gray-600 mr-2">
+              <div className="bg-warning-background w-full md:w-[368px] h-[55px] rounded-lg flex items-center px-3 mt-2">
+                <AlertCircle className="size-[16px] text-text-warning-primary" />
+                <span className="text-sm mr-2 text-text-warning-primary">
                   تم إرسال كود التحقق الى: {email ? email : ""}
                 </span>
               </div>
@@ -327,6 +327,7 @@ function ForgetPasswordPage() {
                 <p className="font-normal text-sm text-gray-500">
                   لم يصلك الكود؟{" "}
                   <button
+                    disabled={loading}
                     className="text-primary text-xs font-normal cursor-pointer"
                     onClick={() => handleStep1()}>
                     أعد الارسال
@@ -478,6 +479,7 @@ function ForgetPasswordPage() {
               <p className="text-sm text-gray-600 mt-1">
                 العودة لتسجيل الدخول؟
                 <button
+                  disabled={loading}
                   className="text-primary text-xs font-normal cursor-pointer"
                   onClick={() => {
                     navigate("/login");
