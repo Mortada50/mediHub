@@ -43,8 +43,8 @@ function LoginPage() {
         password: password,
       });
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        navigate("/dashboard");
+        await setActive({ session: result.createdSessionId, redirectUrl: "/dashboard" });
+        
       }
     } catch (err) {
       const e = {};

@@ -38,13 +38,15 @@ function LoginPage() {
       return;
     }
     try {
+
       const result = await signIn.create({
         identifier: email,
         password: password,
       });
+    
+      
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        navigate("/dashboard");
+        await setActive({ session: result.createdSessionId, redirectUrl: "/dashboard" });
       }
     } catch (err) {
       const e = {};
@@ -54,6 +56,7 @@ function LoginPage() {
       else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
       setError(e);
+      
     } finally {
       setLoading(false);
     }

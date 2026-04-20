@@ -1,5 +1,5 @@
-import React from "react";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import React, { useEffect } from "react";
+import { useClerk, useAuth, useUser } from "@clerk/clerk-react";
 import { Navigate, Route, Routes } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
@@ -16,12 +16,11 @@ function App() {
 
    const {user, isLoaded: userLoaded} = useUser();
    
-   
-   
+
    if (!isLoaded || !userLoaded) return <PageLoader />;
+ 
 
    const status = user?.publicMetadata?.status;
-    
 
   return (
     <Routes>

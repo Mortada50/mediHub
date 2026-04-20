@@ -81,7 +81,7 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
         <button
           onClick={() => signOut()}
           style={{ justifyContent: isOpen ? "flex-start" : "center" }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150">
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150 cursor-pointer">
           <LogOut className="size-5 shrink-0" />
           {isOpen && (
             <span className="text-sm font-medium whitespace-nowrap">

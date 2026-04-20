@@ -1,7 +1,4 @@
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 
 @font-face {
     font-family: 'Bein';
@@ -17,10 +14,12 @@
 
 @theme {
     --color-primary: #2B9C8E;
+    --color-primary-400: #55b1a5;
     --color-background: #F8FAFB;
     --color-background-white: #ffffff;
     --color-background-primary: #eaf5f4;
     --color-background-secondary: #55B1A5;
+    --color-background-light: #fbfafb;
     --color-text: #2F3541;
     --color-text-secondary: #555555;
     --color-border-primary: #E8E8E8;
@@ -37,4 +36,15 @@ body {
     direction: rtl;
     text-align: right;
     background-color: var(--color-background);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE و Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
