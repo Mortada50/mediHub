@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useClerk, useUser } from "@clerk/clerk-react";
 import { Outlet } from "react-router";
 
 import Navbar from "../components/Navbar";
@@ -6,13 +7,39 @@ import Sidebar, {
   SIDEBAR_OPEN_WIDTH,
   SIDEBAR_CLOSED_WIDTH,
 } from "../components/Sidebar";
+import PageLoader from "../../../admin/src/components/PageLoader";
 
 const NAVBAR_HEIGHT = "81px";
 
 function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  const {signOut} = useClerk()
+  
+     
+     const { user, isLoaded } = useUser();
+     
+     useEffect(() => {
+       if (!isLoaded || !user) return;
+
+       const checkRole = async () => {
+         const role = user?.publicMetadata?.role;
+         console.log(role);
+
+         if (role !== "doctor") {
+           await signOut({ redirectUrl: "/login" });
+         }
+       };
+
+       checkRole();
+     }, [isLoaded, user, signOut]);
+
+      
+
+     if (!isLoaded) return <PageLoader />;
+     
   return (
+    user?.publicMetadata?.role === "doctor" && (
     <div className="min-h-screen">
       <Navbar />
 
@@ -36,7 +63,7 @@ function DashboardLayout() {
         />
       </div>
     </div>
-  );
+  ));
 }
 
 export default DashboardLayout;
