@@ -7,7 +7,7 @@ import Sidebar, {
   SIDEBAR_OPEN_WIDTH,
   SIDEBAR_CLOSED_WIDTH,
 } from "../components/Sidebar";
-import PageLoader from "../../../admin/src/components/PageLoader";
+import PageLoader from "../components/PageLoader";
 
 const NAVBAR_HEIGHT = "81px";
 
@@ -24,7 +24,6 @@ function DashboardLayout() {
 
        const checkRole = async () => {
          const role = user?.publicMetadata?.role;
-         console.log(role);
 
          if (role !== "doctor") {
            await signOut({ redirectUrl: "/login" });
@@ -37,6 +36,8 @@ function DashboardLayout() {
       
 
      if (!isLoaded) return <PageLoader />;
+     
+     if (!user) return <Navigate to="/login" replace />;
      
   return (
     user?.publicMetadata?.role === "doctor" && (

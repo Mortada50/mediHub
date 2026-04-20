@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/clerk-react";
-import { Outlet } from "react-router";
+import { Outlet ,Navigate} from "react-router";
 
 import Navbar from "../components/Navbar";
 import Sidebar, { SIDEBAR_OPEN_WIDTH, SIDEBAR_CLOSED_WIDTH } from "../components/Sidebar";
@@ -34,6 +34,8 @@ function DashboardLayout() {
       
 
      if (!isLoaded) return <PageLoader />;
+     
+     if (!user) return <Navigate to="/login" replace />;
      
   return (
     user?.publicMetadata?.role === "admin" && (

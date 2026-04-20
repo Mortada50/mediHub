@@ -88,11 +88,10 @@ function AdmissionsRegistrationPage() {
   const itemPerPage = 7;
 
   if (isDoctorsPharmaciesLoading) return <PageLoader />;
-  if (isDoctorsPharmaciesError) {
-    console.log(DoctorsPharmaciesError);
-  }
+  
 
-  const allUsers = DoctorsPharmaciesData.users;
+
+  const allUsers = DoctorsPharmaciesData?.users ?? [];
   
   const tabUsers =
     activeTab === "doctor"
@@ -180,7 +179,7 @@ function AdmissionsRegistrationPage() {
            isError={isChangeApprovalStatusError}
            Error={ChangeApprovalStatusError}
            openErrorUiDialog={openErrorUiDialog}
-           setOpenErrorUiDialog={setOpenErrorUiDialog}
+           setOpenErrorUiDialog={() => setOpenErrorUiDialog(false)}
 
          />
        )}

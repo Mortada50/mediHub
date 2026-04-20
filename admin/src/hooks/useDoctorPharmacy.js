@@ -50,7 +50,7 @@ export const useDoctorPharmacy = () => {
     DoctorsPharmaciesError: error,
 
     changeApprovalStatusMutation: updateDoctorPharmacyStatus.mutate,
-    isChangeApprovalStatusLoadning: updateDoctorPharmacyStatus.isPending,
+    isChangeApprovalStatusLoadning: updateDoctorPharmacyStatus.isLoading,
     isChangeApprovalStatusError: updateDoctorPharmacyStatus.isError,
     ChangeApprovalStatusError: updateDoctorPharmacyStatus.error,
 

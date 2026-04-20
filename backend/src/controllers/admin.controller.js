@@ -18,13 +18,12 @@ export const getPendingRejectedUsers = async (req, res) => {
       }),
     ]);
 
-    if (!doctors && !pharmacies) {
-      return sendSuccess(res, {}, "لا توجد بيانات", 404);
-    }
+
 
     const users = [...doctors, ...pharmacies];
 
     sendSuccess(res, { users });
+
   } catch (error) {
     sendError(res, "حدث خطاء في استرجاع طلبات الانظمام", 500, error);
   }
@@ -35,67 +34,53 @@ export const updateDocPharmApprovelStatus = async (req, res) => {
     const { userId } = req.params;
     const { status, role } = req.body;
 
-    if (!userId || !status || !role)
-      return sendError(res, "بيانات ناقصة", 400);
-
-    const Moadel = role === "doctor" ? Doctor : Pharmacy;
-
-    let user = await Moadel.findById(userId);
-
-    if (!user) {
-      return sendSuccess(res, {}, "المستخدم غير موجود", 404);
+    const ALLOWED_STATUS = ["rejected", "active", "suspended"];
+    const ALLOWED_ROLE   = ["doctor", "pharmacy"];
+    if (!userId || !ALLOWED_STATUS.includes(status) || !ALLOWED_ROLE.includes(role)) {
+      return sendError(res, "بيانات ناقصة أو غير صالحة", 400);
     }
 
-    const clerkUserId = user.clerkUserId;
-    await clerkClient.users.updateUserMetadata(clerkUserId, {
+    const Model = role === "doctor" ? Doctor : Pharmacy;
+    const user = await Model.findById(userId);
+    if (!user) return sendError(res, "المستخدم غير موجود", 404);
+
+    // DB first, Clerk second — easier to compensate on failure.
+    user.status = status;
+    await user.save();
+
+    await clerkClient.users.updateUserMetadata(user.clerkUserId, {
       publicMetadata: { status },
     });
 
-    user.status = status;
-
-    await user.save();
-
-    sendSuccess(res, user, "تم تحديث حالة المستخدم", 200);
+    return sendSuccess(res, user, "تم تحديث حالة المستخدم", 200);
   } catch (error) {
-    console.log(error);
-    sendError(res, "هناك خطاء", error);
+    console.error(error);
+    return sendError(res, "هناك خطأ", 500, error);
   }
 };
 
 export const removeRejectedUser = async (req, res) => {
 try {
-  const { userId } = req.params;
-  const  {role}  = req.body;
+    const { userId } = req.params;
+    const { role } = req.body;
 
-  const secretKey = ENV.CLERK_SECRET_KEY; 
+    if (!userId || !["doctor", "pharmacy"].includes(role)) {
+      return sendError(res, "خطأ في الحذف", 400);
+    }
 
-  if(!secretKey) {
-    throw new Error("clerk secret key no found")
+    const Model = role === "doctor" ? Doctor : Pharmacy;
+    const user = await Model.findById(userId);
+    if (!user) return sendError(res, "المستخدم غير موجود", 404);
+
+    const { clerkUserId } = user;
+
+    // Delete DB row first; orphan Clerk users are easier to reconcile than orphan DB rows.
+    await Model.findOneAndDelete({ _id: userId });
+    await clerkClient.users.deleteUser(clerkUserId);
+
+    return sendSuccess(res, {}, "تم حذف المستخدم بنجاح", 200);
+  } catch (error) {
+    console.error(error);
+    return sendError(res, "هناك خطأ", 500, error);
   }
-
-  
-
-  if(!userId || !role) return sendError(res, "خطاء في الحذف", 400);
-
-  const Model = role === "doctor" ? Doctor : Pharmacy;
-
-  const user = await Model.findById(userId);
-
-  if(!user) return sendSuccess(res, {}, "المستخدم غير موجود", 404);
-
-  const clerkUserId = user.clerkUserId;
-
-
-  const clerk = new Clerk({secretKey});
-
-  await clerk.users.deleteUser(clerkUserId);
-
-  await Model.findOneAndDelete({_id: userId});
-
-  sendSuccess(res, {}, "تم حذف المستخدم بنجاح", 200);
-
-} catch (error) {
-  console.log(error);
-  sendError(res, "هناك خطاء", error);
-}
 }

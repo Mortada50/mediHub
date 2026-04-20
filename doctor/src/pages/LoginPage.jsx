@@ -56,7 +56,6 @@ function LoginPage() {
       else if (msg?.includes("Password")) e.password = "كلمة المرور غير صحيحة";
       else e.unKnown = "حدث خطأ، يرجى المحاولة مجدداً";
       setError(e);
-      console.log(err);
       
     } finally {
       setLoading(false);

@@ -15,7 +15,7 @@ import {
   LoaderIcon,
 } from "lucide-react";
 import PageLoader from "./PageLoader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ErrorUIDialog from "./ErrorUIDialog";
 /* ─────────────────────────────────────────── */
 /*  INFO ROW                                   */
@@ -48,6 +48,7 @@ export default function UserDetailModal({
   });
   
 
+
   if (!user) return null;
 
 
@@ -56,11 +57,7 @@ export default function UserDetailModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={() => {
-        if (!isLoading) {
-          onClose();
-        }
-      }}>
+      onClick={isLoading ? undefined : onClose}>
       <div
         className="bg-background-primary rounded-2xl shadow-2xl w-full max-w-[950px] max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}>
@@ -75,13 +72,15 @@ export default function UserDetailModal({
         <div className="flex flex-col sm:flex-row gap-2 relative p-4 pt-2">
           {/* ── RIGHT: INFO ── */}
           {isError && openErrorUiDialog ? (
-              <ErrorUIDialog
-                title="حدث خطأ"
-                message="تعذر تحديث حالة المستخدم يرجى المحاولة لاحقا"
-                onClose={setOpenErrorUiDialog}
-                Error={Error}
-              />
-            ) : ("")}
+            <ErrorUIDialog
+              title="حدث خطأ"
+              message="تعذر تحديث حالة المستخدم يرجى المحاولة لاحقا"
+              onClose={setOpenErrorUiDialog}
+              error={Error}
+            />
+          ) : (
+            ""
+          )}
           <div className="flex flex-col flex-1  gap-2 text-right">
             {/* ACCOUNT INFO */}
             <div className="bg-white rounded-md p-4">
@@ -150,13 +149,13 @@ export default function UserDetailModal({
                   <InfoRow label="تلفون العيادة" value={user.phone} dir="ltr" />
                   <div className="flex gap-4 justify-start">
                     <div className="w-[50%]">
-                      <InfoRow label="المديرية" value={user.address.area} />
+                      <InfoRow label="المديرية" value={user.address?.area} />
                     </div>
                     <div className="w-[50%]">
-                      <InfoRow label="المدينة" value={user.address.city} />
+                      <InfoRow label="المدينة" value={user.address?.city} />
                     </div>
                   </div>
-                  <InfoRow label="الحي / الشارع" value={user.address.street} />
+                  <InfoRow label="الحي / الشارع" value={user.address?.street} />
                 </div>
               </div>
             ) : (
@@ -213,7 +212,7 @@ export default function UserDetailModal({
             disabled={isLoading}
             onClick={() => {
               onApprove(user._id, user.role, "active");
-              setIsPending({ ...isLoading, approve: true });
+              setIsPending({ reject: false, approve: true });
             }}
             className="px-5 h-[40px] rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer flex items-center gap-1.5">
             {isLoading && isPending.approve ? (
@@ -230,7 +229,7 @@ export default function UserDetailModal({
               disabled={isLoading}
               onClick={() => {
                 onApprove(user._id, user.role, "rejected");
-                setIsPending({ ...isPending, reject: true });
+                setIsPending({ approve: false, reject: true });
               }}
               className="px-5 h-[40px] rounded-lg bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors cursor-pointer flex items-center gap-1.5">
               {isLoading && isPending.reject ? (

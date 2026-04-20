@@ -31,7 +31,7 @@ const queryClient = new QueryClient({
     },
     mutations: {
       // إعادة المحاولة مرة واحدة للـ mutations
-      retry: 1,
+      retry: false,
     },
   },
 });

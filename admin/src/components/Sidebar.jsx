@@ -79,12 +79,12 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
               key={label}
               to={path}
               style={{ justifyContent: isOpen ? "flex-start" : "center" }}
-              className={
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600  hover:bg-background-primary hover:text-primary transition-colors duration-150
-                ${isActive
-                  ? "bg-background-primary text-primary font-normal"
-                  : "text-text-secondary"}`
-              }>
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-gray-600  hover:bg-background-primary hover:text-primary transition-colors duration-150
+                ${
+                  isActive
+                    ? "bg-background-primary text-primary font-normal"
+                    : "text-text-secondary"
+                }`}>
               <Icon className="size-5 shrink-0 " />
               {isOpen && <span className="whitespace-nowrap">{label}</span>}
             </Link>
@@ -97,7 +97,7 @@ function Sidebar({ isOpen, onToggle, navbarHeight = "81px" }) {
         <button
           onClick={() => signOut()}
           style={{ justifyContent: isOpen ? "flex-start" : "center" }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150">
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 hover:bg-red-50 transition-colors duration-150 cursor-pointer">
           <LogOut className="size-5 shrink-0" />
           {isOpen && (
             <span className="text-sm font-medium whitespace-nowrap">
