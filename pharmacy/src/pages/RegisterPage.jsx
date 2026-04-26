@@ -338,6 +338,7 @@ function RegisterPage() {
                 <p className="mr-2 text-primary">اسم المسؤول</p>
                 <div className="flex items-center">
                   <input
+                    autoFocus
                     type="text"
                     name="fullName"
                     value={form.fullName}
@@ -529,6 +530,7 @@ function RegisterPage() {
                   اسم الصيدلية
                 </p>
                 <input
+                  autoFocus
                   name="pharmacyName"
                   value={form.pharmacyName}
                   onChange={onChange}

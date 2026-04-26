@@ -56,6 +56,7 @@
       isProfileError,
       profileError,
       isProfileLoading,
+
       isUpdatingProfile,
       profileUpdateMutation,
       profileUpdatedSuccess,
@@ -310,9 +311,7 @@
       }
     }, [update, userProfile]);
 
-    // useEffect(() => {
-    //   if (profileUpdatedSuccess) navigate("/pending-page");
-    // }, [profileUpdatedSuccess, navigate]);
+ 
 
     if (update && isProfileLoading) return <PageLoader />;
     if (isProfileError) return <div>{profileError?.message}</div>;
@@ -352,6 +351,7 @@
                   <p className="mr-2 text-primary">الاسم الثلاثي</p>
                   <div className="flex items-center">
                     <input
+                      autoFocus
                       type="text"
                       name="fullName"
                       value={form.fullName}

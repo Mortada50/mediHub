@@ -76,6 +76,8 @@ export const useDoctorPharmacyApi = () => {
     const { data } = await api.get("/admin/pending-reject/status");
     return data.data;
   };
+  
+ 
 
   const updateDocPharmApprovelStatus = async (userId, role, status) => {
     const { data } = await api.patch(`/admin/approve-reject/users/${userId}`, {role, status});
@@ -91,9 +93,25 @@ export const useDoctorPharmacyApi = () => {
 
 
 
+
   return {
     getDoctorsPharmacies,
     updateDocPharmApprovelStatus,
     deleteRejectedUser,
+  };
+};
+
+export const useUsersApi = () => {
+  const api = useApi();
+
+  const getActiveSuspendedUsers = async (role) => {
+    const { data } = await api.get("/admin/active-suspended/users", {
+      params: { role },
+    });
+    return data.data;
+  };
+
+  return {
+    getActiveSuspendedUsers,
   };
 };

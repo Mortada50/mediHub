@@ -235,6 +235,7 @@ function ForgetPasswordPage() {
               <p className="mr-2 text-primary">البريد الإلكتروني</p>
               <div className="flex items-center">
                 <input
+                  autoFocus
                   type="email"
                   placeholder="البريد الإلكتروني"
                   className={`h-[55px] w-[368px] -ml-1 bg-background-primary rounded-r-lg py-2 px-4 border focus:outline-none placeholder:text-sm ${error.email ? "border-red-400" : "border-transparent"}`}

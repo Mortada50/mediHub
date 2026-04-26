@@ -1,7 +1,7 @@
-import {
-  useDoctorPharmacyApi,
-} from "../services/api.js";
+import { useDoctorPharmacyApi } from "../services/api.js";
 import {QueryClient, useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
+
+
 
 export const useDoctorPharmacy = () => {
 
@@ -12,7 +12,7 @@ export const useDoctorPharmacy = () => {
   } = useDoctorPharmacyApi();
   
 
-   const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   const {
     data: DoctorsPharmaciesData,
@@ -29,8 +29,13 @@ export const useDoctorPharmacy = () => {
   const updateDoctorPharmacyStatus = useMutation({
     mutationFn: ({_id, role, status}) => updateDocPharmApprovelStatus(_id, role, status),
     onSuccess: () => {
+      
+      queryClient.invalidateQueries({ queryKey: ["userData"]  })
+   
       queryClient.invalidateQueries({ queryKey: ["DoctorsPharmacies"] });
+    
     }
+    
   });
 
   const deleteRejectedUserMutation = useMutation({

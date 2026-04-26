@@ -4,6 +4,7 @@ import {
   getPendingRejectedUsers,
   updateDocPharmApprovelStatus,
   removeRejectedUser,
+  getActiveSuspendedUsers,
 } from "../controllers/admin.controller.js";
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const router = express.Router();
 router.use(requireAuth, loadUser, requireRole("admin"))
 
 router.get("/pending-reject/status", getPendingRejectedUsers);
+router.get("/active-suspended/users", getActiveSuspendedUsers);
 router.patch("/approve-reject/users/:userId", updateDocPharmApprovelStatus);
 router.delete("/remove-reject/users/:userId", removeRejectedUser);
 

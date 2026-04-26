@@ -5,8 +5,8 @@ import {
   Trash2,
   X,
   LoaderIcon,
+  Pencil,
 } from "lucide-react";
-import { useState } from "react";
 
 const VARIANTS = {
   danger: {
@@ -14,6 +14,12 @@ const VARIANTS = {
     iconBg: "bg-red-50",
     confirmBtn: "bg-red-500 hover:bg-red-600 text-white",
     confirmLabel: "حذف",
+  },
+  change: {
+    icon: <Pencil className="size-6 text-red-500" strokeWidth={1.5} />,
+    iconBg: "bg-red-50",
+    confirmBtn: "bg-red-500 hover:bg-red-600 text-white",
+    confirmLabel: "توقيف",
   },
   warning: {
     icon: (
@@ -24,7 +30,7 @@ const VARIANTS = {
     confirmLabel: "تأكيد",
   },
   info: {
-    icon: <Info className="size-6 text-blue-500" strokeWidth={1.5} />,
+    icon: <Info className="size-6 text-primary" strokeWidth={1.5} />,
     iconBg: "bg-blue-50",
     confirmBtn: "bg-primary hover:bg-primary/90 text-white",
     confirmLabel: "تأكيد",
@@ -45,25 +51,20 @@ export default function ConfirmModal({
   cancelLabel = "إلغاء",
   onConfirm,
   onClose,
-  loading
+  loading,
 }) {
-  // const [loading, setLoading] = useState(false);
+  
   const v = VARIANTS[variant] ?? VARIANTS.danger;
 
-  // const handleConfirm = async () => {
-  //   setLoading(true);
-  //   try {
-  //     await onConfirm();
-  //   } finally {
-  //     setLoading(false);
-  //     onClose();
-  //   }
-  // };
+  
 
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={onClose}>
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!loading) onClose();
+      }}>
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-[400px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
@@ -74,7 +75,10 @@ export default function ConfirmModal({
             {v.icon}
           </div>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!loading) onClose();
+            }}
             className="p-1.5 rounded-full hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition-colors cursor-pointer">
             <X size={16} />
           </button>
@@ -101,7 +105,10 @@ export default function ConfirmModal({
             )}
           </button>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!loading) onClose();
+            }}
             disabled={loading}
             className="flex-1 h-[40px] rounded-lg border border-gray-200 text-gray-500 text-sm font-semibold hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50">
             {cancelLabel}
