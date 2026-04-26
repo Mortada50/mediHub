@@ -202,13 +202,13 @@ export default function PharmacyDetailModal({
             <div className="bg-white rounded-xl p-4">
               <p className="text-primary font-bold text-sm mb-3">أيام العمل</p>
               <div className="flex flex-wrap gap-2">
-                {Object.entries(DAY_LABELS).map(([key, label], i) => (
+                {Object.entries(DAY_LABELS).map(([key, label]) => (
                   <span
                     key={key}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                      pharmacy.weeklySchedule?.[i] === DAY_LABELS[i]
-                        ? "bg-background-primary text-gray-400 border-transparent"
-                        : "bg-primary text-white border-primary"
+                      pharmacy.weeklySchedule?.includes(key)
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background-primary text-gray-400 border-transparent"
                     }`}>
                     {label}
                   </span>
@@ -216,9 +216,7 @@ export default function PharmacyDetailModal({
               </div>
             </div>
             <div className="bg-white rounded-xl p-4 flex flex-col gap-3 flex-1">
-              <p className="text-primary font-semibold text-sm">
-                صورة الترخيص 
-              </p>
+              <p className="text-primary font-semibold text-sm">صورة الترخيص</p>
 
               {pharmacy.license ? (
                 <a

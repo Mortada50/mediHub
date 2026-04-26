@@ -185,13 +185,13 @@ export default function DoctorDetailModal({
             <div className="bg-white rounded-xl p-4">
               <p className="text-primary font-bold text-sm mb-3">أيام العمل</p>
               <div className="flex flex-wrap gap-2">
-                {Object.entries(DAY_LABELS).map(([key, label], i) => (
+                {Object.entries(DAY_LABELS).map(([key, label]) => (
                   <span
                     key={key}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                      doctor.weeklySchedule?.[i] === DAY_LABELS[i]
-                        ? "bg-background-primary text-gray-400 border-transparent"
-                        : "bg-primary text-white border-primary"
+                      doctor.weeklySchedule?.includes(key)
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background-primary text-gray-400 border-transparent"
                     }`}>
                     {label}
                   </span>

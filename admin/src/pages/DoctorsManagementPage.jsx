@@ -35,7 +35,7 @@ const StatusBadge = ({ status }) => {
     );
   return (
     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#ffe5e5] text-[#b22f2f] whitespace-nowrap">
-      موقف
+      موقوف
     </span>
   );
 };
@@ -68,6 +68,18 @@ function DoctorsManagementPage() {
   const itemPerPage = 7;
 
   if (isLoading) return <PageLoader />;
+  if (isError || !usersData) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <TableErrorUI
+          message={error?.message}
+          onRetry={() => refetch()}
+          onloading={isFetching}
+        />
+        ;
+      </div>
+    );
+  }
 
   const {
     totalUsers,
@@ -80,34 +92,25 @@ function DoctorsManagementPage() {
   } = usersData;
   const allUsers = userList ?? [];
 
-  const tabUsers =
-    activeTab === "suspended"
-      ? allUsers.filter((u) => u.status === "suspended")
-      : activeTab === "active"
-        ? allUsers.filter((u) => u.status === "active")
-        : allUsers;
+   const matchedUsers = allUsers.filter((u) => {
+     const matchTab = activeTab === "all" || u.status === activeTab;
+     const matchSearch =
+       !searchInput ||
+       u.fullName?.includes(searchInput) ||
+       u.email?.includes(searchInput);
+     const matchCity = city === "كل المدن" || u.address?.city === city;
+     const matchSpeciality =
+       speciality === "جميع التخصصات" || u.speciality === speciality;
+     return matchTab && matchSearch && matchCity && matchSpeciality;
+   });
 
-  const totalPages = Math.ceil(tabUsers.length / itemPerPage);
+   const totalPages = Math.max(1, Math.ceil(matchedUsers.length / itemPerPage));
+   const safePage = Math.min(currentPage, totalPages);
+   const filtered = matchedUsers.slice(
+     (safePage - 1) * itemPerPage,
+     safePage * itemPerPage,
+   );
 
-  const paged = searchInput
-    ? allUsers
-    : tabUsers.slice(
-        (currentPage - 1) * itemPerPage,
-        currentPage * itemPerPage,
-      );
-
-  const filtered = paged.filter((u) => {
-    const matchSearch =
-      !searchInput ||
-      u.fullName.includes(searchInput) ||
-      u.email.includes(searchInput);
-    const matchCity = city === "كل المدن" || u.city === city;
-    const matchSpeciality =
-      speciality === "جميع التخصصات" || u.speciality === speciality;
-    return matchSearch && matchCity && matchSpeciality;
-  });
-  
- 
   const TABS = [
     { label: "كل الاطباء", value: "all" },
     {
@@ -369,14 +372,14 @@ function DoctorsManagementPage() {
               <tbody>
                 {isError ? (
                   <TableErrorUI
-                    colSpan={5}
+                    colSpan={6}
                     message={error?.message}
                     onRetry={() => refetch()}
                     onloading={isFetching}
                   />
                 ) : filtered.length === 0 ? (
                   <TableEmptyUI
-                    colSpan={5}
+                    colSpan={6}
                     isSearching={!!searchInput}
                     message="لا  يوجد اطباء مطابقين للبحث"
                     messageSubTitle="حاول تعديل معايير البحث او ازالتها بالكامل"

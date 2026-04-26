@@ -58,7 +58,7 @@ function AdmissionsRegistrationPage() {
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [openErrorUiDialog, setOpenErrorUiDialog] = useState(true);
+  const [openErrorUiDialog, setOpenErrorUiDialog] = useState(false);
   const { confirmState, confirm, close } = useConfirm();
 
   const itemPerPage = 7;

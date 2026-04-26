@@ -35,7 +35,7 @@ const StatusBadge = ({ status }) => {
     );
   return (
     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#ffe5e5] text-[#b22f2f] whitespace-nowrap">
-      موقف
+      موقوف
     </span>
   );
 };
@@ -69,6 +69,18 @@ function PharmacyManagementPage() {
   const itemPerPage = 7;
 
   if (isLoading) return <PageLoader />;
+    if (isError || !usersData) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <TableErrorUI
+            message={error?.message}
+            onRetry={() => refetch()}
+            onloading={isFetching}
+          />
+          ;
+        </div>
+      );
+    }
 
   const {
     totalUsers,
@@ -81,30 +93,22 @@ function PharmacyManagementPage() {
   } = usersData;
   const allUsers = userList ?? [];
 
-  const tabUsers =
-    activeTab === "suspended"
-      ? allUsers.filter((u) => u.status === "suspended")
-      : activeTab === "active"
-        ? allUsers.filter((u) => u.status === "active")
-        : allUsers;
-
-  const totalPages = Math.ceil(tabUsers.length / itemPerPage);
-
-  const paged = searchInput
-    ? allUsers
-    : tabUsers.slice(
-        (currentPage - 1) * itemPerPage,
-        currentPage * itemPerPage,
-      );
-
-  const filtered = paged.filter((u) => {
+    const matchedUsers = allUsers.filter((u) => {
+    const matchTab = activeTab === "all" || u.status === activeTab;
     const matchSearch =
       !searchInput ||
-      u.fullName.includes(searchInput) ||
-      u.pharmacyName.includes(searchInput);
-    const matchCity = city === "كل المدن" || u.city === city;
-    return matchSearch && matchCity ;
+      u.fullName?.includes(searchInput) ||
+      u.pharmacyName?.includes(searchInput);
+    const matchCity = city === "كل المدن" || u.address?.city === city;
+    return matchTab && matchSearch && matchCity;
   });
+
+  const totalPages = Math.max(1, Math.ceil(matchedUsers.length / itemPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const filtered = matchedUsers.slice(
+    (safePage - 1) * itemPerPage,
+    safePage * itemPerPage,
+  );
   
  
   const TABS = [
@@ -124,8 +128,8 @@ function PharmacyManagementPage() {
       title: status === "suspended" ? "توقيف" : "تفعيل",
       message:
         status === "suspended"
-          ? `هل أنت متأكد من انك تريد توقيف د/ ${fullName} `
-          : `هل أنت متأكد من انك تريد تفعيل د/ ${fullName} `,
+          ? `هل أنت متأكد من انك تريد توقيف  ${fullName} `
+          : `هل أنت متأكد من انك تريد تفعيل  ${fullName} `,
       variant: status === "suspended" ? "change" : "info",
       onConfirm: () => {
         changeApprovalStatusMutation(
@@ -337,14 +341,14 @@ function PharmacyManagementPage() {
               <tbody>
                 {isError ? (
                   <TableErrorUI
-                    colSpan={5}
+                    colSpan={6}
                     message={error?.message}
                     onRetry={() => refetch()}
                     onloading={isFetching}
                   />
                 ) : filtered.length === 0 ? (
                   <TableEmptyUI
-                    colSpan={5}
+                    colSpan={6}
                     isSearching={!!searchInput}
                     message="لا  يوجد صيدليات مطابقين للبحث"
                     messageSubTitle="حاول تعديل معايير البحث او ازالتها بالكامل"

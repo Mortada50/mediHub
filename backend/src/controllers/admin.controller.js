@@ -78,9 +78,10 @@ try {
     // Delete DB row first; orphan Clerk users are easier to reconcile than orphan DB rows.
     await Model.findOneAndDelete({ _id: userId });
 
+    await deleteFromCloudinary(license);
+
     await clerkClient.users.deleteUser(clerkUserId);
     
-    await deleteFromCloudinary(license);
 
     return sendSuccess(res, {}, "تم حذف المستخدم بنجاح", 200);
   } catch (error) {
@@ -93,20 +94,15 @@ export const getActiveSuspendedUsers = async (req, res) => {
   // todo: get doctor appointments & consultations count & rating
   try {
     const { role } = req.query;
-    console.log(role);
-
+   
+    if (!["doctor", "pharmacy"].includes(role)) {
+      return sendError(res, "بيانات ناقصة أو غير صالحة", 400);
+    }
     const Model = role === "doctor" ? Doctor : Pharmacy;
-    const currentDate = new Date();
-    const startofMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() + 1,
-      0,
-    );
+
+    const now = new Date();
+    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const startOfNextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
     
     const Data = await Model.aggregate([
       {
@@ -115,10 +111,7 @@ export const getActiveSuspendedUsers = async (req, res) => {
             { $match: { status: { $in: ["active", "suspended"] } } },
             { $count: "count" },
           ],
-          activeUsers: [
-            { $match: { status: "active" } },
-            { $count: "count" },
-          ],
+          activeUsers: [{ $match: { status: "active" } }, { $count: "count" }],
           suspendedUsers: [
             { $match: { status: "suspended" } },
             { $count: "count" },
@@ -128,7 +121,7 @@ export const getActiveSuspendedUsers = async (req, res) => {
             {
               $match: {
                 status: { $in: ["active", "suspended"] },
-                createdAt: { $gte: startofMonth, $lte: endOfMonth },
+                createdAt: { $gte: startOfMonth, $lt: startOfNextMonth },
               },
             },
             { $count: "count" },
