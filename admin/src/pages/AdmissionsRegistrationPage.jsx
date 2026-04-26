@@ -12,14 +12,14 @@ import PageLoader from "../components/PageLoader.jsx";
 import UserDetailModal from "../components/UserDetailModal.jsx";
 import TableErrorUI from "../components/TableErrorUi.jsx";
 import TableEmptyUI from "../components/TableEmptyUi.jsx";
+import Avatar from "../components/Avatar.jsx";
 
 // Confirm messages
 import { useConfirm } from "../hooks/useConfirm";
 import ConfirmModal from "../components/ConfirmModal";
+import ErrorUIDialog from "../components/ErrorUIDialog";
 
-/* ─────────────────────────────────────────── */
-/*  STATUS BADGE                               */
-/* ─────────────────────────────────────────── */
+//  STATUS BADGE
 const StatusBadge = ({ status }) => {
   if (status === "pending")
     return (
@@ -34,30 +34,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-/* ─────────────────────────────────────────── */
-/*  AVATAR                                     */
-/* ─────────────────────────────────────────── */
-const Avatar = ({ user }) => {
-  if (user.avatar)
-    return (
-      <img
-        src={user.avatar}
-        alt={user.fullName}
-        className="size-9 rounded-full object-cover shrink-0"
-      />
-    );
-  return (
-    <div className="size-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-      {user.fullName?.charAt(0)}
-    </div>
-  );
-};
-
-
-
-/* ─────────────────────────────────────────── */
-/*  MAIN PAGE                                  */
-/* ─────────────────────────────────────────── */
 function AdmissionsRegistrationPage() {
   const {
     DoctorsPharmaciesData,
@@ -73,7 +49,7 @@ function AdmissionsRegistrationPage() {
     deleteRejectedUserError,
     deleteRejectedUserMutation,
     isDeleteRejectedUserError,
-    isDeleteRejectedUserLoading
+    isDeleteRejectedUserLoading,
   } = useDoctorPharmacy();
 
   const [openStatusDropDown, setOpenStatusDropDown] = useState(false);
@@ -82,17 +58,15 @@ function AdmissionsRegistrationPage() {
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [openErrorUiDialog, setOpenErrorUiDialog] = useState(true);
-   const { confirmState, confirm, close } = useConfirm();
+  const [openErrorUiDialog, setOpenErrorUiDialog] = useState(false);
+  const { confirmState, confirm, close } = useConfirm();
 
   const itemPerPage = 7;
 
   if (isDoctorsPharmaciesLoading) return <PageLoader />;
-  
-
 
   const allUsers = DoctorsPharmaciesData?.users ?? [];
-  
+
   const tabUsers =
     activeTab === "doctor"
       ? allUsers.filter((u) => u.role === "doctor")
@@ -135,16 +109,37 @@ function AdmissionsRegistrationPage() {
     },
   ];
 
-  const handleApprove = (_id, role, status) => {
-     
-    changeApprovalStatusMutation({_id, role, status},{
-      onSuccess: () => setSelectedUser(null),
-      onError: () => setOpenErrorUiDialog(true)
-    
-    } );
-  }
+  const handleApprove = (_id, role, status, fullName) => {
+    confirm({
+      title: status === "active" ? "قبول مستخدم" : "رفض مستخدم",
+      message:
+        status === "active"
+          ? role === "doctor"
+            ? `هل أنت متأكد من انك تريد قبول المستخدم د/ ${fullName} هذه العملية لا يمكن التراجع عنها وسيتمكن المستخدم من تسجيل الدخول و استخدام المنصة`
+            : `هل أنت متأكد من انك تريد قبول صيدلية  ${fullName} هذه العملية لا يمكن التراجع عنها وسيتمكن المستخدم من تسجيل الدخول و استخدام المنصة`
+          : role === "pharmacy"
+            ? `هل أنت متأكد من انك تريد رفض صيدلية  ${fullName} `
+            : `هل أنت متأكد من انك تريد رفض المستخدم د/ ${fullName} `,
+      variant: status === "active" ? "info" : "danger",
+      onConfirm: () => {
+        changeApprovalStatusMutation(
+          { _id, role, status },
+          {
+            onSuccess: () => {
+              close();
+              setSelectedUser(null); 
+            },
+            onError: () =>{ 
+              close();
+              setOpenErrorUiDialog(true);
+            },
+          },
+        );
+      },
+    });
+  };
 
-  const handleDeleteUser = ({_id, role, fullName}) => {
+  const handleDeleteUser = ({ _id, role, fullName }) => {
     confirm({
       title: "حذف المستخدم",
       message: `هل أنت متأكد من حذف "${fullName}"؟ لا يمكن التراجع عن هذا الإجراء.`,
@@ -154,262 +149,276 @@ function AdmissionsRegistrationPage() {
           { _id, role },
           {
             onSuccess: () => close(),
+            onError: () => {
+              close();
+              setOpenErrorUiDialog(true);
+            },
+
           },
         ),
     });
-  }
-  
-  
-   return (
-     <>
-       {confirmState && (
-         <ConfirmModal
-           {...confirmState}
-           onClose={close}
-           loading={isDeleteRejectedUserLoading}
-         />
-       )}
-       {/* MODAL */}
-       {selectedUser && (
-         <UserDetailModal
-           user={selectedUser}
-           onClose={() => setSelectedUser(null)}
-           onApprove={handleApprove}
-           isLoading={isChangeApprovalStatusLoadning}
-           isError={isChangeApprovalStatusError}
-           Error={ChangeApprovalStatusError}
-           openErrorUiDialog={openErrorUiDialog}
-           setOpenErrorUiDialog={() => setOpenErrorUiDialog(false)}
+  };
 
-         />
-       )}
+  return (
+    <>
+      {isDeleteRejectedUserError && openErrorUiDialog &&(
+        <ErrorUIDialog
+          title="حدث خطأ"
+          message="تعذر حذف المستخدم يرجى المحاولة لاحقا"
+          onClose={() => setOpenErrorUiDialog(false)}
+          error={deleteRejectedUserError}
+        />
+      )}
 
-       <div className="flex flex-col gap-4 h-full">
-         {/* PAGE HEADER */}
-         <div className="flex flex-col items-end sm:items-start">
-           <h1 className="text-primary font-black text-xl sm:text-2xl">
-             إدارة طلبات التسجيل
-           </h1>
-           <p className="text-primary-400 font-normal text-sm sm:text-base">
-             مراجعة وقبول أو رفض الكوادر الطبية الجديدة
-           </p>
-         </div>
+      {confirmState && (
+        <ConfirmModal
+          {...confirmState}
+          onClose={close}
+          loading={
+            isDeleteRejectedUserLoading || isChangeApprovalStatusLoadning
+          }
+        />
+      )}
+      {/* MODAL */}
+      {selectedUser && (
+        <UserDetailModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onApprove={handleApprove}
+          isLoading={isChangeApprovalStatusLoadning}
+          isError={isChangeApprovalStatusError}
+          Error={ChangeApprovalStatusError}
+          openErrorUiDialog={openErrorUiDialog}
+          setOpenErrorUiDialog={() => setOpenErrorUiDialog(false)}
+        />
+      )}
 
-         {/* FILTER BAR */}
-         <div className="bg-white rounded-xl flex flex-col sm:flex-row justify-between gap-3 p-2 sm:p-3 items-stretch sm:items-center shadow-sm">
-           <div className="flex gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
-             {TABS.map((tab) => (
-               <button
-                 key={tab.value}
-                 onClick={() => {
-                   setActiveTab(tab.value);
-                   setCurrentPage(1);
-                 }}
-                 className={`cursor-pointer flex-shrink-0 flex justify-center items-center font-normal py-2 px-3 rounded-lg text-sm transition-colors duration-150 ${
-                   activeTab === tab.value
-                     ? "bg-background-primary text-primary font-semibold"
-                     : "text-gray-400 hover:bg-background-primary hover:text-primary"
-                 }`}>
-                 {tab.label} <span className="mr-1">({tab.count})</span>
-               </button>
-             ))}
-           </div>
+      <div className="flex flex-col gap-4 h-full">
+        {/* PAGE HEADER */}
+        <div className="flex flex-col items-end sm:items-start">
+          <h1 className="text-primary font-black text-xl sm:text-2xl">
+            إدارة طلبات التسجيل
+          </h1>
+          <p className="text-primary-400 font-normal text-sm sm:text-base">
+            مراجعة وقبول أو رفض الكوادر الطبية الجديدة
+          </p>
+        </div>
 
-           <div className="flex gap-2 items-center">
-             {/* STATUS DROPDOWN */}
-             <div
-               onClick={() => setOpenStatusDropDown((p) => !p)}
-               className="relative flex items-center gap-2 p-2 sm:p-3 bg-background-primary rounded-lg cursor-pointer text-sm shrink-0 select-none">
-               <span className="text-primary text-sm">{statusLabel}</span>
-               <ChevronDown
-                 size={14}
-                 className={`text-primary transition-transform ${openStatusDropDown ? "rotate-180" : ""}`}
-               />
-               {openStatusDropDown && (
-                 <div className="absolute z-20 flex flex-col gap-1 bg-white shadow-lg border border-gray-100 p-2 top-11 left-0 rounded-xl min-w-[110px]">
-                   {[
-                     { val: "all-status", label: "الكل" },
-                     { val: "rejected", label: "مرفوض" },
-                     { val: "pending", label: "معلق" },
-                   ].map((opt) => (
-                     <button
-                       key={opt.val}
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         setStatus(opt.val);
-                         setOpenStatusDropDown(false);
-                       }}
-                       className="cursor-pointer text-right hover:bg-background-primary text-gray-400 hover:text-primary py-2 px-3 rounded-lg text-sm transition-colors">
-                       {opt.label}
-                     </button>
-                   ))}
-                 </div>
-               )}
-             </div>
+        {/* FILTER BAR */}
+        <div className="bg-white rounded-xl flex flex-col sm:flex-row justify-between gap-3 p-2 sm:p-3 items-stretch sm:items-center shadow-sm">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
+            {TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => {
+                  setActiveTab(tab.value);
+                  setCurrentPage(1);
+                }}
+                className={`cursor-pointer flex-shrink-0 flex justify-center items-center font-normal py-2 px-3 rounded-lg text-sm transition-colors duration-150 ${
+                  activeTab === tab.value
+                    ? "bg-background-primary text-primary font-semibold"
+                    : "text-gray-400 hover:bg-background-primary hover:text-primary"
+                }`}>
+                {tab.label} <span className="mr-1">({tab.count})</span>
+              </button>
+            ))}
+          </div>
 
-             {/* SEARCH */}
-             <div className="flex items-center rounded-lg py-2 px-3 gap-2 bg-background-primary flex-1 min-w-0">
-               <Search size={15} className="text-primary shrink-0" />
-               <input
-                 placeholder="ابحث باسم المستخدم أو البريد الالكتروني"
-                 className="bg-transparent text-gray-600 font-normal text-xs sm:text-sm w-full outline-none placeholder:text-gray-400"
-                 value={searchInput}
-                 onChange={(e) => {
-                   setSearchInput(e.target.value);
-                   setCurrentPage(1);
-                 }}
-               />
-             </div>
-           </div>
-         </div>
+          <div className="flex gap-2 items-center">
+            {/* STATUS DROPDOWN */}
+            <div
+              onClick={() => setOpenStatusDropDown((p) => !p)}
+              className="relative flex items-center gap-2 p-2 sm:p-3 bg-background-primary rounded-lg cursor-pointer text-sm shrink-0 select-none">
+              <span className="text-primary text-sm">{statusLabel}</span>
+              <ChevronDown
+                size={14}
+                className={`text-primary transition-transform ${openStatusDropDown ? "rotate-180" : ""}`}
+              />
+              {openStatusDropDown && (
+                <div className="absolute z-20 flex flex-col gap-1 bg-white shadow-lg border border-gray-100 p-2 top-11 left-0 rounded-xl min-w-[110px]">
+                  {[
+                    { val: "all-status", label: "الكل" },
+                    { val: "rejected", label: "مرفوض" },
+                    { val: "pending", label: "معلق" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatus(opt.val);
+                        setOpenStatusDropDown(false);
+                      }}
+                      className="cursor-pointer text-right hover:bg-background-primary text-gray-400 hover:text-primary py-2 px-3 rounded-lg text-sm transition-colors">
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-         {/* TABLE */}
-         <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
-           <div className="overflow-x-auto flex-1 no-scrollbar">
-             <table className="w-full min-w-[600px] text-right">
-               <thead>
-                 <tr className="bg-primary text-white">
-                   <th className="py-3 px-4 font-semibold text-sm text-right rounded-tr-xl">
-                     بيانات المستخدم
-                   </th>
-                   <th className="py-3 px-4 font-semibold text-sm text-center">
-                     نوع الحساب
-                   </th>
-                   <th className="py-3 px-4 font-semibold text-sm text-center">
-                     حالة الحساب
-                   </th>
-                   <th className="py-3 px-4 font-semibold text-sm text-center">
-                     رقم الهاتف
-                   </th>
-                   <th className="py-3 px-4 font-semibold text-sm text-center rounded-tl-xl">
-                     احداث
-                   </th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {DoctorsPharmaciesError ? (
-                   <TableErrorUI
-                     colSpan={5}
-                     message={DoctorsPharmaciesError?.message}
-                     onRetry={() => refetchDcotorsPharmaciesData()}
-                     onloading={isReFetchingDcotorsPharmaciesData}
-                   />
-                 ) : filtered.length === 0 ? (
-                   <TableEmptyUI
-                     colSpan={5}
-                     isSearching={!!searchInput}
-                     message="لا توجد طلبات انظمام حديثة"
-                     messageSubTitle="ستظهر طلبات الانظمام هنا!"
-                   />
-                 ) : (
-                   filtered.map((user, idx) => (
-                     <tr
-                       key={user._id}
-                       className={`border-b border-gray-50 transition-colors hover:bg-primary/5 ${
-                         idx % 2 === 1 ? "bg-background-primary/40" : "bg-white"
-                       }`}>
-                       <td className="py-3 px-4">
-                         <div className="flex items-center gap-3">
-                           <Avatar user={user} />
-                           <div className="flex flex-col items-start">
-                             <span className="text-primary font-semibold text-sm">
-                               {user.fullName}
-                             </span>
-                             <span className="text-gray-400 text-xs" dir="ltr">
-                               {user.email}
-                             </span>
-                           </div>
-                         </div>
-                       </td>
-                       <td className="py-3 px-4 text-center text-gray-600 text-sm">
-                         {user.role === "doctor" ? "طبيب" : "صيدلية"}
-                       </td>
-                       <td className="py-3 px-4 text-center">
-                         <div className="flex justify-center">
-                           <StatusBadge status={user.status} />
-                         </div>
-                       </td>
-                       <td
-                         className="py-3 px-4 text-center text-gray-600 text-sm"
-                         dir="ltr">
-                         {user.phone}
-                       </td>
-                       <td className="py-3 px-4">
-                         <div className="flex items-center justify-center gap-2">
-                           {user.status === "rejected" && (
-                             <button
-                               onClick={() => handleDeleteUser(user)}
-                               className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors cursor-pointer">
-                               <Trash2 size={16} />
-                             </button>
-                           )}
-                           {/* MoreHorizontal → opens modal */}
-                           <button
-                             onClick={() => setSelectedUser(user)}
-                             className="p-1.5 rounded-lg hover:bg-background-primary text-gray-400 hover:text-primary transition-colors cursor-pointer">
-                             <MoreHorizontal size={16} />
-                           </button>
-                         </div>
-                       </td>
-                     </tr>
-                   ))
-                 )}
-               </tbody>
-             </table>
-           </div>
+            {/* SEARCH */}
+            <div className="flex items-center rounded-lg py-2 px-3 gap-2 bg-background-primary flex-1 min-w-0">
+              <Search size={15} className="text-primary shrink-0" />
+              <input
+                placeholder="ابحث باسم المستخدم أو البريد الالكتروني"
+                className="bg-transparent text-gray-600 font-normal text-xs sm:text-sm w-full outline-none placeholder:text-gray-400"
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
-           {/* PAGINATION */}
-           <div className="flex items-center justify-center gap-2 py-4 px-4 border-t border-gray-100">
-             <button
-               onClick={() => setCurrentPage((p) => p + 1)}
-               disabled={currentPage === totalPages}
-               className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-               <ChevronLeft size={15} />
-             </button>
+        {/* TABLE */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
+          <div className="overflow-x-auto flex-1 no-scrollbar">
+            <table className="w-full min-w-[600px] text-right">
+              <thead>
+                <tr className="bg-primary text-white">
+                  <th className="py-3 px-4 font-semibold text-sm text-right rounded-tr-xl">
+                    بيانات المستخدم
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-sm text-center">
+                    نوع الحساب
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-sm text-center">
+                    حالة الحساب
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-sm text-center">
+                    رقم الهاتف
+                  </th>
+                  <th className="py-3 px-4 font-semibold text-sm text-center rounded-tl-xl">
+                    احداث
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {DoctorsPharmaciesError ? (
+                  <TableErrorUI
+                    colSpan={5}
+                    message={DoctorsPharmaciesError?.message}
+                    onRetry={() => refetchDcotorsPharmaciesData()}
+                    onloading={isReFetchingDcotorsPharmaciesData}
+                  />
+                ) : filtered.length === 0 ? (
+                  <TableEmptyUI
+                    colSpan={5}
+                    isSearching={!!searchInput}
+                    message="لا توجد طلبات انظمام حديثة"
+                    messageSubTitle="ستظهر طلبات الانظمام هنا!"
+                  />
+                ) : (
+                  filtered.map((user, idx) => (
+                    <tr
+                      key={user._id}
+                      className={`border-b border-gray-50 transition-colors hover:bg-primary/5 ${
+                        idx % 2 === 1 ? "bg-background-primary/40" : "bg-white"
+                      }`}>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar user={user} />
+                          <div className="flex flex-col items-start">
+                            <span className="text-primary font-semibold text-sm">
+                              {user.fullName}
+                            </span>
+                            <span className="text-gray-400 text-xs" dir="ltr">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center text-gray-600 text-sm">
+                        {user.role === "doctor" ? "طبيب" : "صيدلية"}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex justify-center">
+                          <StatusBadge status={user.status} />
+                        </div>
+                      </td>
+                      <td
+                        className="py-3 px-4 text-center text-gray-600 text-sm"
+                        dir="ltr">
+                        {user.phone}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {user.status === "rejected" && (
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors cursor-pointer">
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                          {/* MoreHorizontal → opens modal */}
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="p-1.5 rounded-lg hover:bg-background-primary text-gray-400 hover:text-primary transition-colors cursor-pointer">
+                            <MoreHorizontal size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-             {Array.from(
-               { length: Math.min(3, totalPages) },
-               (_, i) => i + 1,
-             ).map((page) => (
-               <button
-                 key={page}
-                 onClick={() => setCurrentPage(page)}
-                 className={`size-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
-                   currentPage === page
-                     ? "bg-primary text-white"
-                     : "border border-gray-200 text-gray-400 hover:border-primary hover:text-primary"
-                 }`}>
-                 {page}
-               </button>
-             ))}
+          {/* PAGINATION */}
+          <div className="flex items-center justify-center gap-2 py-4 px-4 border-t border-gray-100">
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage === totalPages}
+              className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <ChevronLeft size={15} />
+            </button>
 
-             {totalPages > 4 && (
-               <span className="text-gray-300 text-sm">...</span>
-             )}
+            {Array.from(
+              { length: Math.min(3, totalPages) },
+              (_, i) => i + 1,
+            ).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`size-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                  currentPage === page
+                    ? "bg-primary text-white"
+                    : "border border-gray-200 text-gray-400 hover:border-primary hover:text-primary"
+                }`}>
+                {page}
+              </button>
+            ))}
 
-             {totalPages > 3 && (
-               <button
-                 onClick={() => setCurrentPage(totalPages)}
-                 className={`size-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
-                   currentPage === totalPages
-                     ? "bg-primary text-white"
-                     : "border border-gray-200 text-gray-400 hover:border-primary hover:text-primary"
-                 }`}>
-                 {totalPages}
-               </button>
-             )}
+            {totalPages > 4 && (
+              <span className="text-gray-300 text-sm">...</span>
+            )}
 
-             <button
-               onClick={() => setCurrentPage((p) => p - 1)}
-               disabled={currentPage === 1}
-               className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-               <ChevronRight size={15} />
-             </button>
-           </div>
-         </div>
-       </div>
-     </>
-   );
+            {totalPages > 3 && (
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                className={`size-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                  currentPage === totalPages
+                    ? "bg-primary text-white"
+                    : "border border-gray-200 text-gray-400 hover:border-primary hover:text-primary"
+                }`}>
+                {totalPages}
+              </button>
+            )}
+
+            <button
+              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={currentPage === 1}
+              className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default AdmissionsRegistrationPage;

@@ -91,6 +91,7 @@ function LoginPage() {
             </p>
             <div className="flex items-center">
               <input
+                autoFocus
                 type="email"
                 placeholder="البريد الإلكتروني"
                 className={`h-[55px] w-full -ml-1 bg-background-primary rounded-r-lg py-2 px-4 border focus:outline-none placeholder:text-sm ${

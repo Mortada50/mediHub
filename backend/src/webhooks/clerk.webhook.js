@@ -66,6 +66,7 @@ router.post(
 );
 
 async function handleUserCreated(data) {
+  
   const { id: clerkUserId, email_addresses, unsafe_metadata } = data;
   const email = email_addresses?.[0]?.email_address;
   const role = unsafe_metadata?.role;

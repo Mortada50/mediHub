@@ -95,6 +95,7 @@ function LoginPage() {
                 className={`h-[55px] w-full -ml-1 bg-background-primary rounded-r-lg py-2 px-4 border focus:outline-none placeholder:text-sm ${
                   error.email ? "border-red-400" : "border-transparent"
                 }`}
+                autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

@@ -34,6 +34,7 @@ export const useProfile = (state = false) => {
     isProfileLoading: isLoading,
     isProfileError: isError,
     profileError: error,
+    
     profileUpdateMutation: profileUpdateMutation.mutate,
     isUpdatingProfile: profileUpdateMutation.isLoading,
     profileUpdatedSuccess: profileUpdateMutation.isSuccess,

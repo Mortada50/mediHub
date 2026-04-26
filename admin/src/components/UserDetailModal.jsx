@@ -14,12 +14,15 @@ import {
   XCircle,
   LoaderIcon,
 } from "lucide-react";
+
 import PageLoader from "./PageLoader";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ErrorUIDialog from "./ErrorUIDialog";
-/* ─────────────────────────────────────────── */
-/*  INFO ROW                                   */
-/* ─────────────────────────────────────────── */
+
+
+
+//  INFO ROW                          
+
 const InfoRow = ({ label, value, dir = "rtl" }) => (
   <div className="flex flex-col items-start gap-0.5">
     <span className="text-primary text-sm font-semibold">{label}</span>
@@ -29,9 +32,9 @@ const InfoRow = ({ label, value, dir = "rtl" }) => (
   </div>
 );
 
-/* ─────────────────────────────────────────── */
-/*  USER DETAIL MODAL                          */
-/* ─────────────────────────────────────────── */
+
+//  USER DETAIL MODAL                          
+
 export default function UserDetailModal({
   user,
   onClose,
@@ -57,14 +60,20 @@ export default function UserDetailModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={isLoading ? undefined : onClose}>
+      onClick={(e) => {
+        e.stopPropagation();
+        isLoading ? undefined : onClose();
+      }}>
       <div
         className="bg-background-primary rounded-2xl shadow-2xl w-full max-w-[950px] max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}>
         {/* CLOSE BTN */}
         <button
           disabled={isLoading}
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           className="absolute top-4 left-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer z-10">
           <X size={18} />
         </button>
@@ -210,8 +219,9 @@ export default function UserDetailModal({
         <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 bg-background-primary rounded-b-2xl">
           <button
             disabled={isLoading}
-            onClick={() => {
-              onApprove(user._id, user.role, "active");
+            onClick={(e) => {
+              e.stopPropagation();
+              onApprove(user._id, user.role, "active", user.fullName);
               setIsPending({ reject: false, approve: true });
             }}
             className="px-5 h-[40px] rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors cursor-pointer flex items-center gap-1.5">
@@ -227,8 +237,9 @@ export default function UserDetailModal({
           {user.status !== "rejected" && (
             <button
               disabled={isLoading}
-              onClick={() => {
-                onApprove(user._id, user.role, "rejected");
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove(user._id, user.role, "rejected", user.fullName);
                 setIsPending({ approve: false, reject: true });
               }}
               className="px-5 h-[40px] rounded-lg bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors cursor-pointer flex items-center gap-1.5">
@@ -245,7 +256,10 @@ export default function UserDetailModal({
 
           <button
             disabled={isLoading}
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             className="px-5 h-[40px] rounded-lg border border-gray-300 text-gray-500 text-sm font-semibold hover:bg-gray-100 transition-colors cursor-pointer">
             إلغاء
           </button>

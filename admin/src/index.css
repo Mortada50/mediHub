@@ -44,7 +44,7 @@ body {
 
 .no-scrollbar {
     -ms-overflow-style: none;
-    /* IE و Edge */
+    /* IE & Edge */
     scrollbar-width: none;
     /* Firefox */
 }
