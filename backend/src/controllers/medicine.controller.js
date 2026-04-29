@@ -77,6 +77,7 @@ export const getAllMedicines = async (req, res) => {
     );
   } catch (error) {
     console.log(error);
+    return sendError(res, "حدث خطأ أثناء جلب الأدوية", 500, error.message);
   }
 };
 
@@ -289,13 +290,14 @@ export const deleteMedicine = async (req, res) => {
     
     const medicine = await Medicine.findById(medicineId);
 
-    if(!medicine) return sendError(res, "هذا الدواء غير موجود", 404);
+    if (!medicine) {
+      await session.abortTransaction();
+      session.endSession();
+      return sendError(res, "هذا الدواء غير موجود", 404);
+    }
 
     const images = medicine.images;
 
-    if(images.length > 0){
-      await deleteFromCloudinary(images)
-    }
 
     await Medicine.findByIdAndDelete(medicineId, {session});
 
@@ -311,6 +313,10 @@ export const deleteMedicine = async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+     if (images.length > 0) {
+       await deleteFromCloudinary(images);
+     }
 
     sendSuccess(res, {}, "تم حذف الدواء بنجاح", 200);
     

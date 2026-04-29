@@ -6,7 +6,7 @@ import {
 
 import { DAYS_OF_WEEK } from "../utils/constants.js";
 
-export const weeklyScheduleSchema = new mongoose.Schema(
+const weeklyScheduleSchema = new mongoose.Schema(
   {
     day: {
       type: String,
