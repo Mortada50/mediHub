@@ -31,6 +31,11 @@
 * {
     font-family: 'Bein', sans-serif;
 }
+.font-serif {
+    font-family: sans-serif, serif;
+        /* ui-serif, Georgia, Cambria, "Times New Roman", Times, serif */
+    ;
+}
 
 body {
     direction: rtl;

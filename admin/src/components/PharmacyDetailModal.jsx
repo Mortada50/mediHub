@@ -151,7 +151,7 @@ export default function PharmacyDetailModal({
                 <StatCard
                   icon={<Package size={13} />}
                   label="الادوية"
-                  value={`140`}
+                  value={pharmacy.medicines?.length ?? "—"}
                   sub="دواء متوفر"
                 />
                 <StatCard

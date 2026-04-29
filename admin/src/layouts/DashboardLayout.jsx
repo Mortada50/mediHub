@@ -21,7 +21,6 @@ function DashboardLayout() {
 
        const checkRole = async () => {
          const role = user?.publicMetadata?.role;
-         console.log(role);
 
          if (role !== "admin") {
            await signOut({ redirectUrl: "/login" });

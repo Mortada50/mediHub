@@ -7,7 +7,7 @@ import {
   MessageSquareText,
   MoreHorizontal,
   Search,
-  Stethoscope,
+  Pill,
 } from "lucide-react";
 import { useState } from "react";
 import Avatar from "../components/Avatar.jsx";
@@ -71,14 +71,15 @@ function PharmacyManagementPage() {
   if (isLoading) return <PageLoader />;
     if (isError || !usersData) {
       return (
-        <div className="flex items-center justify-center h-full">
+        <table className="flex items-center justify-center h-full">
+          <tbody>
           <TableErrorUI
             message={error?.message}
             onRetry={() => refetch()}
             onloading={isFetching}
           />
-          ;
-        </div>
+          </tbody>
+        </table>
       );
     }
 
@@ -193,7 +194,7 @@ function PharmacyManagementPage() {
                 إجمالي عدد الصيدليات
               </p>
               <div className="flex items-center justify-center rounded-full bg-background-primary p-2">
-                <Stethoscope size={20} className="text-primary" />
+                <Pill size={20} className="text-primary" />
               </div>
             </div>
             <div>

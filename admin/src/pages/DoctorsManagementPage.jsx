@@ -70,14 +70,15 @@ function DoctorsManagementPage() {
   if (isLoading) return <PageLoader />;
   if (isError || !usersData) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <table className="flex items-center justify-center h-full">
+        <tbody>
         <TableErrorUI
           message={error?.message}
           onRetry={() => refetch()}
           onloading={isFetching}
         />
-        ;
-      </div>
+        </tbody>
+      </table>
     );
   }
 
@@ -90,6 +91,7 @@ function DoctorsManagementPage() {
     activePercentage,
     activeUsers,
   } = usersData;
+  
   const allUsers = userList ?? [];
 
    const matchedUsers = allUsers.filter((u) => {

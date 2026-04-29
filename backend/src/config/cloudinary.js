@@ -43,9 +43,30 @@ const avatarStorage = new CloudinaryStorage({
   },
 });
 
+// ───── Medicine Images Storage ─────
+const medicineStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "mediHub/medicines",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    public_id: `medicine-${Date.now()}-${Math.round(Math.random()*1e9)}`,
+    transformation: [
+      {
+        width: 1000,
+        height: 1000,
+        crop: "limit",
+      },
+      {
+        quality: "auto:good",
+      },
+    ],
+  }),
+});
+
 // ───── File Size Limits ─────
 const licenseFileLimits = { fileSize: 5 * 1024 * 1024 }; // 5MB
 const avatarFileLimits = { fileSize: 2 * 1024 * 1024 }; // 2MB
+const medicineFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 
 export const uploadDoctorLicense = multer({
   storage: doctorLicenseStorage,
@@ -69,21 +90,65 @@ export const uploadAvatar = multer({
   },
 });
 
+// ───── Upload Medicine Images (single or multiple) ─────
+export const uploadMedicineImages = multer({
+  storage: medicineStorage,
+  limits: medicineFileLimits,
+  
+  fileFilter: (req, file, cb) => {;
+    
+    if(file.mimetype.startsWith("image/")){
+
+      cb(null,true);
+    } else {
+      cb(new Error("الملفات يجب أن تكون صور"), false);
+    }
+  }
+});
+
+
 // ───── Delete file from Cloudinary ─────
-export const deleteFromCloudinary = async (url) => {
+// export const deleteFromCloudinary = async (url) => {
+//   try {
+//     if (!url) return;
+//     // Find the upload segment and extract everything after it (excluding version)
+//     const uploadIndex = url.indexOf("/upload/");
+//     if (uploadIndex === -1) return;
+
+//     // Extract path after /upload/ and remove version prefix (v1234567890/)
+//     const pathAfterUpload = url.slice(uploadIndex + 8);
+//     const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
+
+//     // Remove file extension to get publicId
+//     const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
+//     await cloudinary.uploader.destroy(publicId);
+//   } catch (error) {
+//     console.error("Cloudinary delete error:", error.message);
+//   }
+// };
+
+export const deleteFromCloudinary = async (urls) => {
   try {
-    if (!url) return;
+    if (!urls) return;
     // Find the upload segment and extract everything after it (excluding version)
-    const uploadIndex = url.indexOf("/upload/");
-    if (uploadIndex === -1) return;
 
-    // Extract path after /upload/ and remove version prefix (v1234567890/)
-    const pathAfterUpload = url.slice(uploadIndex + 8);
-    const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
+    const urlsArray = Array.isArray(urls) ? urls : [urls];
 
-    // Remove file extension to get publicId
-    const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
-    await cloudinary.uploader.destroy(publicId);
+    await Promise.all(
+      urlsArray.map(async (url) => {
+        const uploadIndex = url.indexOf("/upload/");
+        if (uploadIndex === -1) return;
+        // Extract path after /upload/ and remove version prefix (v1234567890/)
+
+        const pathAfterUpload = url.slice(uploadIndex + 8);
+        const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
+        // Remove file extension to get publicId
+
+        const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
+
+        await cloudinary.uploader.destroy(publicId);
+      }),
+    );
   } catch (error) {
     console.error("Cloudinary delete error:", error.message);
   }
