@@ -4,8 +4,8 @@ import axios from "axios";
 
 
 
-const baseURL = "http://localhost:3000/api" 
-// import.meta.env.VITE_API_BASE_URL;
+const baseURL = "http://localhost:3000/api"; 
+//import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(
@@ -115,3 +115,64 @@ export const useUsersApi = () => {
     getActiveSuspendedUsers,
   };
 };
+
+export const useMedicinesApi = () => {
+  const api = useApi();
+
+  const getAllMedicines = async () => {
+    const {data} = await api.get("/medicines");
+    return data.data;
+  }
+
+  const addNewMedicine = async (medicineFormData) => {
+    
+    const formData = new FormData();
+    for (const key in medicineFormData) {
+      if (key === "images") {
+        medicineFormData[key].forEach((image) => {
+          
+          formData.append("images", image.file);
+        });
+      } else {
+        formData.append(key, medicineFormData[key]);
+      }
+    }
+    
+    const { data } = await api.post("/medicines/add", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data.data;
+  }
+
+  const updateMedicine = async (medicineFormData) => {
+    
+    const formData = new FormData();
+    for (const key in medicineFormData) {
+      if (key === "images") {
+        medicineFormData[key].forEach((image) => {
+          
+          formData.append("images", image.file);
+        });
+      } else {
+        formData.append(key, medicineFormData[key]);
+      }
+    }
+    
+    const { data } = await api.put("/medicines/update", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data.data;
+  }
+
+  const deleteMedicine = async (medicineId) => {
+    const { data } = await api.delete(`/medicines/delete/${medicineId}`);
+
+    return data.data;
+  }
+
+  return { getAllMedicines, addNewMedicine, updateMedicine, deleteMedicine };
+}

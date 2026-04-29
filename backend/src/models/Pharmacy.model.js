@@ -1,9 +1,27 @@
 import mongoose from "mongoose";
 import {
-  weeklyScheduleSchema,
   addressSchema,
   locationSchema,
 } from "./shared.schema.js";
+
+import { DAYS_OF_WEEK } from "../utils/constants.js";
+
+export const weeklyScheduleSchema = new mongoose.Schema(
+  {
+    day: {
+      type: String,
+      enum: DAYS_OF_WEEK,
+      required: true,
+    },
+    dayNumber: {
+      type: Number,
+      min: 0,
+      max: 6,
+    },
+
+  },
+  { _id: true },
+);
 
 // todo: check the weekly schedule
 
@@ -90,6 +108,31 @@ const pharmacySchema = new mongoose.Schema(
     rating: {
       average: { type: Number, default: 0, min: 0, max: 5 },
       count: { type: Number, default: 0 },
+    },
+
+    // ── Opend & Closed Time ──
+    // هل الصيدلية تعمل 24 ساعة؟
+    isOpen24Hours: {
+      type: Boolean,
+      default: false,
+    },
+
+    // وقت العمل (في حالة ليست 24 ساعة)
+    workingHours: {
+      openTime: {
+        type: String,
+        required: function () {
+          return !this.isOpen24Hours;
+        },
+        match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, // HH:mm
+      },
+      closeTime: {
+        type: String,
+        required: function () {
+          return !this.isOpen24Hours;
+        },
+        match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+      },
     },
   },
   { timestamps: true },

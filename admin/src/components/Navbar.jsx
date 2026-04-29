@@ -11,7 +11,7 @@ function Navbar() {
   const { user } = useUser();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-[81px] items-center justify-between bg-white border-b border-gray-200">
+    <header className="fixed top-0 left-0 right-0 z-40 flex h-[81px] items-center justify-between bg-white border-b border-gray-200">
       {/* Logo */}
       <img
         src={logo}
