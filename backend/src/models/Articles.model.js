@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { SPECIALITY } from "../utils/constants.js";
+import { ARTICLE_CATEGORIES } from "../utils/constants.js";
 
 const articleSchema = new mongoose.Schema(
   {
@@ -25,7 +25,7 @@ const articleSchema = new mongoose.Schema(
     // ── الصور ──────────────────────────────────────────
     image: {
       type: String,
-      required: true,
+      default: null,
     },
 
     // ── المؤلف ─────────────────────────────────────────
@@ -37,7 +37,7 @@ const articleSchema = new mongoose.Schema(
     authorRole: {
       type: String,
       required: true,
-      enum: ["Doctor", "Admin"],
+      enum: ["doctor", "admin"],
     },
     authorName: {
       type: String,
@@ -48,16 +48,21 @@ const articleSchema = new mongoose.Schema(
       type: String,
       // تخصص الطبيب (فقط إذا كان authorRole = "Doctor")
     },
+    authorAvatar: {
+      type: String,
+      default: null,
+      // تخصص الطبيب (فقط إذا كان authorRole = "Doctor")
+    },
 
     // ── التصنيف─ ─────────────────────
     category: {
       type: String,
       required: true,
-      enum: SPECIALITY,
+      enum: ARTICLE_CATEGORIES,
     },
 
     // ── مميزة ─────────────────────────────────────────
-    
+
     isFeatured: {
       type: Boolean,
       default: false,

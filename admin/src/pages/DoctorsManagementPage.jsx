@@ -83,13 +83,13 @@ function DoctorsManagementPage() {
   }
 
   const {
-    totalUsers,
+    totalUser,
     suspendedPercentage,
-    suspendedUsers,
+    suspendedUser,
     newUsersThisMonth,
     userList,
     activePercentage,
-    activeUsers,
+    activeUser,
   } = usersData;
   
   const allUsers = userList ?? [];
@@ -200,7 +200,7 @@ function DoctorsManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {totalUsers}
+                {totalUser}
               </span>
             </div>
             <div>
@@ -218,7 +218,7 @@ function DoctorsManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {activeUsers}
+                {activeUser}
               </span>
             </div>
             <div>
@@ -236,7 +236,7 @@ function DoctorsManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {suspendedUsers}
+                {suspendedUser}
               </span>
             </div>
             <div>

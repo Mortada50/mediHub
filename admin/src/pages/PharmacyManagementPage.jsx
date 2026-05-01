@@ -43,8 +43,6 @@ const StatusBadge = ({ status }) => {
 function PharmacyManagementPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [openCitiesDropDown, setOpenCitiesDropDown] = useState(false);
-  
-  
   const [city, setCity] = useState("كل المدن");
   
   
@@ -84,13 +82,13 @@ function PharmacyManagementPage() {
     }
 
   const {
-    totalUsers,
+    totalUser,
     suspendedPercentage,
-    suspendedUsers,
+    suspendedUser,
     newUsersThisMonth,
     userList,
     activePercentage,
-    activeUsers,
+    activeUser,
   } = usersData;
   const allUsers = userList ?? [];
 
@@ -199,7 +197,7 @@ function PharmacyManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {totalUsers}
+                {totalUser}
               </span>
             </div>
             <div>
@@ -217,7 +215,7 @@ function PharmacyManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {activeUsers}
+                {activeUser}
               </span>
             </div>
             <div>
@@ -235,7 +233,7 @@ function PharmacyManagementPage() {
             </div>
             <div>
               <span className="font-black text-xl text-gray-700">
-                {suspendedUsers}
+                {suspendedUser}
               </span>
             </div>
             <div>

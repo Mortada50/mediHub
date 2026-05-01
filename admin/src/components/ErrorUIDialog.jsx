@@ -6,7 +6,7 @@ import { XCircle } from "lucide-react";
 function ErrorUIDialog({ title, message, onClose, error = null }) {
   
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
       <div className="flex flex-col items-center justify-center gap-3 bg-white border border-red-100 shadow-lg rounded-2xl px-8 py-6 size-[300px]">
         <div className="size-12 rounded-full bg-red-50 flex items-center justify-center">
           <XCircle className="size-6 text-red-500" />

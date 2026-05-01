@@ -4,8 +4,7 @@ import axios from "axios";
 
 
 
-const baseURL = "http://localhost:3000/api"; 
-//import.meta.env.VITE_API_BASE_URL;
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(
@@ -147,7 +146,7 @@ export const useMedicinesApi = () => {
   }
 
   const updateMedicine = async (medicineFormData) => {
-    
+
     const formData = new FormData();
     for (const key in medicineFormData) {
       if (key === "images") {
@@ -175,4 +174,67 @@ export const useMedicinesApi = () => {
   }
 
   return { getAllMedicines, addNewMedicine, updateMedicine, deleteMedicine };
+}
+
+export const useArticlesApi = () => {
+  const api = useApi();
+
+  const getArticles = async () => {
+    const {data} = await api.get("/articles");
+    return data.data;
+  }
+
+  const addNewArticle = async (articleData) => {
+    const formData = new FormData();
+
+    for (const key in articleData) {
+     formData.append(key, articleData[key]);
+    }
+    
+    const { data } = await api.post("/articles/add", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return data.data;
+  }
+
+  const updateArticle = async (articleData) => {
+    console.log(articleData);
+    
+    const formData = new FormData();
+
+    for (const key in articleData) {
+     formData.append(key, articleData[key]);
+    }
+    
+    const { data } = await api.put("/articles/update", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return data.data;
+  }
+
+  const toggleIsFeaturedStatus=async(articleId)=>{
+   const {data}=await api.patch(`/articles/update/${articleId}`)
+   return data;
+  }
+
+   const deleteArticle = async (articleId) => {
+     const { data } = await api.delete(`/articles/delete/${articleId}`);
+
+     return data.data;
+   };
+
+
+  return {
+    addNewArticle,
+    getArticles,
+    updateArticle,
+    toggleIsFeaturedStatus,
+    deleteArticle,
+  };
 }
