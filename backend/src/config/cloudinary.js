@@ -64,11 +64,11 @@ const medicineStorage = new CloudinaryStorage({
 });
 
 // ───── Articale Storage ─────
-const articaleStorage = new CloudinaryStorage({
+const articleStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "mediHub/articales",
-    allowed_formats: ["jpg", "jpeg", "png"],
+    folder: "mediHub/articles",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
     transformation: [
       {
         width: 500,
@@ -130,7 +130,7 @@ export const uploadMedicineImages = multer({
 
 //  Upload Article Images
 export const uploadArticle = multer({
-  storage: articaleStorage,
+  storage: articleStorage,
   limits: articleFileLimits,
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
