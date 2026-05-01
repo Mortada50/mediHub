@@ -124,6 +124,7 @@ function MedicationManagementPage() {
   };
 
   const handleUpdateMedicine = (formData) => {
+
     const imagesUrl = formData.images.filter((image) => image.file === null).map((image) => image.url )
     
     formData.imagesUrl = imagesUrl;
@@ -363,6 +364,7 @@ function MedicationManagementPage() {
             </button>
           </div>
         </div>
+        
         {/* TABLE */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
           <div className="overflow-x-auto flex-1 no-scrollbar">

@@ -41,7 +41,8 @@ export const loadUser = async (req, res, next) => {
 
 // ───── Middleware 3: verify user has required role(s) ─────
 export const requireRole = (...allowedRoles) => {
-  return (req, res, next) => {
+  return (req, res, next) => {;
+    
     if (!req.userRole) {
       return sendError(res, "لم يتم تحديد صلاحية المستخدم", 403);
     }

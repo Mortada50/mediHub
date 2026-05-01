@@ -114,7 +114,7 @@ const pharmacySchema = new mongoose.Schema(
     // هل الصيدلية تعمل 24 ساعة؟
     isOpen24Hours: {
       type: Boolean,
-      default: false,
+      default: true,
     },
 
     // وقت العمل (في حالة ليست 24 ساعة)

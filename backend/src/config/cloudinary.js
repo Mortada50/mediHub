@@ -63,10 +63,32 @@ const medicineStorage = new CloudinaryStorage({
   }),
 });
 
+// ───── Articale Storage ─────
+const articleStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "mediHub/articles",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [
+      {
+        width: 500,
+        height: 500,
+        crop: "fill",
+        gravity: "auto",
+      },
+      {
+        quality: "auto",
+        fetch_format: "auto",
+      },
+    ],
+  },
+});
+
 // ───── File Size Limits ─────
 const licenseFileLimits = { fileSize: 5 * 1024 * 1024 }; // 5MB
 const avatarFileLimits = { fileSize: 2 * 1024 * 1024 }; // 2MB
 const medicineFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
+const articleFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 
 export const uploadDoctorLicense = multer({
   storage: doctorLicenseStorage,
@@ -95,7 +117,7 @@ export const uploadMedicineImages = multer({
   storage: medicineStorage,
   limits: medicineFileLimits,
   
-  fileFilter: (req, file, cb) => {;
+  fileFilter: (req, file, cb) => {
     
     if(file.mimetype.startsWith("image/")){
 
@@ -106,6 +128,18 @@ export const uploadMedicineImages = multer({
   }
 });
 
+//  Upload Article Images
+export const uploadArticle = multer({
+  storage: articleStorage,
+  limits: articleFileLimits,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("الملف يجب أن يكون صورة"), false);
+    }
+  },
+});
 
 // ───── Delete file from Cloudinary ─────
 // export const deleteFromCloudinary = async (url) => {

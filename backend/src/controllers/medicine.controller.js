@@ -19,7 +19,7 @@ export const getAllMedicines = async (req, res) => {
         $lookup: {
           from: "pharmacies",
           localField: "_id",
-          foreignField: " medicines.medicine",
+          foreignField: "medicines.medicine",
           as: "pharmacies",
         },
       },
@@ -209,7 +209,7 @@ export const updateMedicine = async (req, res) => {
       );
     }
 
-    if(!_id) return sendError(res, "معرف دواء غير صالح", 400) 
+    if(!_id) return sendError(res, "معرف دواء غير صالح", 400);
 
       const oldImages = Array.isArray(imagesUrl)
         ? imagesUrl
@@ -243,6 +243,7 @@ export const updateMedicine = async (req, res) => {
     if(!medicine){
       return sendError(res, "هذا الدواء غير موجود", 404)
     }
+    
     const updatedMedicine = await Medicine.findByIdAndUpdate(
       _id,
       {

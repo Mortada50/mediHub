@@ -59,7 +59,7 @@ export default function UserDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-45 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
       onClick={(e) => {
         e.stopPropagation();
         isLoading ? undefined : onClose();

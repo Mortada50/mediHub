@@ -30,9 +30,10 @@ export const useDoctorPharmacy = () => {
     mutationFn: ({_id, role, status}) => updateDocPharmApprovelStatus(_id, role, status),
     onSuccess: () => {
       
-      queryClient.invalidateQueries({ queryKey: ["userData"]  })
+      queryClient.invalidateQueries({ queryKey: ["userData"]  }),
+      queryClient.invalidateQueries({ queryKey: ["DoctorsPharmacies"] })
+      
    
-      queryClient.invalidateQueries({ queryKey: ["DoctorsPharmacies"] });
     
     }
     
@@ -40,9 +41,8 @@ export const useDoctorPharmacy = () => {
 
   const deleteRejectedUserMutation = useMutation({
     mutationFn: ({ _id, role }) => deleteRejectedUser(_id, role),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["DoctorsPharmacies"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["DoctorsPharmacies"] })
+    
   });
 
 
