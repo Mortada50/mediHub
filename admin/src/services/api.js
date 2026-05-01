@@ -175,6 +175,7 @@ export const useMedicinesApi = () => {
 
   return { getAllMedicines, addNewMedicine, updateMedicine, deleteMedicine };
 }
+<<<<<<< admin-article-management
 
 export const useArticlesApi = () => {
   const api = useApi();
@@ -239,3 +240,5 @@ export const useArticlesApi = () => {
     deleteArticle,
   };
 }
+=======
+>>>>>>> main
