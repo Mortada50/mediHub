@@ -132,6 +132,13 @@ export const uploadMedicineImages = multer({
 export const uploadArticle = multer({
   storage: articaleStorage,
   limits: articleFileLimits,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("الملف يجب أن يكون صورة"), false);
+    }
+  },
 });
 
 // ───── Delete file from Cloudinary ─────

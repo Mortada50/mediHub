@@ -3,6 +3,7 @@ import {
   requireAuth,
   requireRole,
   loadUser,
+  requireActiveStatus,
 } from "../middleware/auth.middleware.js";
 
 import {
@@ -21,7 +22,7 @@ router.use(requireAuth, loadUser);
 
 router.get("/", getAllArticles);
 
-router.use(requireRole("admin", "doctor"));
+router.use(requireActiveStatus, requireRole("admin", "doctor"));
 
 router.post("/add", uploadArticle.single("image"), addNewArticle);
 router.put("/update", uploadArticle.single("image"), updateArticle);

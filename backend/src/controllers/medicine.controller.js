@@ -235,7 +235,7 @@ export const updateMedicine = async (req, res) => {
       type: ageGroupType,
       minAge: ageGroupType !== "جميع الأعمار" ? Number(minAge) : undefined,
 
-      maxAge: ageGroupType === "نطاق" ? Number(maxAe) : undefined,
+      maxAge: ageGroupType === "نطاق" ? Number(maxAge) : undefined,
     };
    
     let medicine = await Medicine.findById(_id);

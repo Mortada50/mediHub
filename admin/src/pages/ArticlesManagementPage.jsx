@@ -383,7 +383,7 @@ function ArticlesManagementPage() {
   const TABS = [
     { label: "كل المقالات", value: "all" },
     { label: "المميزة", value: true },
-    { label: "مقالات الإدارة", value: "Admin" },
+    { label: "مقالات الإدارة", value: "admin" },
   ];
 
   const closeAllDropdowns = () => {

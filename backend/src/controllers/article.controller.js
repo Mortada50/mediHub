@@ -139,19 +139,16 @@ export const updateArticle = async (req, res) => {
 
     if (!article) return sendError(res, "هذه المقالة غير موجودة", 404);
 
-    console.log(req?.file?.path, "preview", imagePreview);
+     if (mongoId !== article?.author.toString())
+      return sendError(res, "ليس لديك صلاحية لتعديل هذا المقال", 403);
 
     let imageUrl = article?.image;
     if (req?.file?.path || imagePreview === "null") {
       if (article?.image) {
         await deleteFromCloudinary(article?.image);
-        imageUrl = req?.file?.path || null;
       }
       imageUrl = req?.file?.path || null;
     }
-
-    if (mongoId !== article.author.toString())
-      return senError(res, "ليس لديك صلاحية لتعديل هذا المقال", 401);
 
     const updatedArticle = await Article.findByIdAndUpdate(
       _id,
@@ -197,7 +194,7 @@ export const deleteArticle = async (req, res) => {
 
     const { articleId } = req.params;
 
-    const { role, mongoId } = req;
+    const { userRole, mongoId } = req;
 
     if (!articleId) {
       return sendError(res, "معرف المقالة مطلوب ", 400);
@@ -209,8 +206,8 @@ export const deleteArticle = async (req, res) => {
 
     if (!article) return sendError(res, "هذه المقالة غير موجودة", 404);
 
-    if (role === "doctor" && mongoId !== article.author)
-      return senError(res, "انت غير مخول لحذف هذه المقالة", 401);
+    if (userRole === "doctor" && mongoId !== article?.author.toString())
+      return senError(res, "انت غير مخول لحذف هذه المقالة", 403);
 
     await Article.findByIdAndDelete(articleId);
 
