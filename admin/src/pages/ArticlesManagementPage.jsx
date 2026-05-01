@@ -394,8 +394,9 @@ function ArticlesManagementPage() {
   const handleSubmit = (data) => {
       if (data._id)  {
         updateArticleMutation(data, {
-          onSuccess: () => setFormModal({ open: false, mode: "add", article: null }),
-          onError: () => console.log(updateArticleError),
+          onSuccess: () =>
+            setFormModal({ open: false, mode: "add", article: null }),
+          onError: () => setOpenErrorUiDialog(true),
         });
 
       }else {
