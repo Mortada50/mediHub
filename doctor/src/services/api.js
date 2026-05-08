@@ -4,7 +4,8 @@ import axios from "axios";
 
 
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = "http://localhost:3000/api"; 
+// import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(
@@ -85,10 +86,29 @@ export const useProfileApi = () => {
     return data.data;
   };
 
-  const updateProfile = async (profile) => {
-    const { data } = await api.put("/doctor/update-profile", profile);
+  const updateRegisterData = async (profile) => {
+    const { data } = await api.put("/doctor/update-register/data", profile);
     return data;
   }
 
-  return { getProfile, updateProfile };
+  const updateProfile = async (profile) => {
+    console.log(profile);
+    
+    const formData = new FormData();
+
+    for(const key in profile){
+      formData.append(key, profile[key]);
+    }
+
+    const { data } = await api.put("/doctor/update-profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    
+    return data;
+    
+  }
+
+  return { getProfile, updateRegisterData, updateProfile };
 };

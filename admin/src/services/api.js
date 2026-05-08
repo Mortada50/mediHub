@@ -4,7 +4,8 @@ import axios from "axios";
 
 
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = "http://localhost:3000/api";
+// import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(
@@ -84,7 +85,6 @@ export const useDoctorPharmacyApi = () => {
   }
 
   const deleteRejectedUser = async (userId, role) => {
-    console.log(userId);
     
     const { data } = await api.delete(`admin/remove-reject/users/${userId}`, {role});
     return data;
@@ -202,7 +202,6 @@ export const useArticlesApi = () => {
   }
 
   const updateArticle = async (articleData) => {
-    console.log(articleData);
     
     const formData = new FormData();
 

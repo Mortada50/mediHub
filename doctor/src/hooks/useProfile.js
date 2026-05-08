@@ -2,7 +2,7 @@ import { useProfileApi } from "../services/api.js";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 
 export const useProfile = (state = false) => {
-  const { getProfile, updateProfile } = useProfileApi()
+  const { getProfile, updateRegisterData, updateProfile } = useProfileApi();
 
   const queryClient = useQueryClient();
 
@@ -11,15 +11,28 @@ export const useProfile = (state = false) => {
     isLoading,
     isError,
     error,
+    isFetching,
+    refetch,
   } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
     enabled: state,
   });
 
-  const profileUpdateMutation = useMutation({
+  const registerUpdateMutation = useMutation({
     mutationFn: async (profile) => {
-      const {data} = await updateProfile(profile);
+      const { data } = await updateRegisterData(profile);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+    }
+  })
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profile) => {
+      const { data } = await updateProfile(profile);
       return data;
     },
     onSuccess: () => {
@@ -34,10 +47,18 @@ export const useProfile = (state = false) => {
     isProfileLoading: isLoading,
     isProfileError: isError,
     profileError: error,
-    
-    profileUpdateMutation: profileUpdateMutation.mutate,
-    isUpdatingProfile: profileUpdateMutation.isLoading,
-    profileUpdatedSuccess: profileUpdateMutation.isSuccess,
-    profileUpdateError: profileUpdateMutation.error,
+    isFetching,
+    refetch,
+
+    registerUpdateMutation: registerUpdateMutation.mutate,
+    isUpdatingRegister: registerUpdateMutation.isLoading,
+    registerUpdatedSuccess: registerUpdateMutation.isSuccess,
+    registerUpdateError: registerUpdateMutation.error,
+
+    updateProfileMutation: updateProfileMutation.mutate,
+    isUpdatingProfile: updateProfileMutation.isLoading,
+    profileUpdatedSuccess: updateProfileMutation.isSuccess,
+    profileUpdateError: updateProfileMutation.error,
+    isProfileUpdateError: updateProfileMutation.isError,
   };
 }

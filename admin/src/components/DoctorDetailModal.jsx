@@ -76,7 +76,7 @@ export default function DoctorDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-45 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
       onClick={!isLoading && onClose}>
       <div
         className="bg-background-primary rounded-2xl shadow-2xl w-full max-w-[860px] max-h-[90vh] overflow-y-auto no-scrollbar"
@@ -236,7 +236,9 @@ export default function DoctorDetailModal({
                 <InfoRow
                   label="سنوات الخبرة"
                   value={
-                    doctor.experience ? `${doctor.experience} سنوات` : null
+                    doctor.yearOfExperience
+                      ? `${doctor.yearOfExperience} سنوات`
+                      : null
                   }
                 />
               </div>
