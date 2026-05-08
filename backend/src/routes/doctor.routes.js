@@ -1,12 +1,17 @@
 import express from "express";
 import { requireAuth, requireRole, loadUser } from "../middleware/auth.middleware.js";
-import { updateProfile } from "../controllers/doctor.controller.js";
+import {
+  updateProfile,
+  updateRegisterData,
+} from "../controllers/doctor.controller.js";
+import { uploadAvatar } from "../config/cloudinary.js"
 
 const router = express.Router();
 
 router.use(requireAuth, loadUser, requireRole("doctor"))
 
-router.put("/update-profile", updateProfile);
+router.put("/update-register/data", updateRegisterData);
+router.put("/update-profile", uploadAvatar.single("avatar"), updateProfile);
 
 
 export default router;

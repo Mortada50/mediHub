@@ -57,10 +57,11 @@
       profileError,
       isProfileLoading,
 
-      isUpdatingProfile,
-      profileUpdateMutation,
-      profileUpdatedSuccess,
-      profileUpdateError,
+      registerUpdateMutation,
+      isUpdatingRegister,
+      registerUpdatedSuccess,
+      registerUpdateError
+      
     } = useProfile(update);
 
     const [licensePreviewUrl, setLicensePreviewUrl] = useState(null);
@@ -222,9 +223,24 @@
 
           setStep(3);
         } else {
-          profileUpdateMutation(
+          // todo: check this prompt
+          /**
+           * Verify each finding against current code. Fix only still-valid issues, skip the
+            rest with a brief reason, keep changes minimal, and validate.
+
+            In `@doctor/src/pages/RegisterPage.jsx` around lines 226 - 229, The current call
+            uses registerUpdateMutation.mutate which is not promise-based so the surrounding
+            try/catch/finally won't await the network result; change to use
+            registerUpdateMutation.mutateAsync and await it (e.g., await
+            registerUpdateMutation.mutateAsync({ ...form, license: licenseUrl })) or
+            otherwise move loading/error handling into the mutation callbacks
+            (onSuccess/onError) so errors reach the catch block; update the call site that
+            currently invokes registerUpdateMutation(...) and ensure the await is used where
+            th e finally block expects the request to have settled.
+           */
+          registerUpdateMutation(
             { ...form, license: licenseUrl },
-            { onSuccess: () => navigate("/pending-page") }
+            { onSuccess: () => navigate("/pending-page") },
           );
         }
       } catch (err) {
@@ -739,7 +755,7 @@
                           </label>
                         )}
                         <button
-                          disabled={loading || isUpdatingProfile}
+                          disabled={loading || isUpdatingRegister}
                           type="button"
                           onClick={() => set("license", null)}
                           className="flex items-center gap-1 bg-white text-red-500 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors duration-150">
@@ -757,17 +773,17 @@
                 <div className="flex flex-col-reverse sm:flex-row gap-3 w-full mt-4">
                   <button
                     type="submit"
-                    disabled={loading || isUpdatingProfile}
+                    disabled={loading || isUpdatingRegister}
                     onClick={() => setStep(1)}
                     className="flex-1 h-[50px] border-2 border-primary text-primary rounded-md font-black text-lg flex items-center justify-center hover:bg-primary/5 transition-colors duration-150 cursor-pointer">
                     السابق
                   </button>
                   <button
                     type="submit"
-                    disabled={loading || isUpdatingProfile}
+                    disabled={loading || isUpdatingRegister}
                     onClick={handleStep2}
                     className="flex-1 h-[50px] bg-primary text-white rounded-md font-black text-lg flex items-center justify-center disabled:cursor-not-allowed hover:bg-primary/90 transition-colors duration-150 cursor-pointer">
-                    {loading || isUpdatingProfile ? (
+                    {loading || isUpdatingRegister ? (
                       <LoaderIcon className="size-7 animate-spin" />
                     ) : update ? (
                       "حفظ التغيرات"
@@ -781,7 +797,7 @@
                   <p className="text-sm text-gray-600">
                     لديك حساب؟{" "}
                     <button
-                      disabled={loading || isUpdatingProfile}
+                      disabled={loading || isUpdatingRegister}
                       className="text-primary text-xs cursor-pointer"
                       onClick={() => navigate("/login")}>
                       اضغط هنا

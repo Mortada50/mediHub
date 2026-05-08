@@ -14,6 +14,7 @@
 
 @theme {
   --color-primary: #2B9C8E;
+  --color-primary-400: #55b1a5;
   --color-background: #F8FAFB;
   --color-background-white: #ffffff;
   --color-background-primary: #eaf5f4;
@@ -22,7 +23,7 @@
   --color-text-secondary: #555555;
   --color-border-primary: #E8E8E8;
   --color-warning-background: #fff3cd;
-    --color-text-warning-primary: #856404;
+  --color-text-warning-primary: #856404;
 
 }
 

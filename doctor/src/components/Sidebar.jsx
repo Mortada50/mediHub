@@ -5,14 +5,30 @@ import {
   PanelRightIcon,
   MessageCircle,
   FileText,
+  CalendarDays,
+  Hospital,
+  CalendarClock,
+  UserCircle2
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "@clerk/clerk-react";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "لوحة التحكم", path: "/dashboard" },
+  {
+    icon: CalendarDays,
+    label: "الجدول الأسبوعي",
+    path: "/weekly-schedule",
+  },
+  { icon: Hospital, label: "العيادة", path: "/clinic" },
   { icon: FileText, label: "إدارة المقالات", path: "/articles-management" },
-  { icon: MessageCircle, label: "الرسائل", path: "/chats" },
+  {
+    icon: CalendarClock,
+    label: "إدارة المواعيد",
+    path: "/appointment-management",
+  },
+  { icon: MessageCircle, label: "الإستشارات", path: "/chats" },
+  { icon: UserCircle2, label: "الملف الشخصي", path: "/profile" },
 ];
 
 export const SIDEBAR_OPEN_WIDTH = 230;

@@ -9,6 +9,10 @@ import RegisterPage from "./pages/RegisterPage";
 import PageLoader from "./components/PageLoader";
 import ForgetPasswordPage from "./pages/ForgetPasswordPage";
 import PendingRejectPage from "./pages/PendingRejectPage";
+import WeeklySchedule from "./pages/WeeklySchedule";
+import ClinicSetting from "./pages/ClinicSetting";
+import AppointmentManagement from "./pages/AppointmentManagement";
+import Profile from "./pages/Profile";
 
 function App() {
    const { isSignedIn, isLoaded } = useAuth();
@@ -20,7 +24,7 @@ function App() {
  
 
    const status = user?.publicMetadata?.status;
-
+  
   return (
     <Routes>
       <Route
@@ -79,12 +83,16 @@ function App() {
         }>
         <Route index element={<Navigate to={"dashboard"} />} />
         <Route path="dashboard" element={<DashboardPage />} />
-
-        <Route path="chats" element={<ChatsPage />} />
+        <Route path="weekly-schedule" element={<WeeklySchedule />} />
+        <Route path="clinic" element={<ClinicSetting />} />
         <Route
           path="articles-management"
           element={<ArticlesManagementPage />}
         />
+        <Route path="appointment-management" element={<AppointmentManagement />} />
+
+        <Route path="chats" element={<ChatsPage />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>
   );

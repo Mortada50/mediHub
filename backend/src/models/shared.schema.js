@@ -6,7 +6,7 @@ export const sessionSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["morning", "evening"],
+      enum: ["صباحا", "مساء"],
     },
     startTime: {
       type: String,

@@ -142,7 +142,7 @@ export const updateArticle = async (req, res) => {
      if (mongoId !== article?.author.toString())
       return sendError(res, "ليس لديك صلاحية لتعديل هذا المقال", 403);
 
-    let imageUrl = article?.image;
+    let imageUrl = article?.image || null;
     if (req?.file?.path || imagePreview === "null") {
       if (article?.image) {
         await deleteFromCloudinary(article?.image);
