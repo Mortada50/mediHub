@@ -92,7 +92,6 @@ export const useProfileApi = () => {
   }
 
   const updateProfile = async (profile) => {
-    console.log(profile);
     
     const formData = new FormData();
 
@@ -100,11 +99,7 @@ export const useProfileApi = () => {
       formData.append(key, profile[key]);
     }
 
-    const { data } = await api.put("/doctor/update-profile", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const { data } = await api.put("/doctor/update-profile", formData);
     
     return data;
     

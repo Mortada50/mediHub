@@ -13,12 +13,12 @@ function ErrorUIDialog({ title, message, onClose, error = null }) {
         </div>
         <p className="text-gray-700 font-semibold text-sm">{title}</p>
         <p className="text-gray-500 text-xs text-center">
-          {message ||error?.message}
+          {error?.message || message}
         </p>
         <button
           onClick={(e) => {
-            e.stopPropagation()
-            onClose()
+            e.stopPropagation();
+            onClose();
           }}
           className="mt-1 px-5 h-[36px] rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors cursor-pointer">
           إغلاق

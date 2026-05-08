@@ -4,6 +4,7 @@ import {useProfile} from "../hooks/useProfile.js"
 import PageLoader from "../components/PageLoader.jsx";
 import TableErrorUI from "../components/TableErrorUi.jsx";
 import ErrorUIDialog from "../components/ErrorUIDialog.jsx";
+import InputsError from "../components/InputsError.jsx";
 
 /* ── mock data ── */
 const INITIAL_DATA = {
@@ -20,7 +21,15 @@ const INITIAL_DATA = {
 };
 
 /* ── reusable field components ── */
-const InfoField = ({ label, value, isEditing, name, onChange, multiline }) => (
+const InfoField = ({
+  label,
+  value,
+  isEditing,
+  name,
+  onChange,
+  multiline,
+  error,
+}) => (
   <div className="flex flex-col gap-1 w-full">
     <p className="text-primary-400 text-md font-normal text-right px-1">
       {label}
@@ -35,14 +44,17 @@ const InfoField = ({ label, value, isEditing, name, onChange, multiline }) => (
           className="w-full bg-background-primary rounded-lg px-4 py-3 text-sm text-gray-700 border border-primary/20 focus:outline-none focus:border-primary/50 transition-colors resize-none text-right"
         />
       ) : (
-        <input
-          readOnly={name === "specialty"}
-          type={name === "experienceYears" ? "number" : "text"}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className="w-full h-[46px] bg-background-primary rounded-lg px-4 text-sm text-gray-700 border border-primary/20 focus:outline-none focus:border-primary/50 transition-colors text-right"
-        />
+        <>
+          <input
+            readOnly={name === "specialty"}
+            type={name === "experienceYears" ? "number" : "text"}
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={`w-full h-[46px] bg-background-primary rounded-lg px-4 text-sm text-gray-700 border ${error ? "border-red-500" : "border-primary/20"} focus:outline-none focus:border-primary/50 transition-colors text-right`}
+          />
+          {error && <InputsError error={error} />}
+        </>
       )
     ) : (
       <div className="w-full bg-background-primary rounded-lg px-4 py-3 text-sm text-gray-700 text-right whitespace-pre-line">
@@ -76,6 +88,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [openErrorUiDialog, setOpenErrorUiDialog] = useState(false);
+  const [error, setError] = useState("")
   const avatarRef = useRef();
 
   const handleChange = (e) => {
@@ -95,6 +108,12 @@ export default function Profile() {
   };
 
   const handleSave = () => {
+    setError("");
+    if(draft.fullName.length < 6 || draft.fullName.split(" ").length < 3){
+      setError("الاسم الثلاثي مطلوب");
+      return;
+    }
+
     updateProfileMutation(
       {
         ...draft,
@@ -104,7 +123,9 @@ export default function Profile() {
         onSuccess: () => {
           setIsEditing(false);
         },
-        onError: () => setOpenErrorUiDialog(true),
+        onError: () => {
+          
+          setOpenErrorUiDialog(true)},
       },
     );
 
@@ -248,6 +269,7 @@ export default function Profile() {
                       value={draft.fullName}
                       onChange={handleChange}
                       className="h-[38px] bg-background-primary rounded-lg px-3 text-lg font-black text-primary border border-primary/20 focus:outline-none text-right w-[260px]"
+                      
                     />
                   ) : (
                     <h1 className="text-primary font-black text-2xl">
@@ -298,6 +320,7 @@ export default function Profile() {
               name="fullName"
               isEditing={isEditing}
               onChange={handleChange}
+              error={error}
             />
 
             {/* Bio */}

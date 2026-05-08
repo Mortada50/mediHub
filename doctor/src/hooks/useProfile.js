@@ -19,6 +19,8 @@ export const useProfile = (state = false) => {
     enabled: state,
   });
 
+  
+
   const registerUpdateMutation = useMutation({
     mutationFn: async (profile) => {
       const { data } = await updateRegisterData(profile);

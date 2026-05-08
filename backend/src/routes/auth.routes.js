@@ -28,7 +28,6 @@ router.get("/me", requireAuth, loadUser, async (req, res) => {
     if (!Model || !mongoId) {
       return sendError(res, "بيانات المستخدم غير مكتملة", 400);
     }
-    console.log(userRole, mongoId, userStatus);
 
     const profile = await Model.findById(mongoId);
     if (!profile)

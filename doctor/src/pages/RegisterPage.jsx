@@ -223,9 +223,24 @@
 
           setStep(3);
         } else {
+          // todo: check this prompt
+          /**
+           * Verify each finding against current code. Fix only still-valid issues, skip the
+            rest with a brief reason, keep changes minimal, and validate.
+
+            In `@doctor/src/pages/RegisterPage.jsx` around lines 226 - 229, The current call
+            uses registerUpdateMutation.mutate which is not promise-based so the surrounding
+            try/catch/finally won't await the network result; change to use
+            registerUpdateMutation.mutateAsync and await it (e.g., await
+            registerUpdateMutation.mutateAsync({ ...form, license: licenseUrl })) or
+            otherwise move loading/error handling into the mutation callbacks
+            (onSuccess/onError) so errors reach the catch block; update the call site that
+            currently invokes registerUpdateMutation(...) and ensure the await is used where
+            th e finally block expects the request to have settled.
+           */
           registerUpdateMutation(
             { ...form, license: licenseUrl },
-            { onSuccess: () => navigate("/pending-page") }
+            { onSuccess: () => navigate("/pending-page") },
           );
         }
       } catch (err) {
