@@ -7,7 +7,7 @@ import {
 
 const router = express.Router();
 
-router.use(requireAuth, loadUser, requireRole("patient"))
+router.use(requireAuth, loadUser, requireRole("patient"));
 
 // this route for user (mobile app)
 

@@ -148,8 +148,11 @@ export default function LocationPickerMap({
           center={[mapCenter.lat, mapCenter.lng]}
           zoom={13}
           style={{ height: "100%", width: "100%" }}
-          attributionControl={false}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+             >
+          <TileLayer
+            attribution="&copy; OpenStreetMap contributors"
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
           <MapClickHandler onLocationSelect={onLocationSelect} />
 
           {selectedLocation && (

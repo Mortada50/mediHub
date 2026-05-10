@@ -168,7 +168,7 @@ export const updateAppointmentSetting = async (req, res) => {
     const { sessionDuration, price } = req.body;
 
     if (!sessionDuration || !price)
-      return sedErrror(res, "يرجى إدخال جميع الحقول المطلوبة", 400);
+      return sedError(res, "يرجى إدخال جميع الحقول المطلوبة", 400);
 
     const doctor = await Doctor.findById(mongoId);
 

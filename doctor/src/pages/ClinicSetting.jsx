@@ -57,7 +57,6 @@ const InfoField = ({
           className="h-[46px] w-full bg-background-primary rounded-lg px-4 text-sm text-gray-700 border border-primary/20 focus:outline-none focus:border-primary/50 transition-colors"
         />
         {errors[name] && <InputsError error={errors[name]} />}
-          
       </>
     ) : (
       <div className="h-[46px] w-full bg-background-primary rounded-lg px-4 flex items-center text-sm text-gray-700">
@@ -101,15 +100,14 @@ const SectionCard = ({
           onClick={onSave}
           disabled={isLoading}
           className="flex items-center gap-2 px-6 h-[40px] bg-primary text-white rounded-xl text-sm font-black hover:bg-primary/90 transition-colors cursor-pointer">
-         {isLoading ? (
-          <LoaderIcon className="size-4 animate-spin" />
-         ) : (
-          <>
-            <Check size={15} />
-             حفظ التغييرات
-          </>
-         )}
-         
+          {isLoading ? (
+            <LoaderIcon className="size-4 animate-spin" />
+          ) : (
+            <>
+              <Check size={15} />
+              حفظ التغييرات
+            </>
+          )}
         </button>
         <button
           onClick={onCancel}
@@ -132,7 +130,7 @@ export default function ClinicSetting() {
     refetch,
     isFetching,
 
-    updateClinicMutation, 
+    updateClinicMutation,
     isUpdatingClinic,
     isClinicUpdateError,
     clinicUpdateError,
@@ -141,7 +139,6 @@ export default function ClinicSetting() {
     isUpdatingAppointment,
     isAppointmentUpdateError,
     appointmentUpdateError,
-
   } = useProfile(true);
 
   /* ── clinic state ── */
@@ -173,11 +170,10 @@ export default function ClinicSetting() {
     if (!validateClinicData()) return;
 
     setErrors({});
-    setClinic(clinicDraft);
-    updateClinicMutation(clinicDraft,{
+    updateClinicMutation(clinicDraft, {
       onSuccess: () => setEditingClinic(false),
-      onError: () => setOpenErrorUiDialog(true)
-    })
+      onError: () => setOpenErrorUiDialog(true),
+    });
   };
   const cancelClinic = () => {
     setClinicDraft(clinic);
@@ -190,13 +186,10 @@ export default function ClinicSetting() {
   const [editingAppt, setEditingAppt] = useState(false);
 
   const saveAppt = () => {
-    setAppt(apptDraft);
-
     updateAppointmentMutation(apptDraft, {
       onSuccess: () => setEditingAppt(false),
-      onError: () => setOpenErrorUiDialog(true)
-    })
-
+      onError: () => setOpenErrorUiDialog(true),
+    });
   };
   const cancelAppt = () => {
     setApptDraft(appt);
@@ -206,20 +199,20 @@ export default function ClinicSetting() {
   useEffect(() => {
     if (!isProfileLoading) {
       const profile = userProfile?.profile;
-      
+
       const initialClinic = {
-        clinicName: profile?.clinicName,
-        phone: profile?.phone,
-        city: profile?.address?.city,
-        area: profile?.address?.area,
-        street: profile?.address?.street,
-        lat: profile?.latLng?.lat || null,
-        lng: profile?.latLng?.lng || null,
+        clinicName: profile?.clinicName ?? "",
+        phone: profile?.phone ?? "",
+        city: profile?.address?.city ?? "",
+        area: profile?.address?.area ?? "",
+        street: profile?.address?.street ?? "",
+        lat: profile?.latLng?.lat ?? null,
+        lng: profile?.latLng?.lng ?? null,
       };
-      
+
       const initialAppointments = {
-        price: profile?.appointmentFee,
-        sessionDuration: profile?.appointmentDuration,
+        price: profile?.appointmentFee ?? 1000,
+        sessionDuration: profile?.appointmentDuration ?? DURATIONS[0],
       };
 
       setClinicDraft(initialClinic);
@@ -234,7 +227,7 @@ export default function ClinicSetting() {
 
   const currentClinic = editingClinic ? clinicDraft : clinic;
   const currentAppt = editingAppt ? apptDraft : appt;
-  
+
   if (isProfileError || !userProfile) {
     return (
       <table className="flex items-center justify-center h-full">
@@ -255,7 +248,11 @@ export default function ClinicSetting() {
         openErrorUiDialog && (
           <ErrorUIDialog
             title="حدث خطأ"
-            message= {isAppointmentUpdateError ? "تعذر تحديث إعداد المواعيد" : "تعذر تحديث إعداد العيادة"}
+            message={
+              isAppointmentUpdateError
+                ? "تعذر تحديث إعداد المواعيد"
+                : "تعذر تحديث إعداد العيادة"
+            }
             onClose={() => setOpenErrorUiDialog(false)}
             error={appointmentUpdateError || clinicUpdateError}
           />
@@ -274,8 +271,8 @@ export default function ClinicSetting() {
           onConfirm={(loc) =>
             setClinicDraft((p) => ({
               ...p,
-              lat: loc.lat.toFixed(6),
-              lng: loc.lng.toFixed(6),
+              lat: Number(loc.lat.toFixed(6)),
+              lng: Number(loc.lng.toFixed(6)),
             }))
           }
           onClose={() => setShowMapModal(false)}

@@ -15,7 +15,7 @@ import pharmacyRoutes from "./routes/pharmacy.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import medicineRoutes from "./routes/medicine.routes.js";
 import articlesRoutes from "./routes/articles.routes.js";
-import locationRoutes from "./routes/lcoation.routes.js";
+import locationRoutes from "./routes/location.routes.js";
 const app = express();
 app.set("trust proxy", 1);
 

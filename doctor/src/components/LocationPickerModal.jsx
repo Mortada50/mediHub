@@ -25,6 +25,8 @@ export default function LocationPickerModal({
             </h2>
           </div>
           <button
+           type="button"
+            aria-label="إغلاق نافذة اختيار الموقع"
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition-colors cursor-pointer">
             <X size={16} />
