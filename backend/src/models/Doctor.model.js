@@ -98,7 +98,10 @@ const doctorSchema = new mongoose.Schema(
       match: [/^(?:\+967|00967)?(77|71|78|73)\d{7}$/, "الرجاء إدخال رقم صالح"],
     },
     address: addressSchema,
-    location: locationSchema,
+    location: {
+      type: locationSchema,
+      required: [true, "Location coordinates are required"],
+    },
 
     // ── Appointment Settings ──
     appointmentFee: {
@@ -108,8 +111,8 @@ const doctorSchema = new mongoose.Schema(
     },
     appointmentDuration: {
       type: Number,
-      default: 30, // بالدقائق
       enum: [15, 20, 30, 45, 60],
+      default: 30, // بالدقائق
     },
 
     // ── Schedule ──
@@ -136,12 +139,30 @@ const doctorSchema = new mongoose.Schema(
       count: { type: Number, default: 0 },
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 // ───── Indexes ─────
 doctorSchema.index({ location: "2dsphere" });
 doctorSchema.index({ speciality: 1 });
 doctorSchema.index({ "address.city": 1 });
+
+/**
+ * Virtual: coordinates في صيغة [lat, lng] للـ frontend
+ * الـ frontend (Leaflet) يستخدم [lat, lng] بينما MongoDB يستخدم [lng, lat]
+ */
+doctorSchema.virtual("latLng").get(function () {
+  if (this.location && this.location.coordinates) {
+    return {
+      lat: this.location.coordinates[1],
+      lng: this.location.coordinates[0],
+    };
+  }
+  return null;
+});
 
 export const Doctor = mongoose.model("Doctor", doctorSchema);

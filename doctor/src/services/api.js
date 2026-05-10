@@ -105,5 +105,24 @@ export const useProfileApi = () => {
     
   }
 
-  return { getProfile, updateRegisterData, updateProfile };
+  const updateClinicData = async (clinciData) => {
+
+    const {data} = await api.put("/doctor/update-clinic/data", clinciData)
+    
+    return data;
+  }
+
+  const updateAppointmentSetting = async (appData) => {
+    const {data} = await api.put("/doctor/update-appointment/data", appData);
+
+    return data;
+  }
+
+  return {
+    getProfile,
+    updateRegisterData,
+    updateProfile,
+    updateClinicData,
+    updateAppointmentSetting,
+  };
 };

@@ -124,3 +124,65 @@ export const updateProfile = async (req, res) => {
     sendError(res, "خطأ في تعديل بيانات الطبيب", 500);
   }
 };
+
+export const updateClinic = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { clinicName, phone, city, area, street, lat, lng } = req.body;
+
+    if (!mongoId || !clinicName || !phone || !city || !area || !street)
+      return sendError(res, "يجب ملئ جميع الحقول المطلوبة", 400);
+
+    const doctor = await Doctor.findById(mongoId);
+
+    if (!doctor) return sendError(res, "لم يتم العثور على هذا الطبيب", 404);
+
+    const clinicUpdatedData = {
+      clinicName,
+      phone,
+      address: { city, area, street },
+    };
+
+    if (lat && lng) {
+      clinicUpdatedData.location = {
+        type: "Point",
+        coordinates: [parseFloat(lng), parseFloat(lat)],
+      };
+    }
+
+    await Doctor.findByIdAndUpdate(mongoId, clinicUpdatedData, {
+      runValidators: true,
+    });
+
+    sendSuccess(res, {}, "تم تحديث بيانات العيادة بنجاح", 200);
+  } catch (error) {
+    console.log(error);
+
+    sendError(res, "خطأ في تعديل بيانات العيادة", 500);
+  }
+};
+
+export const updateAppointmentSetting = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { sessionDuration, price } = req.body;
+
+    if (!sessionDuration || !price)
+      return sedErrror(res, "يرجى إدخال جميع الحقول المطلوبة", 400);
+
+    const doctor = await Doctor.findById(mongoId);
+
+    if (!doctor) return sendError(res, "هذا الطبيب غير موجود", 404);
+
+    doctor.appointmentDuration = Number(sessionDuration);
+    doctor.appointmentFee = Number(price);
+
+    await doctor.save()
+
+    sendSuccess(res, {}, "تم تحديث إعدادات المواعيد بنجاح", 200)
+
+  } catch (error) {
+    console.log(error);
+    sendError(res, "خطأ في تحديث إعدادات المواعيد", 500);
+  }
+};

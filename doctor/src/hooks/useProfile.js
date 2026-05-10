@@ -2,7 +2,13 @@ import { useProfileApi } from "../services/api.js";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 
 export const useProfile = (state = false) => {
-  const { getProfile, updateRegisterData, updateProfile } = useProfileApi();
+  const {
+    getProfile,
+    updateRegisterData,
+    updateProfile,
+    updateClinicData,
+    updateAppointmentSetting,
+  } = useProfileApi();
 
   const queryClient = useQueryClient();
 
@@ -42,7 +48,29 @@ export const useProfile = (state = false) => {
 
     }
   })
+  
+  const updateClinicMutation = useMutation({
+    mutationFn: async (clinciData) => {
+      const {data}  = await updateClinicData(clinciData);
+      
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
 
+    }
+  })
+
+  const updateAppointmentMutation = useMutation({
+    mutationFn: async (appData) => {
+      const { data } = await updateAppointmentSetting(appData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+    }
+  })
 
   return {
     userProfile,
@@ -62,5 +90,17 @@ export const useProfile = (state = false) => {
     profileUpdatedSuccess: updateProfileMutation.isSuccess,
     profileUpdateError: updateProfileMutation.error,
     isProfileUpdateError: updateProfileMutation.isError,
+
+    updateClinicMutation: updateClinicMutation.mutate,
+    isUpdatingClinic: updateClinicMutation.isLoading,
+    clinicUpdatedSuccess: updateClinicMutation.isSuccess,
+    clinicUpdateError: updateClinicMutation.error,
+    isClinicUpdateError: updateClinicMutation.isError,
+
+    updateAppointmentMutation: updateAppointmentMutation.mutate,
+    isUpdatingAppointment: updateAppointmentMutation.isLoading,
+    appointmentUpdatedSuccess: updateAppointmentMutation.isSuccess,
+    appointmentUpdateError: updateAppointmentMutation.error,
+    isAppointmentUpdateError: updateAppointmentMutation.isError,
   };
 }
