@@ -6,19 +6,7 @@ import TableErrorUI from "../components/TableErrorUi.jsx";
 import ErrorUIDialog from "../components/ErrorUIDialog.jsx";
 import InputsError from "../components/InputsError.jsx";
 
-/* ── mock data ── */
-const INITIAL_DATA = {
-  fullName: "د.أحمد محمد السلامي",
-  email: "ahmedmohammed@gmial.com",
-  gender: "ذكر",
-  specialty: "أخصائي جراحة عامة",
-  status: "نشط",
-  bio: "أخصائي جراحة عامة يمتلك خبرة واسعة في تشخيص وعلاج الحالات الجراحية المختلفة، مع مهارة عالية في إجراء العمليات الدقيقة بأحدث التقنيات.\nيتميز بالدقة والالتزام برعاية المرضى.",
-  experienceYears: "12",
-  qualifications:
-    "بكالوريوس في الطب والجراحة، مع إتمام سنة الامتياز والتدريب السريري في المستشفيات المعتمدة.حاصل على شهادة اختصاصبورد في الجراحة العامة.\nإضافة إلى دورات متقدمة في الجراحة الحديثة وتقنيات المناظير.",
-  avatar: null,
-};
+
 
 /* ── reusable field components ── */
 const InfoField = ({
@@ -31,9 +19,7 @@ const InfoField = ({
   error,
 }) => (
   <div className="flex flex-col gap-1 w-full">
-    <p className="text-primary-400 text-md font-normal text-right px-1">
-      {label}
-    </p>
+    <p className="text-primary text-sm font-semibold px-1">{label}</p>
     {isEditing ? (
       multiline ? (
         <textarea
@@ -110,7 +96,7 @@ export default function Profile() {
   const handleSave = () => {
     setError("");
     if(draft.fullName.length < 6 || draft.fullName.split(" ").length < 3){
-      setError("الاسم الثلاثي مطلوب");
+      setError("يجب ان يكون الاسم ثلاثيا");
       return;
     }
 
@@ -197,7 +183,7 @@ export default function Profile() {
           {/* ── HEADER SECTION ── */}
           <div className="px-6 pt-6 pb-5 border-b border-gray-100">
             <div className="flex items-start justify-between gap-4 flex-wrap">
-              <h2 className="text-[#23404c] font-black text-lg mb-2">
+              <h2 className="text-dark font-black text-lg mb-2">
                 معلومات شخصية
               </h2>
               <div className="flex items-center gap-3">

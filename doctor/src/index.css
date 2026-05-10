@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @font-face {
   font-family: 'Bein';
@@ -20,6 +21,7 @@
   --color-background-primary: #eaf5f4;
   --color-background-secondary: #55B1A5;
   --color-text: #2F3541;
+  --color-dark: #23404c;
   --color-text-secondary: #555555;
   --color-border-primary: #E8E8E8;
   --color-warning-background: #fff3cd;

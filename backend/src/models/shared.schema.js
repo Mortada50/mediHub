@@ -62,15 +62,19 @@ export const locationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: ["Point"],
+      required: true,
       default: "Point",
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
       validate: {
-        validator: (v) => !v.length || v.length === 2,
-        message: "الإحداثيات يجب أن تكون [longitude, latitude]",
+        validator: function (coords) {
+          if (!Array.isArray(coords) || coords.length !== 2) return false;
+          const [lng, lat] = coords;
+          return lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90;
+        },
+        message: "Coordinates must be [longitude, latitude] with valid ranges",
       },
     },
-  },
-  { _id: false },
+  }
 );
