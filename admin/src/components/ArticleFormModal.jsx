@@ -198,6 +198,7 @@ export default function ArticleFormModal({
   const handleSubmit = () => {
     
     if (!validate()) return;
+    if (isEdit && !article?._id) return;
      onSubmit?.({ ...form, ...(isEdit ? { _id: article._id } : {}) });
   };
 

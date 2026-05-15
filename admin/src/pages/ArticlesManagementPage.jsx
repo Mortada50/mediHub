@@ -439,7 +439,15 @@ function ArticlesManagementPage() {
         openErrorUiDialog && (
           <ErrorUIDialog
             title="حدث خطأ"
-            message="تعذر حذف المقالة يرجى المحاولة لاحقا"
+            message={
+              isDeleteingArticleError
+                ? "تعذر حذف المقالة يرجى المحاولة لاحقًا"
+                : isAddingNewArticleError
+                  ? "تعذر إضافة المقالة يرجى المحاولة لاحقًا"
+                  : isUpdateingArticleError
+                    ? "تعذر تحديث المقالة يرجى المحاولة لاحقًا"
+                    : "تعذر تحديث حالة المقالة يرجى المحاولة لاحقًا"
+            }
             onClose={() => setOpenErrorUiDialog(false)}
             error={
               deleteArticleError ||

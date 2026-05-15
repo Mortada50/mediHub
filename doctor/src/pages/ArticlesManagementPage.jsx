@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ARTICLE_CATEGORIES } from "../utils/constant.js";
 import { useArticles } from "../hooks/useArticle.js";
 import {
@@ -65,22 +65,6 @@ function ArticlesManagementPage() {
     deleteArticleError,
   } = useArticles();
 
-  if (isLoading) return <PageLoader />;
-
-  if (isError || !articles) {
-    return (
-      <table className="flex items-center justify-center h-full">
-        <tbody>
-          <TableErrorUI
-            message={error?.message}
-            onRetry={() => refetch()}
-            onloading={isFetching}
-          />
-        </tbody>
-      </table>
-    );
-  }
-
   const articlesData = articles?.data;
   const allArticles = articlesData?.articles ?? [];
 
@@ -107,6 +91,11 @@ function ArticlesManagementPage() {
 
   const totalPages = Math.max(1, Math.ceil(matchArticles.length / itemPerPage));
   const safePage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage !== safePage) setCurrentPage(safePage);
+  }, [currentPage, safePage]);
+
   const filtered = matchArticles.slice(
     (safePage - 1) * itemPerPage,
     safePage * itemPerPage,
@@ -146,6 +135,22 @@ function ArticlesManagementPage() {
       },
     });
   };
+
+  if (isLoading) return <PageLoader />;
+
+  if (isError || !articles) {
+    return (
+      <table className="flex items-center justify-center h-full">
+        <tbody>
+          <TableErrorUI
+            message={error?.message}
+            onRetry={() => refetch()}
+            onloading={isFetching}
+          />
+        </tbody>
+      </table>
+    );
+  }
 
   return (
     <>
@@ -230,20 +235,25 @@ function ArticlesManagementPage() {
           {/* FILTERS + SEARCH + ADD */}
           <div className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
             {/* CATEGORY DROPDOWN */}
-            <div
-              onClick={() => {
-                setOpenCategoryDropDown((p) => !p);
-              }}
-              className="relative flex items-center gap-2 p-2 sm:p-3 bg-background-primary rounded-lg cursor-pointer text-sm shrink-0 select-none">
-              <span className="text-primary text-sm max-w-[100px] truncate">
-                {category}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-primary transition-transform shrink-0 ${openCategoryDropDown ? "rotate-180" : ""}`}
-              />
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setOpenCategoryDropDown((p) => !p)}
+                aria-haspopup="listbox"
+                aria-expanded={openCategoryDropDown}
+                className="flex items-center gap-2 p-2 sm:p-3 bg-background-primary rounded-lg text-sm select-none">
+                <span className="text-primary text-sm max-w-[100px] truncate">
+                  {category}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-primary transition-transform shrink-0 ${openCategoryDropDown ? "rotate-180" : ""}`}
+                />
+              </button>
               {openCategoryDropDown && (
-                <div className="absolute z-20 flex flex-col gap-1 bg-white shadow-lg border border-gray-100 p-2 top-11 left-0 rounded-xl min-w-[160px] max-h-[200px] overflow-y-auto no-scrollbar">
+                <div
+                  role="listbox"
+                  className="absolute z-20 flex flex-col gap-1 bg-white shadow-lg border border-gray-100 p-2 top-11 left-0 rounded-xl min-w-[160px] max-h-[200px] overflow-y-auto no-scrollbar">
                   {["جميع التصنيفات", ...ARTICLE_CATEGORIES].map((cat, i) => (
                     <button
                       key={i}
@@ -326,7 +336,7 @@ function ArticlesManagementPage() {
         <div className="bg-white rounded-xl flex items-center justify-center gap-2 py-3 px-4 shadow-sm">
           <button
             onClick={() => setCurrentPage((p) => p + 1)}
-            disabled={currentPage === totalPages}
+            disabled={safePage === totalPages}
             className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
             <ChevronLeft size={15} />
           </button>
@@ -337,7 +347,7 @@ function ArticlesManagementPage() {
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`size-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
-                  currentPage === page
+                  safePage === page
                     ? "bg-primary text-white"
                     : "border border-gray-200 text-gray-400 hover:border-primary hover:text-primary"
                 }`}>
@@ -362,7 +372,7 @@ function ArticlesManagementPage() {
 
           <button
             onClick={() => setCurrentPage((p) => p - 1)}
-            disabled={currentPage === 1}
+            disabled={safePage === 1}
             className="size-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
             <ChevronRight size={15} />
           </button>
