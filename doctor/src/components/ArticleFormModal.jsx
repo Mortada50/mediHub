@@ -7,7 +7,6 @@ const INITIAL_FORM = {
   description: "",
   content: "",
   category: "",
-  isFeatured: false,
   image: null,
   imagePreview: null,
 };
@@ -173,7 +172,6 @@ export default function ArticleFormModal({
         description: article.description ?? "",
         content: article.content ?? "",
         category: article.category ?? "",
-        isFeatured: article.isFeatured ?? false,
         image: null,
         imagePreview: article.image ?? null,
       });
@@ -282,34 +280,6 @@ export default function ArticleFormModal({
                 isLoading={isLoading}
               />
               {errors.content && <AlertError error={errors.content} />}
-            </div>
-          </section>
-
-          {/* 3. خصائص المقال */}
-          <section>
-            <SectionTitle text="خصائص المقال" />
-            <div className="bg-background-primary rounded-xl px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Star
-                  size={15}
-                  className={form.isFeatured ? "text-primary" : "text-gray-300"}
-                  fill={form.isFeatured ? "currentColor" : "none"}
-                />
-                <span className="text-gray-700 text-sm">تمييز المقال</span>
-              </div>
-              <button
-                disabled={isLoading}
-                type="button"
-                onClick={() => set("isFeatured", !form.isFeatured)}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer shrink-0 ${
-                  form.isFeatured ? "bg-primary" : "bg-gray-200"
-                }`}>
-                <span
-                  className={`absolute top-0.5 size-5 bg-white rounded-full shadow transition-all duration-200 ${
-                    form.isFeatured ? "right-0.5" : "right-5"
-                  }`}
-                />
-              </button>
             </div>
           </section>
 

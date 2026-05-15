@@ -12,6 +12,7 @@ import {
   updateArticle,
   toggleIsFeaturStatus,
   deleteArticle,
+  getDoctorArticles,
 } from "../controllers/article.controller.js";
 
 import { uploadArticle } from "../config/cloudinary.js";
@@ -24,6 +25,7 @@ router.get("/", getAllArticles);
 
 router.use(requireActiveStatus, requireRole("admin", "doctor"));
 
+router.get("/doctor", getDoctorArticles)
 router.post("/add", uploadArticle.single("image"), addNewArticle);
 router.put("/update", uploadArticle.single("image"), updateArticle);
 router.patch("/update/:articleId", requireRole("admin"), toggleIsFeaturStatus);

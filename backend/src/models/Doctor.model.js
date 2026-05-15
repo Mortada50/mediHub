@@ -100,7 +100,6 @@ const doctorSchema = new mongoose.Schema(
     address: addressSchema,
     location: {
       type: locationSchema,
-      required: [true, "Location coordinates are required"],
     },
 
     // ── Appointment Settings ──

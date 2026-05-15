@@ -179,6 +179,7 @@ export const useArticlesApi = () => {
   const api = useApi();
 
   const getArticles = async () => {
+    
     const {data} = await api.get("/articles");
     return data.data;
   }
@@ -208,11 +209,7 @@ export const useArticlesApi = () => {
      formData.append(key, articleData[key]);
     }
     
-    const { data } = await api.put("/articles/update", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const { data } = await api.put("/articles/update", formData);
 
     return data.data;
   }

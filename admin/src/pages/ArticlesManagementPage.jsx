@@ -21,7 +21,7 @@ import TableEmptyUI from "../components/TableEmptyUi.jsx";
 import TableErrorUI from "../components/TableErrorUi.jsx";
 import ArticleDetailModal from "../components/ArticleDetailModal.jsx";
 import ArticleFormModal from "../components/ArticleFormModal.jsx";
-import PageLoader from "../components/PageLoader.jsx"
+import PageLoader from "../components/PageLoader.jsx";
 import mediHubLogo from "../assets/login-logo.png";
 import { useArticles } from "../hooks/useArticles.js";
 import { useConfirm } from "../hooks/useConfirm.js";
@@ -124,7 +124,6 @@ const MOKO_ARTICLES = [
     createdAt: "2026-04-09T14:20:00.000Z",
   },
 ];
-
 
 /* ── time ago helper ── */
 function timeAgo(dateStr) {
@@ -326,34 +325,32 @@ function ArticlesManagementPage() {
     isDeleteingArticleLoading,
     isDeleteingArticleError,
     deleteArticleError,
-    
   } = useArticles();
 
-  
-  if(isLoading) return <PageLoader />;
+  if (isLoading) return <PageLoader />;
   if (isError || !articlesData) {
-       return (
-         <table className="flex items-center justify-center h-full">
-           <tbody>
-             <TableErrorUI
-               message={error?.message}
-               onRetry={() => refetch()}
-               onloading={isFetching}
-             />
-           </tbody>
-         </table>
-       );
-     }
+    return (
+      <table className="flex items-center justify-center h-full">
+        <tbody>
+          <TableErrorUI
+            message={error?.message}
+            onRetry={() => refetch()}
+            onloading={isFetching}
+          />
+        </tbody>
+      </table>
+    );
+  }
 
-     const {
-       totalArticles,
-       adminArticles,
-       doctorArticles,
-       newArticlesThisMonth,
-       adminArticlesPercentage,
-       doctorArticlesPercentage,
-       articlesList,
-     } = articlesData;
+  const {
+    totalArticles,
+    adminArticles,
+    doctorArticles,
+    newArticlesThisMonth,
+    adminArticlesPercentage,
+    doctorArticlesPercentage,
+    articlesList,
+  } = articlesData;
 
   const allArticles = articlesList ?? [];
 
@@ -392,66 +389,74 @@ function ArticlesManagementPage() {
   };
 
   const handleSubmit = (data) => {
-      if (data._id)  {
-        updateArticleMutation(data, {
-          onSuccess: () =>
-            setFormModal({ open: false, mode: "add", article: null }),
-          onError: () => setOpenErrorUiDialog(true),
-        });
-
-      }else {
-        addNewArticleMutation(data, {
-        onSuccess: () => setFormModal({ open: false, mode: "add", article: null }),
-        onError: () => setOpenErrorUiDialog(true)
-
-       })}
-   
+    if (data._id) {
+      updateArticleMutation(data, {
+        onSuccess: () =>
+          setFormModal({ open: false, mode: "add", article: null }),
+        onError: () => setOpenErrorUiDialog(true),
+      });
+    } else {
+      addNewArticleMutation(data, {
+        onSuccess: () =>
+          setFormModal({ open: false, mode: "add", article: null }),
+        onError: () => setOpenErrorUiDialog(true),
+      });
+    }
   };
 
-  const handleToggleStatues= (articleId)=>{
-
-
+  const handleToggleStatues = (articleId) => {
     toggleIsFeaturedStatusMutation(articleId, {
       onSuccess: () => console.log("تم التحديث"),
       onError: () => setOpenErrorUiDialog(true),
     });
-  }
-
+  };
 
   const handleDeleteArticle = (articleId, title) => {
-     confirm({
-       title: "حذف مقال",
-       message: `هل أنت متأكد من انك تريد حذف المقالة '${title}' هذه العملية لا يمكن التراجع عنها`,
-       variant: "danger",
-       onConfirm: () => {
-         deleteArticleMutation(
-            articleId,
-           {
-             onSuccess: () => {
-               close();
-             },
-             onError: () => {
-               close();
-               setOpenErrorUiDialog(true)
-             },
-           },
-         );
-       },
-     });
-  
-  }
-  
+    confirm({
+      title: "حذف مقال",
+      message: `هل أنت متأكد من انك تريد حذف المقالة '${title}' هذه العملية لا يمكن التراجع عنها`,
+      variant: "danger",
+      onConfirm: () => {
+        deleteArticleMutation(articleId, {
+          onSuccess: () => {
+            close();
+          },
+          onError: () => {
+            close();
+            setOpenErrorUiDialog(true);
+          },
+        });
+      },
+    });
+  };
 
   return (
     <>
-      {(isAddingNewArticleError || isUpdateingArticleError || isDeleteingArticleError || isToggleIsFeaturedStatusError) && openErrorUiDialog && (
-        <ErrorUIDialog
-          title="حدث خطأ"
-          message="تعذر حذف المقالة يرجى المحاولة لاحقا"
-          onClose={() => setOpenErrorUiDialog(false)}
-          error={deleteArticleError || addNewArticleError || updateArticleError || toggleIsFeaturedStatusError}
-        />
-      )}
+      {(isAddingNewArticleError ||
+        isUpdateingArticleError ||
+        isDeleteingArticleError ||
+        isToggleIsFeaturedStatusError) &&
+        openErrorUiDialog && (
+          <ErrorUIDialog
+            title="حدث خطأ"
+            message={
+              isDeleteingArticleError
+                ? "تعذر حذف المقالة يرجى المحاولة لاحقًا"
+                : isAddingNewArticleError
+                  ? "تعذر إضافة المقالة يرجى المحاولة لاحقًا"
+                  : isUpdateingArticleError
+                    ? "تعذر تحديث المقالة يرجى المحاولة لاحقًا"
+                    : "تعذر تحديث حالة المقالة يرجى المحاولة لاحقًا"
+            }
+            onClose={() => setOpenErrorUiDialog(false)}
+            error={
+              deleteArticleError ||
+              addNewArticleError ||
+              updateArticleError ||
+              toggleIsFeaturedStatusError
+            }
+          />
+        )}
 
       {confirmState && (
         <ConfirmModal
@@ -684,7 +689,9 @@ function ArticlesManagementPage() {
                 onDelete={() => handleDeleteArticle(a._id, a.title)}
                 onDetail={() => setDetailArticle(a)}
                 onToggle={() => handleToggleStatues(a._id)}
-                isLoading={isToggleIsFeaturedStatusLoading || isDeleteingArticleLoading}
+                isLoading={
+                  isToggleIsFeaturedStatusLoading || isDeleteingArticleLoading
+                }
               />
             ))
           )}
