@@ -2,9 +2,8 @@ import { publicApi } from "./axios.js";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 
-
-
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+const baseURL = "http://localhost:3000/api";
+// import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
   throw new Error(
@@ -88,21 +87,19 @@ export const useProfileApi = () => {
   const updateRegisterData = async (profile) => {
     const { data } = await api.put("/doctor/update-register/data", profile);
     return data;
-  }
+  };
 
   const updateProfile = async (profile) => {
-    
     const formData = new FormData();
 
-    for(const key in profile){
+    for (const key in profile) {
       formData.append(key, profile[key]);
     }
 
     const { data } = await api.put("/doctor/update-profile", formData);
-    
+
     return data;
-    
-  }
+  };
 
   const updateClinicData = async (clinicData) => {
     const { data } = await api.put("/doctor/update-clinic/data", clinicData);
@@ -111,10 +108,10 @@ export const useProfileApi = () => {
   };
 
   const updateAppointmentSetting = async (appData) => {
-    const {data} = await api.put("/doctor/update-appointment/data", appData);
+    const { data } = await api.put("/doctor/update-appointment/data", appData);
 
     return data;
-  }
+  };
 
   return {
     getProfile,
@@ -122,5 +119,50 @@ export const useProfileApi = () => {
     updateProfile,
     updateClinicData,
     updateAppointmentSetting,
+  };
+};
+
+export const useArticleApi = () => {
+  const api = useApi();
+  const getArticles = async () => {
+    const { data } = await api.get("/articles/doctor");
+    return data;
+  };
+
+  const addNewArticle = async (articleData) => {
+    const formData = new FormData();
+
+    for (const key in articleData) {
+      formData.append(key, articleData[key]);
+    }
+
+    const { data } = await api.post("/articles/add", formData);
+
+    return data.data;
+  };
+
+    const updateArticle = async (articleData) => {
+      const formData = new FormData();
+
+      for (const key in articleData) {
+        formData.append(key, articleData[key]);
+      }
+
+      const { data } = await api.put("/articles/update", formData);
+
+      return data.data;
+    };
+
+    const deleteArticle = async (articleId) => {
+      const { data } = await api.delete(`/articles/delete/${articleId}`);
+
+      return data.data;
+    };
+
+  return {
+    getArticles,
+    addNewArticle,
+    updateArticle,
+    deleteArticle,
   };
 };

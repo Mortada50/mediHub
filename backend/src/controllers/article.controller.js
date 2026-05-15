@@ -3,6 +3,7 @@ import { Admin } from "../models/Admin.model.js";
 import { Doctor } from "../models/Doctor.model.js";
 import { Article } from "../models/Articles.model.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
+import { mongo } from "mongoose";
 
 export const getAllArticles = async (req, res) => {
   try {
@@ -72,7 +73,7 @@ export const getAllArticles = async (req, res) => {
 export const addNewArticle = async (req, res) => {
   try {
     const { userRole, mongoId } = req;
-    const { title, description, content, category, isFeatured } = req.body;
+    const { title, description, content, category, isFeatured = false } = req.body;
 
     if (!title || !description || !content || !category) {
       return sendError(res, "العنوان والوصف والتصنيف والمحتوى مطلوب", 400);
@@ -84,15 +85,15 @@ export const addNewArticle = async (req, res) => {
       const doctor = await Doctor.findById(mongoId);
       if (!doctor) return sendError(res, "الطبيب غير موجود", 404);
 
-      authorName = doctor.fullName;
-      authorSpecialty = doctor.speciality;
-      authorAvatar = doctor.avatar;
+      authorName = doctor?.fullName;
+      authorSpecialty = doctor?.speciality;
+      authorAvatar = doctor?.avatar;
     } else if (userRole === "admin") {
       const admin = await Admin.findById(mongoId);
       if (!admin) return sendError(res, "المسؤل غير موجود", 404);
 
-      authorName = admin.name;
-      authorAvatar = admin.avatar;
+      authorName = admin?.name;
+      authorAvatar = admin?.avatar;
     }
 
     const article = new Article({
@@ -127,7 +128,7 @@ export const updateArticle = async (req, res) => {
       description,
       content,
       category,
-      isFeatured,
+      isFeatured = false,
       imagePreview,
     } = req.body;
 
@@ -222,3 +223,28 @@ export const deleteArticle = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getDoctorArticles = async (req, res) => {
+
+  try {
+    const {mongoId} = req;
+
+    if (!mongoId) return sendError( res ,'معرف الطبيب مطلوب ' , 400 );
+
+    const doctor = await Doctor.findById(mongoId)
+     
+    if (!doctor) return sendError(res, 'هذا الطبيب غير موجود ',404)
+
+    const articles = await Article.find({author: mongoId})
+
+    const totalArticles = articles?.length || 0 
+
+    const totalFeatureArticles = articles?.filter(article => article?.isFeatured).length || 0
+
+    sendSuccess(res, {articles, totalArticles, totalFeatureArticles}, '', 200)
+    
+  } catch (error) {
+    console.error(error);
+    return sendError(res, "هناك خطأ", 500, error);
+  }
+}
