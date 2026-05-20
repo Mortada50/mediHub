@@ -71,6 +71,7 @@ function RegisterPage() {
   const [form, setForm] = useState(INITIAL);
 
   const [loading, setLoading] = useState(false);
+  const [isVirficationLoading, setIsVirficationLoading] = useState(false);
   const [error, setErrors] = useState({});
 
   const [verCode, setVerCode] = useState(["", "", "", "", "", ""]);
@@ -304,6 +305,21 @@ function RegisterPage() {
       setErrors(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resendVerificationCode = async () => {
+    if (!isLoaded) return;
+    setIsVirficationLoading(true)
+    try {
+      
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    } catch (error) {
+      console.log(error);
+      setIsVirficationLoading(false)
+      
+    }finally{
+      setIsVirficationLoading(false)
     }
   };
 
@@ -864,7 +880,7 @@ function RegisterPage() {
               {/* زر التحقق */}
               <button
                 type="submit"
-                disabled={loading || verCode.some((v) => !v)}
+                disabled={loading || verCode.some((v) => !v) || isVirficationLoading}
                 onClick={handleStep3}
                 className="w-full h-[50px] bg-primary text-white rounded-md font-black text-lg flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 transition-opacity">
                 {loading ? (
@@ -879,19 +895,22 @@ function RegisterPage() {
                 <p className="text-sm text-gray-500">
                   لم يصلك الكود؟{" "}
                   <button
-                    disabled={loading}
+                    disabled={loading || isVirficationLoading}
                     className="text-primary text-xs font-normal cursor-pointer hover:underline"
                     onClick={() => {
                       setVerCode(["", "", "", "", "", ""]);
-                      handleStep2();
+                      resendVerificationCode();
                     }}>
-                    أعد الارسال
+                   {isVirficationLoading ? (
+                      <LoaderIcon className="size-4 animate-spin" />
+
+                   ) : ("أعد الارسال")}
                   </button>
                 </p>
                 <p className="text-sm text-gray-500">
                   لديك حساب؟{" "}
                   <button
-                    disabled={loading}
+                    disabled={loading || isVirficationLoading}
                     onClick={() => navigate("/login")}
                     className="text-primary text-xs font-normal cursor-pointer hover:underline">
                     اضغط هنا

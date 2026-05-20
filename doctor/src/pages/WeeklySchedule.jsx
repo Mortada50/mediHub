@@ -688,10 +688,10 @@ function WeekStrip({ weekDates, schedule }) {
                 {d.date}
               </span>
               <div className="flex flex-col gap-1 mt-2 w-full">
-                {!dayData?.isActive || !hasActive || weekDates?.isOnLeave ? (
+                {!dayData?.isActive || !hasActive || d?.isOnLeave ? (
                   <div className="h-[22px] bg-gray-200 rounded-lg flex items-center justify-center">
                     <span className="text-gray-400 text-[10px] font-semibold">
-                      {weekDates?.isOnLeave ? "إجازة" : "عطلة"}
+                      {d?.isOnLeave ? "إجازة" : "عطلة"}
                     </span>
                   </div>
                 ) : (
@@ -827,6 +827,7 @@ export default function WeeklySchedule() {
     );
     if (error) {
       showError(error);
+      return;
     }
     
     updateSessionMutation(

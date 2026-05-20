@@ -59,14 +59,9 @@ export const getWeeklySchedule = async (req, res) => {
       return {
         ...d,
         date: dayDate.getDate(),
-        fullDate: dateStr,
         isToday,
-        // isOnLeave: صح إذا اليوم إجازة (غير الجمعة)
         isOnLeave: !!leaveData,
-        // الجدول والجلسات
         isActive: scheduleDay?.isActive ?? false,
-        sessions:
-          !leaveData && scheduleDay?.sessions ? scheduleDay.sessions : [],
       };
     });
 
@@ -438,8 +433,10 @@ function checkOverlap(newSession, existingSessions) {
 
 function toDateStr(date) {
   const d = new Date(date);
-  return d.toISOString().split("T")[0];
-}
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 
 // ════════════════════════════════════════════════════════════════
 // HELPER: يتحقق إذا كان تاريخ معين يقع ضمن إجازة

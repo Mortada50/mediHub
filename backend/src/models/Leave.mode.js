@@ -21,17 +21,34 @@ const leaveSchema = new mongoose.Schema(
     // For single-day leave
     date: {
       type: Date,
+      required: function () {
+        return this.leaveType === "single";
+      },
       default: null,
     },
 
     // For range leave
     startDate: {
       type: Date,
+      required: function () {
+        return this.leaveType === "range";
+      },
       default: null,
     },
     endDate: {
       type: Date,
+      required: function () {
+        return this.leaveType === "range";
+      },
       default: null,
+      validate: {
+        validator: function (v) {
+          return (
+            this.leaveType !== "range" || !this.startDate || v >= this.startDate
+          );
+        },
+        message: "تاريخ النهاية يجب أن يكون بعد أو يساوي تاريخ البداية",
+      },
     },
 
     // Computed duration in days (virtual or stored)
@@ -54,8 +71,6 @@ const leaveSchema = new mongoose.Schema(
       enum: ["upcoming", "active", "ended", "cancelled"],
       default: "upcoming",
     },
-
-
   },
   {
     timestamps: true, // createdAt, updatedAt
@@ -81,6 +96,8 @@ leaveSchema.virtual("dateLabel").get(function () {
 
 // ─── Pre-save Hook ───────────────────────────────────────────
 leaveSchema.pre("save", function (next) {
+  if (this.status === "cancelled") return next();
+
   // Auto-compute durationDays for range leaves
   if (this.leaveType === "range" && this.startDate && this.endDate) {
     const ms = new Date(this.endDate) - new Date(this.startDate);
@@ -115,7 +132,6 @@ leaveSchema.index({ startDate: 1, endDate: 1 });
 
 // ─── Model ───────────────────────────────────────────────────
 export const Leave = mongoose.model("Leave", leaveSchema);
-
 
 /*
  ── Example Document ────────────────────────────────────────────
