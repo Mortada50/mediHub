@@ -140,23 +140,23 @@ export const useArticleApi = () => {
     return data.data;
   };
 
-    const updateArticle = async (articleData) => {
-      const formData = new FormData();
+  const updateArticle = async (articleData) => {
+    const formData = new FormData();
 
-      for (const key in articleData) {
-        formData.append(key, articleData[key]);
-      }
+    for (const key in articleData) {
+      formData.append(key, articleData[key]);
+    }
 
-      const { data } = await api.put("/articles/update", formData);
+    const { data } = await api.put("/articles/update", formData);
 
-      return data.data;
-    };
+    return data.data;
+  };
 
-    const deleteArticle = async (articleId) => {
-      const { data } = await api.delete(`/articles/delete/${articleId}`);
+  const deleteArticle = async (articleId) => {
+    const { data } = await api.delete(`/articles/delete/${articleId}`);
 
-      return data.data;
-    };
+    return data.data;
+  };
 
   return {
     getArticles,
@@ -165,3 +165,69 @@ export const useArticleApi = () => {
     deleteArticle,
   };
 };
+
+export const useScheduleApi = () => {
+  const api = useApi();
+
+  const getSchedule = async () => {
+    const { data } = await api.get("/schedule");
+
+    return data.data;
+  };
+
+  const toggleDay = async (dayNumber, name) => {
+    const { data } = await api.patch(`/schedule/day/${dayNumber}/toggle`, {
+      name,
+    });
+    return data.data;
+  };
+
+  const addSession = async (dayNumber, type, startTime, endTime) => {
+    const { data } = await api.post(`/schedule/day/${dayNumber}/session`, {
+      type,
+      startTime,
+      endTime,
+    });
+    return data.data;
+  };
+
+  const deleteSession = async (dayNumber, sessionId) => {
+    const { data } = await api.delete(
+      `/schedule/day/${dayNumber}/session/${sessionId}`,
+    );
+    return data.data;
+  };
+
+  const clearDaySessions = async (dayNumber) => {
+    const { data } = await api.delete(`/schedule/day/${dayNumber}/sessions`);
+
+    return data.data;
+  };
+
+  const toggleSession = async (dayNumber, sessionId) => {
+    const { data } = await api.patch(
+      `/schedule/day/${dayNumber}/session/${sessionId}/toggle`,
+    );
+
+    return data.data;
+  };
+
+  const updateSession = async (dayNumber, sessionId, startTime, endTime) => {
+    const { data } = await api.put(
+      `/schedule/day/${dayNumber}/session/${sessionId}`,
+      { startTime, endTime },
+    );
+    return data.data;
+  };
+
+  return {
+    getSchedule,
+    toggleDay,
+    addSession,
+    deleteSession,
+    clearDaySessions,
+    toggleSession,
+    updateSession,
+  };
+};
+

@@ -16,6 +16,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import medicineRoutes from "./routes/medicine.routes.js";
 import articlesRoutes from "./routes/articles.routes.js";
 import locationRoutes from "./routes/location.routes.js";
+import scheduleRoutes from "./routes/schedule.routes.js";
 const app = express();
 app.set("trust proxy", 1);
 
@@ -48,6 +49,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/articles", articlesRoutes);
 app.use("/api/location", locationRoutes);
+app.use("/api/schedule", scheduleRoutes);
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Hello mediHub" });
 });

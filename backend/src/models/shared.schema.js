@@ -8,6 +8,10 @@ export const sessionSchema = new mongoose.Schema(
       type: String,
       enum: ["صباحا", "مساء"],
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     startTime: {
       type: String,
       required: true,
@@ -34,7 +38,10 @@ export const weeklyScheduleSchema = new mongoose.Schema(
     day: {
       type: String,
       enum: DAYS_OF_WEEK,
-      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true
     },
     dayNumber: {
       type: Number,

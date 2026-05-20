@@ -6,27 +6,7 @@ import {
   locationSchema,
 } from "./shared.schema.js";
 
-// ───── Vacation Schema ─────
-const vacationSchema = new mongoose.Schema(
-  {
-    startDate: {
-      type: String, // YYYY-MM-DD
-      required: true,
-      match: [/^\d{4}-\d{2}-\d{2}$/, "صيغة التاريخ غير صحيحة (YYYY-MM-DD)"],
-    },
-    endDate: {
-      type: String,
-      required: true,
-      match: [/^\d{4}-\d{2}-\d{2}$/, "صيغة التاريخ غير صحيحة (YYYY-MM-DD)"],
-    },
-    reason: {
-      type: String,
-      trim: true,
-      maxlength: [500, "سبب الإجازة يجب ألا يتجاوز 500 حرف"],
-    },
-  },
-  { _id: true, timestamps: true },
-);
+
 
 // ───── Doctor Schema ─────
 const doctorSchema = new mongoose.Schema(
@@ -116,7 +96,6 @@ const doctorSchema = new mongoose.Schema(
 
     // ── Schedule ──
     weeklySchedule: [weeklyScheduleSchema],
-    vacation: [vacationSchema],
 
     // ── Status ──
     status: {
