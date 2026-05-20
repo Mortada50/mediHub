@@ -47,14 +47,15 @@ export const BLOOD_TYPES = [
   "unknown",
 ];
 
+
 export const DAYS_OF_WEEK = [
-  "saturday",
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
+  "السبت",
+  "الأحد",
+  "الإثنين",
+  "الثلاثاء",
+  "الأربعاء",
+  "الخميس",
+  "الجمعة",
 ];
 
 export const DRUGCATEGORIES = [
