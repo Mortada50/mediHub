@@ -1,6 +1,6 @@
 import { sendError, sendSuccess } from "../utils/response.js";
 import { Doctor } from "../models/Doctor.model.js";
-import { Leave } from "../models/Leave.mode.js";
+import { Leave } from "../models/Leave.model.js";
 
 export const getWeeklySchedule = async (req, res) => {
   try {

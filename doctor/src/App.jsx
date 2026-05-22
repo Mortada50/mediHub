@@ -13,6 +13,7 @@ import WeeklySchedule from "./pages/WeeklySchedule";
 import ClinicSetting from "./pages/ClinicSetting";
 import AppointmentManagement from "./pages/AppointmentManagement";
 import Profile from "./pages/Profile";
+import LeavesManagementPage from "./pages/LeavesManagementPage";
 
 function App() {
    const { isSignedIn, isLoaded } = useAuth();
@@ -84,6 +85,7 @@ function App() {
         <Route index element={<Navigate to={"dashboard"} />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="weekly-schedule" element={<WeeklySchedule />} />
+        <Route path="leaves-management" element={<LeavesManagementPage />} />
         <Route path="clinic" element={<ClinicSetting />} />
         <Route
           path="articles-management"
