@@ -231,3 +231,36 @@ export const useScheduleApi = () => {
   };
 };
 
+export const useLeavesApi = () => {
+  const api = useApi();
+
+  const getLeaves = async () => {
+    const { data } = await api.get("/leaves");
+    return data.data;
+  };
+
+  const addLeave = async (leaveData) => {
+    const { data } = await api.post("/leaves", leaveData);
+    return data.data;
+  }
+
+  const deleteLeave = async (leaveId) => {
+    const { data } = await api.delete(`/leaves/${leaveId}`);
+    return data.data;
+  };
+
+  const cancelLeave = async (leaveId) => {
+    const { data } = await api.patch(`/leaves/${leaveId}`);
+    return data.data;
+  }
+
+  return {
+    getLeaves,
+    addLeave,
+    deleteLeave,
+    cancelLeave,
+  };
+}
+
+
+  

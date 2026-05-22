@@ -95,22 +95,31 @@ leaveSchema.virtual("dateLabel").get(function () {
 });
 
 // ─── Pre-save Hook ───────────────────────────────────────────
-leaveSchema.pre("save", function (next) {
-  if (this.status === "cancelled") return next();
+leaveSchema.pre("save", function () {
+  if (this.status === "cancelled") return;
 
   // Auto-compute durationDays for range leaves
   if (this.leaveType === "range" && this.startDate && this.endDate) {
     const ms = new Date(this.endDate) - new Date(this.startDate);
-    this.durationDays = Math.ceil(ms / (1000 * 60 * 60 * 24)) + 1;
+
+    this.durationDays =
+      Math.ceil(ms / (1000 * 60 * 60 * 24)) + 1;
   } else {
     this.durationDays = 1;
   }
 
-  // Auto-update status based on current date
+  // Auto-update status
   const now = new Date();
-  const effectiveEnd = this.leaveType === "single" ? this.date : this.endDate;
+
   const effectiveStart =
-    this.leaveType === "single" ? this.date : this.startDate;
+    this.leaveType === "single"
+      ? this.date
+      : this.startDate;
+
+  const effectiveEnd =
+    this.leaveType === "single"
+      ? this.date
+      : this.endDate;
 
   if (effectiveEnd && new Date(effectiveEnd) < now) {
     this.status = "ended";
@@ -121,9 +130,9 @@ leaveSchema.pre("save", function (next) {
     new Date(effectiveEnd) >= now
   ) {
     this.status = "active";
+  } else {
+    this.status = "upcoming";
   }
-
-  next();
 });
 
 // ─── Indexes ─────────────────────────────────────────────────

@@ -8,7 +8,8 @@ import {
   CalendarDays,
   Hospital,
   CalendarClock,
-  UserCircle2
+  UserCircle2,
+  CalendarCheck
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "@clerk/clerk-react";
@@ -26,6 +27,11 @@ const NAV_ITEMS = [
     icon: CalendarClock,
     label: "إدارة المواعيد",
     path: "/appointment-management",
+  },
+  {
+    icon: CalendarCheck,
+    label: "إدارة الإجازات",
+    path: "/leaves-management",
   },
   { icon: MessageCircle, label: "الإستشارات", path: "/chats" },
   { icon: UserCircle2, label: "الملف الشخصي", path: "/profile" },
