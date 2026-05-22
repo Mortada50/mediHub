@@ -526,20 +526,20 @@ export default function LeavesManagementPage() {
         setOverlapError("");
       },
       onError: () => {
-        setErrorMsg(addLeaveError?.data?.message);
+        setErrorMsg(addLeaveError?.data?.message || addLeaveError?.message || "حدث خطأ اثناء إضافة الإجازة");
       },
     });
   };
 
   const handleDelete = (id) => {
     deleteLeaveMutation(id, {
-      onError: () => setErrorMsg(deleteLeaveError?.data?.message),
+      onError: () => setErrorMsg(deleteLeaveError?.data?.message || deleteLeaveError?.message || "حدث خطأ اثناء حذف الإجازة"),
     });
   };
 
   const handleCancel = (id) => {
     cancelLeaveMutation(id, {
-      onError: () => setErrorMsg(cancelLeaveError?.data?.message),
+      onError: () => setErrorMsg(cancelLeaveError?.data?.message || cancelLeaveError?.message || "حدث خطأ اثناء إلغاء الإجازة"),
     });
   };
 
@@ -717,9 +717,8 @@ export default function LeavesManagementPage() {
           {/* FORM FOOTER */}
           <div className="flex items-center gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50">
             <button
-              disabled={isAddingLeaveLoading || !reason || !hasSelection}
+              disabled={isAddingLeaveLoading || !reason.trim() || !hasSelection}
               onClick={handleSave}
-              disabled={!hasSelection}
               className="flex items-center gap-2 px-5 h-[40px] bg-primary text-white rounded-xl text-sm font-black hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               <Save size={14} />
               {isAddingLeaveLoading ? (

@@ -5,11 +5,12 @@ export const getLeaves = async (req, res) => {
   try {
     const { mongoId } = req;
 
-    const leaves = await Leave.find({ doctorId: mongoId }).sort({ createdAt: -1 });
+    const leaves = await Leave.find({ doctorId: mongoId }).sort({
+      createdAt: -1,
+    });
 
     return sendSuccess(res, { leaves }, "تم جلب الإجازات بنجاح");
-  
-} catch (error) {
+  } catch (error) {
     console.error("getLeaves error:", error);
     return sendError(res, "خطأ في جلب الإجازات", 500);
   }
@@ -19,8 +20,6 @@ export const addLeave = async (req, res) => {
   try {
     const { mongoId } = req;
     const { leaveType, date, startDate, endDate, reason } = req.body;
-    console.log(leaveType, date, startDate, endDate, reason);
-
 
     if (!leaveType || !["single", "range"].includes(leaveType)) {
       return sendError(res, "نوع الإجازة غير صالح (single أو range)", 400);
@@ -34,8 +33,24 @@ export const addLeave = async (req, res) => {
       return sendError(res, "تاريخ البداية والنهاية مطلوبان", 400);
     }
 
+    const parsedDate = date ? new Date(date) : null;
+    const parsedStartDate = startDate ? new Date(startDate) : null;
+    const parsedEndDate = endDate ? new Date(endDate) : null;
+    const isInvalidDate = (value) => value && Number.isNaN(value.getTime());
+
+    if (leaveType === "single" && isInvalidDate(parsedDate)) {
+      return sendError(res, "صيغة تاريخ الإجازة غير صالحة", 400);
+    }
+
+    if (
+      leaveType === "range" &&
+      (isInvalidDate(parsedStartDate) || isInvalidDate(parsedEndDate))
+    ) {
+      return sendError(res, "صيغة تاريخ البداية أو النهاية غير صالحة", 400);
+    }
+
     if (leaveType === "range") {
-      if (new Date(endDate) < new Date(startDate)) {
+      if (parsedEndDate < parsedStartDate) {
         return sendError(
           res,
           "تاريخ النهاية يجب أن يكون بعد تاريخ البداية",
@@ -46,18 +61,18 @@ export const addLeave = async (req, res) => {
 
     const overlapError = await checkLeaveOverlap(mongoId, {
       leaveType,
-      date,
-      startDate,
-      endDate,
+      date: parsedDate,
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
     });
     if (overlapError) return sendError(res, overlapError, 400);
 
     const leave = new Leave({
       doctorId: mongoId,
       leaveType,
-      date: leaveType === "single" ? new Date(date) : null,
-      startDate: leaveType === "range" ? new Date(startDate) : null,
-      endDate: leaveType === "range" ? new Date(endDate) : null,
+      date: leaveType === "single" ? parsedDate : null,
+      startDate: leaveType === "range" ? parsedStartDate : null,
+      endDate: leaveType === "range" ? parsedEndDate : null,
       reason: reason || "",
     });
 
@@ -77,7 +92,7 @@ export const deleteLeave = async (req, res) => {
   try {
     const { mongoId } = req;
     const { leaveId } = req.params;
-    console.log(leaveId);
+
     const leave = await Leave.findOne({ _id: leaveId, doctorId: mongoId });
     if (!leave) return sendError(res, "الإجازة غير موجودة", 404);
 
@@ -97,7 +112,7 @@ export const deleteLeave = async (req, res) => {
 export const cancelLeave = async (req, res) => {
   try {
     const { mongoId } = req;
-    const  { leaveId }  = req.params;
+    const { leaveId } = req.params;
 
     const leave = await Leave.findOne({ _id: leaveId, doctorId: mongoId });
     if (!leave) return sendError(res, "الإجازة غير موجودة", 404);
@@ -119,7 +134,6 @@ export const cancelLeave = async (req, res) => {
     return sendError(res, "خطأ في إلغاء الإجازة", 500);
   }
 };
-
 
 // Helper function to check for overlapping leaves
 async function checkLeaveOverlap(doctorId, newLeave, excludeId = null) {
