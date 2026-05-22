@@ -13,6 +13,7 @@ import {
 import { useSchedule } from "../hooks/useSchedule.js";
 import PageLoader from "../components/PageLoader.jsx";
 import TableErrorUI from "../components/TableErrorUi.jsx";
+import ErrorToast from "../components/ErrorToast.jsx";
 /* ── constants ── */
 const DAYS = [
   { name: "السبت", short: "سب", dayNumber: 0 },
