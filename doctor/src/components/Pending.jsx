@@ -25,11 +25,7 @@ function Pending() {
 
   }
 
-  // const reload = async () => {
-    
-  //   await user.reload();
-  // }
-  // return reload() &&( 
+
   
   useEffect(() => {
       user?.reload?.();

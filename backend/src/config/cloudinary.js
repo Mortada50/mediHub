@@ -49,7 +49,7 @@ const medicineStorage = new CloudinaryStorage({
   params: async (req, file) => ({
     folder: "mediHub/medicines",
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
-    public_id: `medicine-${Date.now()}-${Math.round(Math.random()*1e9)}`,
+    public_id: `medicine-${Date.now()}-${Math.round(Math.random() * 1e9)}`,
     transformation: [
       {
         width: 1000,
@@ -84,11 +84,37 @@ const articleStorage = new CloudinaryStorage({
   },
 });
 
+// ── Chat Media (صور + ملفات) ──
+const chatMediaStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (_req, file) => {
+    const isImage = file.mimetype.startsWith("image/");
+    return {
+      folder: isImage ? "mediHub/chats/images" : "mediHub/chats/files",
+      resource_type: isImage ? "image" : "raw",
+      allowed_formats: [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp",
+        "gif",
+        "pdf",
+        "doc",
+        "docx",
+      ],
+      transformation: isImage
+        ? [{ quality: "auto:good", fetch_format: "auto" }]
+        : [],
+    };
+  },
+});
+
 // ───── File Size Limits ─────
 const licenseFileLimits = { fileSize: 5 * 1024 * 1024 }; // 5MB
 const avatarFileLimits = { fileSize: 2 * 1024 * 1024 }; // 2MB
 const medicineFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 const articleFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
+const chatMediaFileLimits = { fileSize: 10 * 1024 * 1024 }; // 10MB
 
 export const uploadDoctorLicense = multer({
   storage: doctorLicenseStorage,
@@ -116,16 +142,14 @@ export const uploadAvatar = multer({
 export const uploadMedicineImages = multer({
   storage: medicineStorage,
   limits: medicineFileLimits,
-  
-  fileFilter: (req, file, cb) => {
-    
-    if(file.mimetype.startsWith("image/")){
 
-      cb(null,true);
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
     } else {
       cb(new Error("الملفات يجب أن تكون صور"), false);
     }
-  }
+  },
 });
 
 //  Upload Article Images
@@ -141,26 +165,26 @@ export const uploadArticle = multer({
   },
 });
 
+export const uploadChatMedia = multer({
+  storage: chatMediaStorage,
+  limits: chatMediaFileLimits,
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    allowed.includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error("نوع الملف غير مدعوم"), false);
+  },
+});
+
 // ───── Delete file from Cloudinary ─────
-// export const deleteFromCloudinary = async (url) => {
-//   try {
-//     if (!url) return;
-//     // Find the upload segment and extract everything after it (excluding version)
-//     const uploadIndex = url.indexOf("/upload/");
-//     if (uploadIndex === -1) return;
-
-//     // Extract path after /upload/ and remove version prefix (v1234567890/)
-//     const pathAfterUpload = url.slice(uploadIndex + 8);
-//     const pathWithoutVersion = pathAfterUpload.replace(/^v\d+\//, "");
-
-//     // Remove file extension to get publicId
-//     const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
-//     await cloudinary.uploader.destroy(publicId);
-//   } catch (error) {
-//     console.error("Cloudinary delete error:", error.message);
-//   }
-// };
-
 export const deleteFromCloudinary = async (urls) => {
   try {
     if (!urls) return;
@@ -180,7 +204,11 @@ export const deleteFromCloudinary = async (urls) => {
 
         const publicId = pathWithoutVersion.replace(/\.[^/.]+$/, "");
 
-        await cloudinary.uploader.destroy(publicId);
+        const isRaw = url.includes("/raw/upload/");
+        await cloudinary.uploader.destroy(
+          publicId,
+          isRaw ? { resource_type: "raw" } : undefined,
+        );
       }),
     );
   } catch (error) {

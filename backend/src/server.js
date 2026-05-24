@@ -1,10 +1,13 @@
 import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import morgan from "morgan";
 import { ENV } from "./config/env.js";
 import { connectDB } from "./config/db.js";
 import { corsMiddleware } from "./config/cors.js";
 import { generalLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
+import { initSocket } from "./socket/socket.handler.js";
 
 // ───── Routes ─────
 import webhookRoutes from "./webhooks/clerk.webhook.js";
@@ -18,8 +21,29 @@ import articlesRoutes from "./routes/articles.routes.js";
 import locationRoutes from "./routes/location.routes.js";
 import scheduleRoutes from "./routes/schedule.routes.js";
 import leavesRoutes from "./routes/leaves.routes.js";
+import chatRoutes    from "./routes/chat.routes.js";      
 
 const app = express();
+const httpServer = createServer(app);                    
+// ── Socket.IO ──
+const io = new Server(httpServer, {
+  cors: {
+    origin: [
+      ENV.DOCTOR_DASHBOARD_URL,
+      ENV.PHARMACY_DASHBOARD_URL,
+      ENV.ADMIN_DASHBOARD_URL,
+      ENV.PATIENT_APP_URL,
+    ].filter(Boolean),
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  pingTimeout:  60000,
+  pingInterval: 25000,
+});
+
+initSocket(io);
+
+app.set("io", io);
 app.set("trust proxy", 1);
 
 // ───── Connect Database ─────
@@ -53,6 +77,8 @@ app.use("/api/articles", articlesRoutes);
 app.use("/api/location", locationRoutes);
 app.use("/api/schedule", scheduleRoutes);
 app.use("/api/leaves", leavesRoutes);
+app.use("/api/chat", chatRoutes);
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Hello mediHub" });
 });
@@ -61,6 +87,7 @@ app.get("/api/health", (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(ENV.PORT, () => {
+
+httpServer.listen(ENV.PORT, () => {
   console.log(`Server start on port: ${ENV.PORT}`);
 });
