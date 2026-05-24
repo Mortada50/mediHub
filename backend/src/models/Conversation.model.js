@@ -38,8 +38,12 @@ const conversationSchema = new mongoose.Schema(
 
     participants: {
       type: [participantSchema],
+      required: true,
       validate: {
-        validator: (arr) => arr.length === 2,
+        validator: (arr) =>
+          Array.isArray(arr) &&
+          arr.length === 2 &&
+          arr[0]?.userId?.toString() !== arr[1]?.userId?.toString(),
         message: "المحادثة الفردية تحتاج مشاركَين بالضبط",
       },
     },

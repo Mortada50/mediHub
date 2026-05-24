@@ -45,10 +45,12 @@ export const initSocket = (io) => {
       }
 
       const clerkUser = await clerkClient.users.getUser(session.userId);
-      const meta = clerkUser.publicMetadata ?? {};
+      const meta = clerkUser.publicMetadata
+        ? clerkUser.publicMetadata
+        : (clerkUser.unsafeMetadata ?? {});
 
       if (meta.status && meta.status === "pending" || meta.status === "suspended") {
-        return next(new Error("ACCOUNT_INACTIVE"));
+        return next(new Error("الحساب معلق او موقوف"));
       }
 
       // نُرفق البيانات بالسوكيت لاستخدامها لاحقاً
@@ -57,7 +59,7 @@ export const initSocket = (io) => {
 
       next();
     } catch (err) {
-      next(new Error("AUTH_ERROR: " + err.message));
+      next(new Error("خطاء تحقق: " + err.message));
     }
   });
 

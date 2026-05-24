@@ -4,15 +4,12 @@ import { sendSuccess, sendError, sendPaginated } from "../utils/response.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
 import { canChat, chatDeniedMsg } from "../utils/chatPermissions.js";
 
-
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
-
 
 const buildSender = (req) => ({
   userId: req.mongoId,
   role: cap(req.userRole),
 });
-
 
 /**
  * POST /api/chats/conversations
@@ -69,7 +66,7 @@ export const createConversation = async (req, res) => {
 
 /**
  * GET /api/chats/conversations
- * 
+ *
  */
 export const getMyConversations = async (req, res) => {
   try {
@@ -81,7 +78,7 @@ export const getMyConversations = async (req, res) => {
       isActive: true,
     })
       .populate("participants.userId", "fullName avatar") // جلب اسم وصورة كل طرف
-      .populate("lastMessage", "content type sender createdAt isDeleted") 
+      .populate("lastMessage", "content type sender createdAt isDeleted")
       .sort({ lastMessageAt: -1 })
       .lean();
 
@@ -93,7 +90,7 @@ export const getMyConversations = async (req, res) => {
 
 /**
  * GET /api/chats/conversations/:conversationId
- * 
+ *
  */
 export const getConversation = async (req, res) => {
   try {
@@ -118,7 +115,7 @@ export const getConversation = async (req, res) => {
 
 /**
  * DELETE /api/chats/conversations/:conversationId
- * 
+ *
  */
 export const deleteConversation = async (req, res) => {
   try {
@@ -195,7 +192,7 @@ export const getMessages = async (req, res) => {
 
 /**
  * POST /api/chats/conversations/:conversationId/messages
- * 
+ *
  * body: { text, replyTo? }
  */
 export const sendTextMessage = async (req, res) => {
@@ -410,6 +407,15 @@ export const markAsRead = async (req, res) => {
     const { conversationId } = req.params;
     const userId = req.mongoId;
 
+    const inConv = await Conversation.exists({
+      _id: conversationId,
+      "participants.userId": userId,
+      isActive: true,
+    });
+    if (!inConv) {
+      return sendError(res, "المحادثة غير موجودة أو غير مصرح لك", 404);
+    }
+
     await Message.updateMany(
       {
         conversationId,
@@ -442,12 +448,21 @@ export const markAsRead = async (req, res) => {
 
 /**
  * GET /api/chats/conversations/:conversationId/unread-count
- * 
+ *
  */
 export const getUnreadCount = async (req, res) => {
   try {
     const { conversationId } = req.params;
     const userId = req.mongoId;
+
+    const inConv = await Conversation.exists({
+      _id: conversationId,
+      "participants.userId": userId,
+      isActive: true,
+    });
+    if (!inConv) {
+      return sendError(res, "المحادثة غير موجودة أو غير مصرح لك", 404);
+    }
 
     const count = await Message.countDocuments({
       conversationId,
