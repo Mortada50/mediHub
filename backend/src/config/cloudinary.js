@@ -84,11 +84,28 @@ const articleStorage = new CloudinaryStorage({
   },
 });
 
+// ── Chat Media (صور + ملفات) ──
+const chatMediaStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (_req, file) => {
+    const isImage = file.mimetype.startsWith("image/");
+    return {
+      folder:        isImage ? "mediHub/chats/images" : "mediHub/chats/files",
+      resource_type: isImage ? "image" : "raw",
+      allowed_formats: ["jpg", "jpeg", "png", "webp", "gif", "pdf", "doc", "docx"],
+      transformation:  isImage
+        ? [{ quality: "auto:good", fetch_format: "auto" }]
+        : [],
+    };
+  },
+});
+
 // ───── File Size Limits ─────
 const licenseFileLimits = { fileSize: 5 * 1024 * 1024 }; // 5MB
 const avatarFileLimits = { fileSize: 2 * 1024 * 1024 }; // 2MB
 const medicineFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 const articleFileLimits = { fileSize: 4 * 1024 * 1024 }; // 4MB
+const chatMediaFileLimits = { fileSize: 10 * 1024 * 1024 }; // 10MB
 
 export const uploadDoctorLicense = multer({
   storage: doctorLicenseStorage,
@@ -138,6 +155,25 @@ export const uploadArticle = multer({
     } else {
       cb(new Error("الملف يجب أن يكون صورة"), false);
     }
+  },
+});
+
+export const uploadChatMedia = multer({
+  storage: chatMediaStorage,
+  limits: chatMediaFileLimits,
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    allowed.includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error("نوع الملف غير مدعوم"), false);
   },
 });
 

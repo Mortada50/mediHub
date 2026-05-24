@@ -12,7 +12,8 @@ const adminSchema = new mongoose.Schema(
     },
 
     // ── Info ──
-    name: {
+
+    fullName: {
       type: String,
       default: "ميدي هب",
       trim: true,

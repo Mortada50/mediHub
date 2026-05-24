@@ -93,5 +93,5 @@ export const protect = (...roles) => [
   requireAuth,
   loadUser,
   requireRole(...roles),
-  requireActiveStatus,
+  
 ];
