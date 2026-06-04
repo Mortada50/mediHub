@@ -77,7 +77,7 @@ app.use("/api/articles", articlesRoutes);
 app.use("/api/location", locationRoutes);
 app.use("/api/schedule", scheduleRoutes);
 app.use("/api/leaves", leavesRoutes);
-app.use("/api/chat", chatRoutes);
+app.use("/api/chats", chatRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Hello mediHub" });
