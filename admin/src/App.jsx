@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Navigate, Route, Routes } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -14,10 +14,16 @@ import ArticlesManagementPage from "./pages/ArticlesManagementPage";
 import PageLoader from "./components/PageLoader";
 import ForgetPasswordPage from "./pages/ForgetPasswordPage";
 
+import { setAuthToken } from "./lib/axios.js";
+
 
 function App() {
 
-   const { isSignedIn, isLoaded } = useAuth();
+   const { isSignedIn, isLoaded, getToken } = useAuth();
+
+   useEffect(() => {
+     setAuthToken(getToken);
+   }, [getToken]);
 
    if (!isLoaded) return <PageLoader />;
 

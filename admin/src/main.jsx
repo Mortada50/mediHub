@@ -42,7 +42,7 @@ createRoot(document.getElementById("root")).render(
       <ClerkProvider publishableKey={publishableKey}>
         <QueryClientProvider client={queryClient}>
           <App />
-          <ReactQueryDevtools initialIsOpen={false} />
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </QueryClientProvider>
       </ClerkProvider>
     </BrowserRouter>

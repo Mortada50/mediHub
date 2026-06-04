@@ -24,6 +24,8 @@ import PageLoader from "../components/PageLoader.jsx";
 import PharmacyDetailModal from "../components/PharmacyDetailModal.jsx";
 import TableErrorUI from "../components/TableErrorUi.jsx";
 import { useConfirm } from "../hooks/useConfirm.js";
+import { useStartChat } from "../hooks/useStartChat.js";
+
 
 //  STATUS BADGE
 const StatusBadge = ({ status }) => {
@@ -57,6 +59,8 @@ function PharmacyManagementPage() {
 
   const { usersData, isLoading, isError, error, refetch, isFetching } =
     useUsers("pharmacy");
+  const { startChat, isLoading: isChatLoading } = useStartChat();
+
   const {
     ChangeApprovalStatusError,
     changeApprovalStatusMutation,
@@ -395,7 +399,13 @@ function PharmacyManagementPage() {
                             <MoreHorizontal size={16} />
                           </button>
                           <button
-                            // onClick={() => handleDeleteUser(user)}
+                            onClick={() =>
+                              startChat({
+                                participantId: user._id,
+                                participantRole: "pharmacy",
+                              })
+                            }
+                            disabled={isChatLoading}
                             className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors cursor-pointer">
                             <MessageSquareText
                               size={16}

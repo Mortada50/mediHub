@@ -1,4 +1,6 @@
 import { clerkClient } from "@clerk/clerk-sdk-node";
+import { verifyToken } from "@clerk/backend";
+import { ENV } from "../config/env.js";
 
 /**
  * Socket.IO Handler — MediHub
@@ -27,29 +29,29 @@ export const initSocket = (io) => {
 
   io.use(async (socket, next) => {
     try {
-    //   todo: check the user sessionId and token sent from the client
       const { token, sessionId } = socket.handshake.auth ?? {};
-
       if (!token || !sessionId) {
-
         return next(new Error("AUTH_MISSING"));
       }
 
-      const session = await clerkClient.sessions.verifySession(
-        sessionId,
-        token,
-      );
+      const payload = await verifyToken(token, {
+        secretKey: ENV.CLERK_SECRET_KEY,
+      });
 
-      if (!session || session.status !== "active") {
+
+      if (!payload || payload.sts !== "active") {
         return next(new Error("AUTH_INVALID"));
       }
 
-      const clerkUser = await clerkClient.users.getUser(session.userId);
+      const clerkUser = await clerkClient.users.getUser(payload.sub);
       const meta = clerkUser.publicMetadata
         ? clerkUser.publicMetadata
         : (clerkUser.unsafeMetadata ?? {});
 
-      if (meta.status && meta.status === "pending" || meta.status === "suspended") {
+      if (
+        (meta.status && meta.status === "pending") ||
+        meta.status === "suspended"
+      ) {
         return next(new Error("الحساب معلق او موقوف"));
       }
 

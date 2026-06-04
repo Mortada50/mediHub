@@ -53,7 +53,7 @@ function DashboardLayout() {
               width: "100%",
             }}
             className="p-6 pt-3 pr-3">
-            <Outlet />
+            <Outlet context={{ isSidebarOpen }} />
           </main>
 
           <Sidebar
