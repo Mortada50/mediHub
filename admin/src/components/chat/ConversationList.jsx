@@ -9,7 +9,6 @@ const ROLE_LABEL = {
 };
 
 const getOther = (conv, myId) => {
-
   return (
     conv.participants?.find((p) => String(p.userId._id) !== String(myId)) ?? {}
   );
@@ -30,8 +29,18 @@ const lastPreview = (conv) => {
   const m = conv.lastMessage;
   if (!m) return "لا توجد رسائل";
   if (m.isDeleted) return "تم حذف الرسالة";
-  if (m.type === "image") return <span className="flex items-center gap-1"><Camera size={12} /> صورة</span>;
-  if (m.type === "file") return <span className="flex items-center gap-1"><File size={12} /> ملف</span>;
+  if (m.type === "image")
+    return (
+      <span className="flex items-center gap-1">
+        <Camera size={12} /> صورة
+      </span>
+    );
+  if (m.type === "file")
+    return (
+      <span className="flex items-center gap-1">
+        <File size={12} /> ملف
+      </span>
+    );
   return m.content?.text ?? "";
 };
 
@@ -49,10 +58,10 @@ export default function ConversationList({
   const filtered = conversations.filter((c) => {
     if (!search.trim()) return true;
     const o = getOther(c, myId);
-    return (
-      o?.userId?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      ROLE_LABEL[o?.role]?.includes(search)
-    );
+    const q = search.toLowerCase();
+    const fullName = o?.userId?.fullName?.toLowerCase() ?? "";
+    const roleLabel = ROLE_LABEL[o?.role] ?? "";
+    return fullName.includes(q) || roleLabel.includes(search);
   });
 
   return (
@@ -101,10 +110,12 @@ export default function ConversationList({
           filtered.map((conv) => {
             const other = getOther(conv, myId);
             const isActive = conv._id === activeConvId;
-            const isOnline = onlineUsers?.has(other?.userId?.toString());
+            const otherUserId = String(
+              other?.userId?._id ?? other?.userId ?? "",
+            );
+            const isOnline = onlineUsers?.has(otherUserId);
             const isTyping = typingMap?.[conv._id];
             const unread = conv._unread ?? 0;
-            
 
             return (
               <button
@@ -112,9 +123,7 @@ export default function ConversationList({
                 onClick={() => onSelect(conv._id)}
                 className={`border-b-1 border-primary/10 w-full flex items-center gap-3 px-4 py-3 text-right transition-colors 
                   hover:bg-background
-                  ${
-                    isActive ? "bg-background rounded-sm" : ""
-                  }`}>
+                  ${isActive ? "bg-background rounded-sm" : ""}`}>
                 {/* Avatar */}
                 <div className="relative shrink-0">
                   <div

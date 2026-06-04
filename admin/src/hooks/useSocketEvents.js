@@ -45,7 +45,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
             c._id === cid
               ? {
                   ...c,
-                  lastMessage:   msg,
+                  lastMessage: msg,
                   lastMessageAt: msg.createdAt,
                   // زيادة العداد فقط إذا المحادثة مش مفتوحة
                   _unread: cid === activeConvId ? 0 : (c._unread || 0) + 1,
@@ -71,6 +71,21 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           })),
         };
       });
+      qc.setQueryData(["conversations"], (old) => {
+        if (!old?.data) return old;
+        return {
+          ...old,
+          data: old.data.map((c) =>
+            c._id === cid && c.lastMessage?._id === updatedMsg._id
+              ? {
+                  ...c,
+                  lastMessage: updatedMsg,
+                  lastMessageAt: updatedMsg.createdAt ?? c.lastMessageAt,
+                }
+              : c,
+          ),
+        };
+      });
     });
 
     // ── رسالة محذوفة ──────────────────────────────
@@ -81,49 +96,80 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           ...old,
           pages: old.pages.map((page) => ({
             ...page,
-            data: page.data?.map((m) =>
-              m._id === messageId && f === "all"
-                ? { ...m, isDeleted: true, content: { text: "تم حذف هذه الرسالة" } }
-                : m,
-            ).filter((m) => !(m._id === messageId && f === "me")),
+            data: page.data
+              ?.map((m) =>
+                m._id === messageId && f === "all"
+                  ? {
+                      ...m,
+                      isDeleted: true,
+                      content: { text: "تم حذف هذه الرسالة" },
+                    }
+                  : m,
+              )
+              .filter((m) => !(m._id === messageId && f === "me")),
           })),
         };
       });
+      if (f === "all") {
+        qc.setQueryData(["conversations"], (old) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map((c) =>
+              c._id === conversationId && c.lastMessage?._id === messageId
+                ? {
+                    ...c,
+                    lastMessage: {
+                      ...c.lastMessage,
+                      isDeleted: true,
+                      content: { text: "تم حذف هذه الرسالة" },
+                    },
+                  }
+                : c,
+            ),
+          };
+        });
+      }
     });
 
     // ── تمت القراءة ───────────────────────────────
-    socket.on("messages_read", ({ conversationId, userId: readerId, readAt }) => {
-      qc.setQueryData(["messages", conversationId], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: page.data?.map((m) => {
-              if (m.sender?.userId === readerId) return m; // رسائل القارئ نفسه لا تُحدَّث
-              const alreadyRead = m.readBy?.some((r) => r.userId === readerId);
-              if (alreadyRead) return m;
-              return {
-                ...m,
-                readBy: [...(m.readBy || []), { userId: readerId, readAt }],
-              };
-            }),
-          })),
-        };
-      });
+    socket.on(
+      "messages_read",
+      ({ conversationId, userId: readerId, readAt }) => {
+        qc.setQueryData(["messages", conversationId], (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data?.map((m) => {
+                if (m.sender?.userId === readerId) return m; // رسائل القارئ نفسه لا تُحدَّث
+                const alreadyRead = m.readBy?.some(
+                  (r) => r.userId === readerId,
+                );
+                if (alreadyRead) return m;
+                return {
+                  ...m,
+                  readBy: [...(m.readBy || []), { userId: readerId, readAt }],
+                };
+              }),
+            })),
+          };
+        });
 
-      // تصفير العداد
-      if (readerId !== myId) return;
-      qc.setQueryData(["conversations"], (old) => {
-        if (!old?.data) return old;
-        return {
-          ...old,
-          data: old.data.map((c) =>
-            c._id === conversationId ? { ...c, _unread: 0 } : c,
-          ),
-        };
-      });
-    });
+        // تصفير العداد
+        if (readerId !== myId) return;
+        qc.setQueryData(["conversations"], (old) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map((c) =>
+              c._id === conversationId ? { ...c, _unread: 0 } : c,
+            ),
+          };
+        });
+      },
+    );
 
     return () => {
       socket.off("new_message");

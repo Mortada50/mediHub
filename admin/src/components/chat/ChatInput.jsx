@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Send, Paperclip, X, Camera, File } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,10 +26,13 @@ export default function ChatInput({
   // ── Mutations ───────────────────────────────────
   const sendText = useMutation({
     mutationFn: (vars) => sendTextMessage(vars),
-    onSuccess: (vars) => {
+
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["conversations"] });
 
-      const repliedMessageId = vars.data.replyTo;
+      const createdMessageId = res?.data?._id;
+      const repliedMessageId = res?.data?.replyTo;
+      if (!createdMessageId || !repliedMessageId) return;
 
       qc.setQueryData(["messages", activeConvId], (old) => {
         if (!old) return old;
@@ -60,23 +63,17 @@ export default function ChatInput({
           };
         }
 
-        const pages = [...old.pages];
-        const lastPageIndex = pages.length - 1;
-
-        pages[lastPageIndex] = {
-          ...pages[lastPageIndex],
-          data: [...pages[lastPageIndex].data],
-        };
-
-        const lastMsgIndex = pages[lastPageIndex].data.length - 1;
-
-        pages[lastPageIndex].data[lastMsgIndex] = {
-          ...pages[lastPageIndex].data[lastMsgIndex],
-          replyTo: {
-            ...pages[lastPageIndex].data[lastMsgIndex].replyTo,
-            ...replyData,
-          },
-        };
+        const pages = old.pages.map((page) => ({
+          ...page,
+          data: (page.data ?? []).map((m) =>
+            m._id === createdMessageId
+              ? {
+                  ...m,
+                  replyTo: { ...(m.replyTo ?? {}), ...replyData },
+                }
+              : m,
+          ),
+        }));
 
         return {
           ...old,
@@ -120,6 +117,7 @@ export default function ChatInput({
   const handleFile = (e) => {
     const f = e.target.files[0];
     if (!f) return;
+    if (preview?.url) URL.revokeObjectURL(preview.url);
     setPreview({
       file: f,
       url: URL.createObjectURL(f),
@@ -133,6 +131,12 @@ export default function ChatInput({
     if (preview?.url) URL.revokeObjectURL(preview.url);
     setPreview(null);
   };
+
+   useEffect(() => {
+    return () => {
+      if (preview?.url) URL.revokeObjectURL(preview.url);
+    };
+  }, [preview?.url]);
 
   // ── Typing ──────────────────────────────────────
   const handleChange = (e) => {

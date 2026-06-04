@@ -21,14 +21,15 @@ import { createConversation } from "../services/chatService.js";
 
 export const useStartChat = () => {
   const navigate = useNavigate();
-  const qc       = useQueryClient();
+  const qc = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: ({ participantId, participantRole }) =>
       createConversation({ participantId, participantRole }),
 
     onSuccess: (res) => {
-      const conversationId = res?.data?._id;
+      const conversationId = res?.data?.data?._id;
+      if (!conversationId) return;
 
       // تحديث cache قائمة المحادثات إن كانت موجودة
       qc.invalidateQueries({ queryKey: ["conversations"] });

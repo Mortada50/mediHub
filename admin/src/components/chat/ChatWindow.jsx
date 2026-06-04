@@ -57,8 +57,9 @@ export default function ChatWindow({
     });
 
   // جميع الرسائل بترتيب صحيح (الأقدم أولاً)
-  const messages = (data?.pages ?? []).flatMap((p) => p.data ?? []);
-
+  const messages = [...(data?.pages ?? [])]
+    .reverse()
+    .flatMap((p) => p.data ?? []);
   // ── Mark as read ──────────────────────────────
   useEffect(() => {
     if (!activeConvId) return;
@@ -91,7 +92,9 @@ export default function ChatWindow({
     obs.observe(topRef.current);
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
+  useEffect(() => {
+    setEditingMsg(null);
+  }, [activeConvId]);
   // ── Delete mutation ───────────────────────────
   const delMutation = useMutation({
     mutationFn: deleteMessage,
@@ -117,11 +120,12 @@ export default function ChatWindow({
           })),
         };
       });
+     
     },
   });
 
   const other = getOther(conversation, myId);
-  const isOnline = onlineUsers?.has(other?.userId?.toString());
+  const isOnline = onlineUsers?.has(other?.userId?._id?.toString());
   const isTyping = typingMap?.[activeConvId];
 
   // ── حالة فارغة ──
@@ -132,7 +136,7 @@ export default function ChatWindow({
           <img
             src={emptyChatWindowLogo}
             alt="Empty chat window"
-            className="w-full h-fullobject-contain opacity-60"
+            className="w-full h-full object-contain opacity-60"
           />
         </div>
         <div className="text-center">
