@@ -14,13 +14,17 @@ import ClinicSetting from "./pages/ClinicSetting";
 import AppointmentManagement from "./pages/AppointmentManagement";
 import Profile from "./pages/Profile";
 import LeavesManagementPage from "./pages/LeavesManagementPage";
+import { useEffect } from "react";
+import { setAuthToken } from "./lib/axios";
 
 function App() {
-   const { isSignedIn, isLoaded } = useAuth();
+   const { isSignedIn, isLoaded, getToken } = useAuth();
 
    const {user, isLoaded: userLoaded} = useUser();
    
-
+   useEffect(() => {
+     setAuthToken(getToken);
+   }, [getToken]);
    if (!isLoaded || !userLoaded) return <PageLoader />;
  
 

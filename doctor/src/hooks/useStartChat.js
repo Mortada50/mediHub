@@ -28,7 +28,6 @@ export const useStartChat = () => {
       createConversation({ participantId, participantRole }),
 
     onSuccess: (res) => {
-      
       const conversationId = res?.data?.data?._id || res?.data?._id;
       if (!conversationId) return;
 

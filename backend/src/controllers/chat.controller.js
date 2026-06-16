@@ -72,15 +72,26 @@ export const getMyConversations = async (req, res) => {
   try {
     const userId = req.mongoId;
 
-    // todo: how to return participants' info (name, avatar) without extra queries? → denormalization?
-    const conversations = await Conversation.find({
+    const myConversations = await Conversation.find({
       "participants.userId": userId,
       isActive: true,
     })
-      .populate("participants.userId", "fullName avatar") // جلب اسم وصورة كل طرف
+      .populate("participants.userId", "fullName avatar")
       .populate("lastMessage", "content type sender createdAt isDeleted")
       .sort({ lastMessageAt: -1 })
       .lean();
+
+    const conversations = await Promise.all(
+      myConversations.map(async (conv) => {
+        const unread = await Message.countDocuments({
+          conversationId: conv._id,
+          isDeleted: false,
+          "sender.userId": { $ne: userId },
+          "readBy.userId": { $ne: userId },
+        });
+        return { ...conv, unread };
+      }),
+    );
 
     sendSuccess(res, conversations);
   } catch (error) {

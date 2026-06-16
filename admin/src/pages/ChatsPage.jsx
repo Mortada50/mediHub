@@ -9,7 +9,6 @@ import ChatWindow from "../components/chat/ChatWindow.jsx";
 import { getConversations } from "../services/chatService.js";
 import { useOutletContext, useLocation, useNavigate } from "react-router";
 
-
 export default function ChatsPage() {
   const { getToken } = useAuth();
   const { session } = useSession();
@@ -22,7 +21,6 @@ export default function ChatsPage() {
   const { isSidebarOpen } = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
-
 
   // mongoId من publicMetadata
   const myId = session?.user?.publicMetadata?.mongoId;
@@ -91,8 +89,7 @@ export default function ChatsPage() {
 
   const activeConv = conversations.find((c) => c._id === activeConvId);
 
-   useEffect(() => {
-    
+  useEffect(() => {
     const openId = location.state?.openConversationId;
 
     if (!openId || conversations.length === 0) return;
@@ -101,67 +98,55 @@ export default function ChatsPage() {
 
     if (exists) {
       setActive(openId);
-      
+
       navigate(location.pathname, {
         replace: true,
         state: {},
       });
     }
+  }, [location.state, convData]);
 
-   }, [location.state, convData]);
- 
   return (
-    <>
-      {/* PAGE HEADER
-      <div className="flex flex-col items-end sm:items-start">
-        <h1 className="text-primary font-black text-xl sm:text-2xl">
-          إدارة الاطباء
-        </h1>
-        <p className="text-primary-400 font-normal text-sm sm:text-base">
-          إدارة ومتابعة كادر الاطباء على ميدي هب
-        </p>
-      </div> */}
-      <div
-        className={`flex overflow-hidden bg-background fixed pr-3 ${isSidebarOpen ? "mr-[230px]" : "mr-[80px]"} transation-all duration-300`}
-        style={{ height: "calc(100vh - 81px)", left: 0, right: 0 }}>
-        {/* ── قائمة المحادثات ── */}
-        <div className="w-[300px] shrink-0 flex flex-col border-l border-[#E8E8E8]">
-          {/* شريط حالة الاتصال */}
-          <div
-            className={`h-0.5 w-full transition-colors duration-500
+    <div
+      className={`flex overflow-hidden bg-background fixed pr-3 ${isSidebarOpen ? "mr-[230px]" : "mr-[80px]"} transation-all duration-300`}
+      style={{ height: "calc(100vh - 81px)", left: 0, right: 0 }}>
+      {/* ── قائمة المحادثات ── */}
+      <div className="w-[300px] shrink-0 flex flex-col border-l border-[#E8E8E8]">
+        {/* شريط حالة الاتصال */}
+        <div
+          className={`h-0.5 w-full transition-colors duration-500
             ${connected ? "bg-primary" : "bg-[#E8E8E8]"}`}
-          />
+        />
 
-          <ConversationList
-            conversations={conversations}
-            activeConvId={activeConvId}
-            myId={myId}
-            onlineUsers={onlineUsers}
-            typingMap={typingMap}
-            loading={loadingConvs}
-            search={search}
-            onSearchChange={setSearch}
-            onSelect={(id) => {
-              if (id !== activeConvId) {
-                setActive(id);
-                setReplyTo(null);
-              }
-            }}
-          />
-        </div>
-
-        {/* ── نافذة المحادثة ── */}
-        <ChatWindow
-          myId={myId}
+        <ConversationList
+          conversations={conversations}
           activeConvId={activeConvId}
-          conversation={activeConv}
-          typingMap={typingMap}
+          myId={myId}
           onlineUsers={onlineUsers}
-          replyTo={replyTo}
-          setReplyTo={setReplyTo}
-          onTyping={emitTyping}
+          typingMap={typingMap}
+          loading={loadingConvs}
+          search={search}
+          onSearchChange={setSearch}
+          onSelect={(id) => {
+            if (id !== activeConvId) {
+              setActive(id);
+              setReplyTo(null);
+            }
+          }}
         />
       </div>
-    </>
+
+      {/* ── نافذة المحادثة ── */}
+      <ChatWindow
+        myId={myId}
+        activeConvId={activeConvId}
+        conversation={activeConv}
+        typingMap={typingMap}
+        onlineUsers={onlineUsers}
+        replyTo={replyTo}
+        setReplyTo={setReplyTo}
+        onTyping={emitTyping}
+      />
+    </div>
   );
 }

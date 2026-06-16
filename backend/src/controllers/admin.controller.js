@@ -5,6 +5,7 @@ import { Pharmacy } from "../models/Pharmacy.model.js";
 import { ENV } from "../config/env.js";
 import { errorHandler } from "../middleware/errorHandler.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
+import { Conversation } from "../models/Conversation.model.js";
 
 export const getPendingRejectedUsers = async (req, res) => {
   try {
@@ -19,12 +20,9 @@ export const getPendingRejectedUsers = async (req, res) => {
       }),
     ]);
 
-
-
     const users = [...doctors, ...pharmacies];
 
     sendSuccess(res, { users });
-
   } catch (error) {
     sendError(res, "حدث خطاء في استرجاع طلبات الانظمام", 500, error);
   }
@@ -34,10 +32,15 @@ export const updateDocPharmApprovelStatus = async (req, res) => {
   try {
     const { userId } = req.params;
     const { status, role } = req.body;
-
+    const { mongoId, userRole: adminRole } = req;
+    
     const ALLOWED_STATUS = ["rejected", "active", "suspended"];
-    const ALLOWED_ROLE   = ["doctor", "pharmacy"];
-    if (!userId || !ALLOWED_STATUS.includes(status) || !ALLOWED_ROLE.includes(role)) {
+    const ALLOWED_ROLE = ["doctor", "pharmacy"];
+    if (
+      !userId ||
+      !ALLOWED_STATUS.includes(status) ||
+      !ALLOWED_ROLE.includes(role)
+    ) {
       return sendError(res, "بيانات ناقصة أو غير صالحة", 400);
     }
 
@@ -53,6 +56,23 @@ export const updateDocPharmApprovelStatus = async (req, res) => {
       publicMetadata: { status },
     });
 
+    if (status === "active") {
+      const existing = await Conversation.findOne({
+        isActive: true,
+        "participants.userId": { $all: [mongoId, userId] },
+      });
+
+      if (!existing) {
+        const conversation = await Conversation.create({
+          type: "private",
+          participants: [
+            { userId: mongoId, role: cap(adminRole) },
+            { userId: userId, role: cap(role) },
+          ],
+        });
+      }
+    }
+
     return sendSuccess(res, user, "تم تحديث حالة المستخدم", 200);
   } catch (error) {
     console.error(error);
@@ -61,7 +81,7 @@ export const updateDocPharmApprovelStatus = async (req, res) => {
 };
 
 export const removeRejectedUser = async (req, res) => {
-try {
+  try {
     const { userId } = req.params;
     const { role } = req.body;
 
@@ -81,29 +101,32 @@ try {
     await deleteFromCloudinary(license);
 
     await clerkClient.users.deleteUser(clerkUserId);
-    
 
     return sendSuccess(res, {}, "تم حذف المستخدم بنجاح", 200);
   } catch (error) {
     console.error(error);
     return sendError(res, "هناك خطأ", 500, error);
   }
-}
+};
 
 export const getActiveSuspendedUsers = async (req, res) => {
   // todo: get doctor appointments & consultations count & rating
   try {
     const { role } = req.query;
-   
+
     if (!["doctor", "pharmacy"].includes(role)) {
       return sendError(res, "بيانات ناقصة أو غير صالحة", 400);
     }
     const Model = role === "doctor" ? Doctor : Pharmacy;
 
     const now = new Date();
-    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const startOfNextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-    
+    const startOfMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const startOfNextMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+
     const Data = await Model.aggregate([
       {
         $facet: {
@@ -159,4 +182,6 @@ export const getActiveSuspendedUsers = async (req, res) => {
     console.error(error);
     return sendError(res, "هناك خطأ", 500, error);
   }
-}
+};
+
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);

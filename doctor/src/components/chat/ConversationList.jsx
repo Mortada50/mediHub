@@ -55,9 +55,14 @@ export default function ConversationList({
   onSearchChange,
   onSelect,
 }) {
+  const adminCnv = conversations.filter(
+    (c) => getOther(c, myId)?.role === "Admin",
+  );
+  const usersConv = conversations.filter(
+    (c) => getOther(c, myId)?.role !== "Admin",
+  );
 
-  
-  const filtered = conversations.filter((c) => {
+  const filtered = [...adminCnv, ...usersConv].filter((c) => {
     if (!search.trim()) return true;
     const o = getOther(c, myId);
     const q = search.toLowerCase();
@@ -118,8 +123,6 @@ export default function ConversationList({
             const isOnline = onlineUsers?.has(otherUserId);
             const isTyping = typingMap?.[conv._id];
             const unread = conv.unread ?? 0;
-            
-            
 
             return (
               <button
@@ -157,7 +160,7 @@ export default function ConversationList({
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <span
                       className={`text-sm truncate
-                      ${isActive || unread > 0 ? "font-bold text-primary" : "font-normal text-text"}`}>
+                      ${isActive ? "font-bold text-primary" : "font-normal text-text"}`}>
                       {other?.userId?.fullName ?? "مستخدم"}
                     </span>
                     <span className="text-[10px] text-text-secondary shrink-0">
