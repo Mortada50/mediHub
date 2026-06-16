@@ -1,10 +1,25 @@
 /**
  * useSocketEvents.js
  * يستمع لأحداث Socket.IO ويُحدّث TanStack Query cache مباشرة
- * بدلاً من useState منفصل — أنظف وأكثر اتساقاً مع TanStack
+ * ✅ إصلاحات:
+ *   - إضافة new_conversation لإضافة محادثة جديدة للقائمة فوراً
+ *   - إضافة sort() بعد كل تحديث للمحادثات
+ *   - إصلاح unread count ليعمل حتى للمحادثات غير المفتوحة
  */
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+
+// دالة مساعدة لترتيب المحادثات (الأحدث أولاً)
+const sortConversations = (conversations) =>
+  [...conversations].sort((a, b) => {
+    const dateA = a.lastMessageAt
+      ? new Date(a.lastMessageAt)
+      : new Date(a.createdAt);
+    const dateB = b.lastMessageAt
+      ? new Date(b.lastMessageAt)
+      : new Date(b.createdAt);
+    return dateB - dateA;
+  });
 
 export const useSocketEvents = ({ socket, activeConvId, myId }) => {
   const qc = useQueryClient();
@@ -12,11 +27,27 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
   useEffect(() => {
     if (!socket) return;
 
+    // ── محادثة جديدة (الطرف الآخر بدأ محادثة مع المستخدم) ──────
+    socket.on("new_conversation", (conv) => {
+      qc.setQueryData(["conversations"], (old) => {
+        if (!old?.data) return old;
+
+        // تجنب الإضافة المكررة
+        const exists = old.data.some((c) => c._id === conv._id);
+        if (exists) return old;
+
+        return {
+          ...old,
+          data: sortConversations([conv, ...old.data]),
+        };
+      });
+    });
+
     // ── رسالة جديدة ──────────────────────────────
     socket.on("new_message", (msg) => {
-      const cid = msg.conversationId;
+      const cid = msg.conversationId?.toString?.() ?? msg.conversationId;
 
-      // إضافة الرسالة لـ cache الرسائل
+      // إضافة الرسالة لـ cache الرسائل (إذا كانت المحادثة مفتوحة)
       qc.setQueryData(["messages", cid], (old) => {
         if (!old) return old;
         const pages = old.pages ?? [];
@@ -31,28 +62,35 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
         return {
           ...old,
           pages: [
-             { ...newestPage, data: [...(newestPage.data || []), msg] },
+            { ...newestPage, data: [...(newestPage.data || []), msg] },
             ...pages.slice(1),
           ],
         };
       });
 
-      // تحديث آخر رسالة في قائمة المحادثات
+      // ✅ تحديث قائمة المحادثات + الترتيب الصحيح
       qc.setQueryData(["conversations"], (old) => {
         if (!old?.data) return old;
+
+        const updatedData = old.data.map((c) =>
+          c._id === cid
+            ? {
+                ...c,
+                lastMessage: msg,
+                lastMessageAt: msg.createdAt,
+                // ✅ زيادة العداد فقط إذا المحادثة مش مفتوحة وأنا لست المرسل
+                unread:
+                  cid === activeConvId ||
+                  msg.sender?.userId?.toString() === myId?.toString()
+                    ? 0
+                    : (c.unread || 0) + 1,
+              }
+            : c,
+        );
+
         return {
           ...old,
-          data: old.data.map((c) =>
-            c._id === cid
-              ? {
-                  ...c,
-                  lastMessage: msg,
-                  lastMessageAt: msg.createdAt,
-                  // زيادة العداد فقط إذا المحادثة مش مفتوحة
-                  unread: cid === activeConvId ? 0 : (c.unread || 0) + 1,
-                }
-              : c,
-          ),
+          data: sortConversations(updatedData),
         };
       });
     });
@@ -72,6 +110,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           })),
         };
       });
+
       qc.setQueryData(["conversations"], (old) => {
         if (!old?.data) return old;
         return {
@@ -111,6 +150,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           })),
         };
       });
+
       if (f === "all") {
         qc.setQueryData(["conversations"], (old) => {
           if (!old?.data) return old;
@@ -144,7 +184,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
             pages: old.pages.map((page) => ({
               ...page,
               data: page.data?.map((m) => {
-                if (m.sender?.userId === readerId) return m; // رسائل القارئ نفسه لا تُحدَّث
+                if (m.sender?.userId === readerId) return m;
                 const alreadyRead = m.readBy?.some(
                   (r) => r.userId === readerId,
                 );
@@ -158,21 +198,23 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           };
         });
 
-        // تصفير العداد
-        if (readerId !== myId) return;
-        qc.setQueryData(["conversations"], (old) => {
-          if (!old?.data) return old;
-          return {
-            ...old,
-            data: old.data.map((c) =>
-              c._id === conversationId ? { ...c, unread: 0 } : c,
-            ),
-          };
-        });
+        // ✅ تصفير العداد عندما يقرأ المستخدم الحالي (في أي جهاز)
+        if (readerId === myId) {
+          qc.setQueryData(["conversations"], (old) => {
+            if (!old?.data) return old;
+            return {
+              ...old,
+              data: old.data.map((c) =>
+                c._id === conversationId ? { ...c, unread: 0 } : c,
+              ),
+            };
+          });
+        }
       },
     );
 
     return () => {
+      socket.off("new_conversation");
       socket.off("new_message");
       socket.off("message_edited");
       socket.off("message_deleted");

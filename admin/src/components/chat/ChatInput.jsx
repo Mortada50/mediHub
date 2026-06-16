@@ -23,77 +23,76 @@ export default function ChatInput({
   const typingRef = useRef(null);
   const textareaRef = useRef(null);
 
-  // ── Mutations ───────────────────────────────────
-  const sendText = useMutation({
-    mutationFn: (vars) => sendTextMessage(vars),
+  // ✅ التعديل هنا: تحديث الواجهة فوراً بمجرد الرد الناجح من السيرفر وبدون انتظار السوكيت
+  const updateCacheWithNewMessage = useCallback(
+    (res) => {
+      const newMessage = res?.data;
+      if (!newMessage) return;
 
-    onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ["conversations"] });
-
-      const createdMessageId = res?.data?._id;
-      const repliedMessageId = res?.data?.replyTo;
-      if (!createdMessageId || !repliedMessageId) return;
-
+      // 1. تحديث قائمة الرسائل للمحادثة الحالية
       qc.setQueryData(["messages", activeConvId], (old) => {
         if (!old) return old;
+        const pages = old.pages ?? [];
+        if (pages.length === 0) return old;
 
-        const originalMessage = old.pages
-          .flatMap((page) => page.data || [])
-          .find((m) => m._id === repliedMessageId);
-
-        if (!originalMessage) return old;
-
-        let replyData;
-
-        if (originalMessage.content?.text) {
-          replyData = {
-            content: {
-              text: originalMessage.content.text,
-            },
-          };
-        } else if (
-          originalMessage.content?.media?.mimeType?.startsWith("image/")
-        ) {
-          replyData = {
-            type: "image",
-          };
-        } else {
-          replyData = {
-            type: "file",
-          };
-        }
-
-        const pages = old.pages.map((page) => ({
-          ...page,
-          data: (page.data ?? []).map((m) =>
-            m._id === createdMessageId
-              ? {
-                  ...m,
-                  replyTo: { ...(m.replyTo ?? {}), ...replyData },
-                }
-              : m,
-          ),
-        }));
+        // منع التكرار إذا كانت السوكيت قد أضافتها بالفعل
+        const exists = pages.some((p) =>
+          p.data?.some((m) => m._id === newMessage._id),
+        );
+        if (exists) return old;
 
         return {
           ...old,
-          pages,
+          pages: [
+            { ...pages[0], data: [...(pages[0].data || []), newMessage] },
+            ...pages.slice(1),
+          ],
         };
       });
+
+      // 2. تحديث قائمة المحادثات (الجانبية) لتصعد للأعلى مع إظهار آخر رسالة
+      qc.setQueryData(["conversations"], (old) => {
+        if (!old?.data) return old;
+        const updatedData = old.data.map((c) =>
+          c._id === activeConvId
+            ? {
+                ...c,
+                lastMessage: newMessage,
+                lastMessageAt: newMessage.createdAt,
+              }
+            : c,
+        );
+        return {
+          ...old,
+          data: updatedData.sort(
+            (a, b) =>
+              new Date(b.lastMessageAt || b.createdAt) -
+              new Date(a.lastMessageAt || a.createdAt),
+          ),
+        };
+      });
+    },
+    [qc, activeConvId],
+  );
+
+  // ── Mutations ───────────────────────────────────
+  const sendText = useMutation({
+    mutationFn: (vars) => sendTextMessage(vars),
+    onSuccess: (res) => {
+      updateCacheWithNewMessage(res);
     },
   });
 
   const sendMedia = useMutation({
     mutationFn: (vars) => sendMediaMessage(vars),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["conversations"] });
+    onSuccess: (res) => {
+      updateCacheWithNewMessage(res);
     },
   });
 
   const editMsg = useMutation({
     mutationFn: (vars) => editMessage(vars),
     onSuccess: (res) => {
-      // تحديث الـ cache مباشرة بدون invalidate
       qc.setQueryData(["messages", activeConvId], (old) => {
         if (!old) return old;
         return {
@@ -132,7 +131,7 @@ export default function ChatInput({
     setPreview(null);
   };
 
-   useEffect(() => {
+  useEffect(() => {
     return () => {
       if (preview?.url) URL.revokeObjectURL(preview.url);
     };
@@ -154,10 +153,9 @@ export default function ChatInput({
   const handleSend = useCallback(() => {
     if (isSending || !activeConvId) return;
 
-    // وضع التعديل
     if (editingMsg) {
       if (!text.trim()) return;
-       editMsg.mutate(
+      editMsg.mutate(
         { messageId: editingMsg._id, text: text.trim() },
         {
           onSuccess: () => {
@@ -169,13 +167,12 @@ export default function ChatInput({
       return;
     }
 
-    // إرسال ميديا
     if (preview) {
       const fd = new FormData();
       fd.append("file", preview.file);
       if (text.trim()) fd.append("text", text.trim());
       if (replyTo) fd.append("replyTo", replyTo._id);
-       sendMedia.mutate(
+      sendMedia.mutate(
         { conversationId: activeConvId, formData: fd },
         {
           onSuccess: () => {
@@ -189,7 +186,6 @@ export default function ChatInput({
       return;
     }
 
-    // إرسال نص
     if (!text.trim()) return;
     sendText.mutate(
       {
@@ -214,7 +210,6 @@ export default function ChatInput({
     }
   };
 
-  // مزامنة نص التعديل
   React.useEffect(() => {
     if (editingMsg) setText(editingMsg.content?.text ?? "");
     else setText("");
@@ -222,7 +217,6 @@ export default function ChatInput({
 
   return (
     <div className="bg-white border-t border-[#E8E8E8] px-4 py-3 shrink-0">
-      {/* Reply Preview */}
       {replyTo && !editingMsg && (
         <div
           className="flex items-center justify-between mb-2 px-3 py-2
@@ -252,7 +246,6 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* Edit Banner */}
       {editingMsg && (
         <div
           className="flex items-center justify-between mb-2 px-3 py-2
@@ -273,7 +266,6 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* Media Preview */}
       {preview && (
         <div className="mb-2 relative inline-block">
           {preview.isImage ? (
@@ -297,9 +289,7 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* Input Row */}
       <div className="flex items-end gap-2">
-        {/* Textarea */}
         <textarea
           ref={textareaRef}
           rows={1}
@@ -318,7 +308,6 @@ export default function ChatInput({
             e.target.style.height = Math.min(e.target.scrollHeight, 112) + "px";
           }}
         />
-        {/* Attach */}
         {!editingMsg && (
           <>
             <input
@@ -339,7 +328,6 @@ export default function ChatInput({
             </button>
           </>
         )}
-        {/* Send */}
         <button
           onClick={handleSend}
           disabled={isSending || (!text.trim() && !preview)}

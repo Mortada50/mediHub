@@ -2,31 +2,9 @@ import { clerkClient } from "@clerk/clerk-sdk-node";
 import { verifyToken } from "@clerk/backend";
 import { ENV } from "../config/env.js";
 
-/**
- * Socket.IO Handler — MediHub
- *
- * ─── Client → Server ──────────────────────────────
- *   join_conversation    { conversationId }
- *   leave_conversation   { conversationId }
- *   typing_start         { conversationId }
- *   typing_stop          { conversationId }
- *
- * ─── Server → Client ──────────────────────────────
- *   new_message          Message
- *   message_edited       Message
- *   message_deleted      { messageId, conversationId, for }
- *   messages_read        { conversationId, userId, readAt }
- *   typing               { conversationId, userId, isTyping }
- *   user_online          { userId }
- *   user_offline         { userId, lastSeen }
- */
-
-// mongoId  →  socketId  (للمستخدمين المتصلين حالياً)
 const onlineUsers = new Map();
 
 export const initSocket = (io) => {
-  // ── Middleware: التحقق من Clerk session ──
-
   io.use(async (socket, next) => {
     try {
       const { token, sessionId } = socket.handshake.auth ?? {};
@@ -38,7 +16,6 @@ export const initSocket = (io) => {
         secretKey: ENV.CLERK_SECRET_KEY,
       });
 
-
       if (!payload || payload.sts !== "active") {
         return next(new Error("AUTH_INVALID"));
       }
@@ -48,15 +25,12 @@ export const initSocket = (io) => {
         ? clerkUser.publicMetadata
         : (clerkUser.unsafeMetadata ?? {});
 
-      if (
-        (meta.status && ["pending", "rejected"].includes(meta.status)) 
-      ) {
+      if (meta.status && ["pending", "rejected"].includes(meta.status)) {
         return next(new Error("الحساب معلق او موقوف"));
       }
 
-      // نُرفق البيانات بالسوكيت لاستخدامها لاحقاً
       socket.mongoId = meta.mongoId;
-      socket.userRole = meta.role; // lowercase
+      socket.userRole = meta.role;
 
       next();
     } catch (err) {
@@ -64,17 +38,18 @@ export const initSocket = (io) => {
     }
   });
 
-  // ── Connection ──
   io.on("connection", (socket) => {
     const userId = socket.mongoId;
 
     console.log(`🟢 [socket] +++ userId=${userId}  role=${socket.userRole}`);
 
-    // تسجيل المستخدم كـ online وإبلاغ الباقين
     onlineUsers.set(userId, socket.id);
+    socket.join(userId.toString());
+
     socket.broadcast.emit("user_online", { userId });
 
-    // ── ROOMS ─────────────────────────────────
+    // ✅ حل مشكلة 3: إرسال القائمة الحالية للمتصلين للمستخدم الذي اتصل للتو
+    socket.emit("online_users", Array.from(onlineUsers.keys()));
 
     socket.on("join_conversation", ({ conversationId } = {}) => {
       if (conversationId) socket.join(conversationId.toString());
@@ -84,27 +59,40 @@ export const initSocket = (io) => {
       if (conversationId) socket.leave(conversationId.toString());
     });
 
-    // ── TYPING ────────────────────────────────
-
-    socket.on("typing_start", ({ conversationId } = {}) => {
+    // ✅ حل مشكلة 1: إرسال مؤشر الكتابة للغرفة الشخصية للطرف الآخر مباشرة
+    socket.on("typing_start", ({ conversationId, receiverId } = {}) => {
       if (!conversationId) return;
-      socket.to(conversationId.toString()).emit("typing", {
-        conversationId,
-        userId,
-        isTyping: true,
-      });
+      if (receiverId) {
+        io.to(receiverId.toString()).emit("typing", {
+          conversationId,
+          userId,
+          isTyping: true,
+        });
+      } else {
+        socket.to(conversationId.toString()).emit("typing", {
+          conversationId,
+          userId,
+          isTyping: true,
+        });
+      }
     });
 
-    socket.on("typing_stop", ({ conversationId } = {}) => {
+    socket.on("typing_stop", ({ conversationId, receiverId } = {}) => {
       if (!conversationId) return;
-      socket.to(conversationId.toString()).emit("typing", {
-        conversationId,
-        userId,
-        isTyping: false,
-      });
+      if (receiverId) {
+        io.to(receiverId.toString()).emit("typing", {
+          conversationId,
+          userId,
+          isTyping: false,
+        });
+      } else {
+        socket.to(conversationId.toString()).emit("typing", {
+          conversationId,
+          userId,
+          isTyping: false,
+        });
+      }
     });
-
-    // ── DISCONNECT ────────────────────────────
 
     socket.on("disconnect", (reason) => {
       onlineUsers.delete(userId);
@@ -123,13 +111,11 @@ export const initSocket = (io) => {
   return io;
 };
 
-/** هل المستخدم متصل حالياً؟ */
 export const isUserOnline = (mongoId) => onlineUsers.has(mongoId?.toString());
 
-/** إرسال event لمستخدم محدد حتى لو مش في الغرفة */
 export const emitToUser = (io, mongoId, event, data) => {
-  const sid = onlineUsers.get(mongoId?.toString());
-  if (sid) io.to(sid).emit(event, data);
+  if (!mongoId) return;
+  io.to(mongoId.toString()).emit(event, data);
 };
 
 export { onlineUsers };

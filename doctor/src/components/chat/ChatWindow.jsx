@@ -4,7 +4,14 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { MessageCircle, VideoIcon, Phone, MoreVertical } from "lucide-react";
+// ✅ التعديل 1: استيراد ArrowRight لزر الرجوع
+import {
+  MessageCircle,
+  VideoIcon,
+  Phone,
+  MoreVertical,
+  ArrowRight,
+} from "lucide-react";
 import MessageBubble from "./MessageBubble.jsx";
 import ChatInput from "./ChatInput.jsx";
 import {
@@ -34,13 +41,13 @@ export default function ChatWindow({
   replyTo,
   setReplyTo,
   onTyping,
+  onBack, // ✅ استقبال الـ prop الجديد
 }) {
   const qc = useQueryClient();
   const bottomRef = useRef(null);
   const topRef = useRef(null);
   const [editingMsg, setEditingMsg] = useState(null);
 
-  // ── Infinite Query للرسائل ────────────────────
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       queryKey: ["messages", activeConvId],
@@ -56,14 +63,15 @@ export default function ChatWindow({
       staleTime: 0,
     });
 
-  // جميع الرسائل بترتيب صحيح (الأقدم أولاً)
   const messages = [...(data?.pages ?? [])]
     .reverse()
     .flatMap((p) => p.data ?? []);
-  // ── Mark as read ──────────────────────────────
+
   useEffect(() => {
     if (!activeConvId) return;
+
     markAsRead(activeConvId).catch(() => {});
+
     qc.setQueryData(["conversations"], (old) => {
       if (!old?.data) return old;
       return {
@@ -73,15 +81,13 @@ export default function ChatWindow({
         ),
       };
     });
-  }, [activeConvId, qc]);
+  }, [activeConvId, messages.length, qc]);
 
-  // ── Scroll to bottom عند رسائل جديدة ──────────
   useEffect(() => {
     if (isFetchingNextPage) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeConvId, messages.length, isFetchingNextPage]);
 
-  // ── Load more عند الوصول للأعلى ──────────────
   useEffect(() => {
     if (!topRef.current || !hasNextPage) return;
     const obs = new IntersectionObserver(
@@ -93,10 +99,11 @@ export default function ChatWindow({
     obs.observe(topRef.current);
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   useEffect(() => {
     setEditingMsg(null);
   }, [activeConvId]);
-  // ── Delete mutation ───────────────────────────
+
   const delMutation = useMutation({
     mutationFn: deleteMessage,
     onSuccess: (_, { messageId, forWho, conversationId }) => {
@@ -131,7 +138,8 @@ export default function ChatWindow({
   // ── حالة فارغة ──
   if (!activeConvId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-white gap-4">
+      // ✅ التعديل 2: إخفاء صفحة الانتظار تماماً في الموبايل لكي تأخذ القائمة مساحة الشاشة بالكامل
+      <div className="flex-1 flex-col items-center justify-center bg-white gap-4 hidden md:flex">
         <div className="rounded-full size-35 bg-background-primary flex items-center justify-center">
           <img
             src={emptyChatWindowLogo}
@@ -151,12 +159,19 @@ export default function ChatWindow({
 
   return (
     <div className="flex-1 flex flex-col bg-background min-w-0">
-      {/* ── Header ── */}
       <div className="flex justify-between border border-[#E8E8E8] ">
         <div
-          className="h-[65px] px-5 flex items-center gap-3
+          className="h-[65px] px-3 md:px-5 flex items-center gap-2 md:gap-3
                       bg-background shrink-0">
-          {/* Avatar */}
+          {/* ✅ التعديل 3: إضافة زر رجوع للموبايل، يختفي تلقائياً في الشاشات الكبيرة */}
+          <button
+            onClick={onBack}
+            className="md:hidden size-8 flex items-center justify-center rounded-full
+                       hover:bg-background-primary text-text-secondary
+                       hover:text-primary transition-colors">
+            <ArrowRight className="size-5" />
+          </button>
+
           <div className="relative">
             <div
               className="size-10 rounded-full bg-background-primary
@@ -175,12 +190,11 @@ export default function ChatWindow({
             {isOnline && (
               <span
                 className="absolute bottom-0 left-0 size-2.5 rounded-full
-                             bg-accent border-2 border-white"
+                             bg-accent bg-primary"
               />
             )}
           </div>
 
-          {/* Name & status */}
           <div>
             <p className="text-sm font-bold text-text leading-tight">
               {other?.userId?.fullName ?? "مستخدم"}
@@ -197,7 +211,7 @@ export default function ChatWindow({
           </div>
         </div>
         <div
-          className="h-[65px] px-5 flex items-center gap-3
+          className="h-[65px] px-3 md:px-5 flex items-center gap-1 md:gap-3
                     bg-background shrink-0">
           <button
             className="size-8 flex items-center justify-center rounded-full
@@ -220,9 +234,7 @@ export default function ChatWindow({
         </div>
       </div>
 
-      {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 no-scrollbar bg-white">
-        {/* Load more trigger */}
         <div ref={topRef} />
 
         {isFetchingNextPage && (
@@ -232,7 +244,6 @@ export default function ChatWindow({
         )}
 
         {isLoading ? (
-          /* Skeleton */
           <div className="flex-1 flex items-center justify-center">
             <span className="size-8 border-2 border-[#E8E8E8] border-t-primary rounded-full animate-spin" />
           </div>
@@ -266,7 +277,6 @@ export default function ChatWindow({
           ))
         )}
 
-        {/* Typing dots */}
         {isTyping && (
           <div className="flex items-end gap-2">
             <div
@@ -288,7 +298,6 @@ export default function ChatWindow({
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Input ── */}
       <ChatInput
         activeConvId={activeConvId}
         myId={myId}
