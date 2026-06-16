@@ -23,7 +23,6 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
         const newestPage = pages[0];
         if (!newestPage) return old;
 
-        // منع التكرار
         const exists = pages.some((page) =>
           page.data?.some((m) => m._id === msg._id),
         );
@@ -32,7 +31,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
         return {
           ...old,
           pages: [
-            { ...newestPage, data: [...(newestPage.data || []), msg] },
+             { ...newestPage, data: [...(newestPage.data || []), msg] },
             ...pages.slice(1),
           ],
         };

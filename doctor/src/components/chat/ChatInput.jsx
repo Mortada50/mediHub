@@ -157,7 +157,7 @@ export default function ChatInput({
     // وضع التعديل
     if (editingMsg) {
       if (!text.trim()) return;
-       editMsg.mutate(
+      editMsg.mutate(
         { messageId: editingMsg._id, text: text.trim() },
         {
           onSuccess: () => {
@@ -175,7 +175,7 @@ export default function ChatInput({
       fd.append("file", preview.file);
       if (text.trim()) fd.append("text", text.trim());
       if (replyTo) fd.append("replyTo", replyTo._id);
-       sendMedia.mutate(
+     sendMedia.mutate(
         { conversationId: activeConvId, formData: fd },
         {
           onSuccess: () => {

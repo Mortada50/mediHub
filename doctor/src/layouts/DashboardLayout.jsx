@@ -41,30 +41,33 @@ function DashboardLayout() {
      
   return (
     user?.publicMetadata?.role === "doctor" && (
-    <div className="min-h-screen">
-      <Navbar />
+      <div className="min-h-screen">
+        <Navbar />
 
-      <div style={{ paddingTop: NAVBAR_HEIGHT }} className="flex min-h-screen">
-        <main
-          style={{
-            marginRight: isSidebarOpen
-              ? `${SIDEBAR_OPEN_WIDTH}px`
-              : `${SIDEBAR_CLOSED_WIDTH}px`,
-            transition: "margin-right 300ms ease-in-out",
-            width: "100%",
-          }}
-          className="p-6">
-          <Outlet />
-        </main>
+        <div
+          style={{ paddingTop: NAVBAR_HEIGHT }}
+          className="flex min-h-screen">
+          <main
+            style={{
+              marginRight: isSidebarOpen
+                ? `${SIDEBAR_OPEN_WIDTH}px`
+                : `${SIDEBAR_CLOSED_WIDTH}px`,
+              transition: "margin-right 300ms ease-in-out",
+              width: "100%",
+            }}
+            className="p-6 pt-3 pr-3">
+            <Outlet context={{ isSidebarOpen }} />
+          </main>
 
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen((prev) => !prev)}
-          navbarHeight={NAVBAR_HEIGHT}
-        />
+          <Sidebar
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen((prev) => !prev)}
+            navbarHeight={NAVBAR_HEIGHT}
+          />
+        </div>
       </div>
-    </div>
-  ));
+    )
+  );
 }
 
 export default DashboardLayout;

@@ -256,7 +256,7 @@ export default function ChatWindow({
                 setReplyTo(null);
               }}
               onDelete={(id, fw) =>
-                  delMutation.mutate({
+                delMutation.mutate({
                   messageId: id,
                   forWho: fw,
                   conversationId: activeConvId,

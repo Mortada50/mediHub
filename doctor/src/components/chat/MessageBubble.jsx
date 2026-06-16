@@ -82,7 +82,7 @@ export default function MessageBubble({
           <img
             src={msg.content?.media?.url}
             alt="صورة"
-              onClick={() => {
+             onClick={() => {
               const rawUrl = msg.content?.media?.url;
               if (!rawUrl) return;
               try {
