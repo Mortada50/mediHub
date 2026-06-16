@@ -133,9 +133,8 @@ export default function ChatsPage() {
 
   return (
     <div
-      // ✅ التعديل 1: إضافة max-md:pr-0 و max-md:mr-0 لأخذ عرض شاشة الموبايل بالكامل وتجاهل مساحة القائمة الجانبية للتطبيق
       className={`flex overflow-hidden bg-background fixed pr-3 max-md:pr-0 ${isSidebarOpen ? "mr-[230px] max-md:mr-0" : "mr-[80px] max-md:mr-0"} transition-all duration-300`}
-      style={{ height: "calc(100vh - 81px)", left: 0, right: 0 }}>
+      style={{ top: "81px", bottom: 0, left: 0, right: 0 }}>
       {/* ── قائمة المحادثات ── */}
       <div
         // ✅ التعديل 2: القائمة تختفي في الموبايل إذا تم اختيار محادثة، وإلا تأخذ العرض كامل

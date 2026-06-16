@@ -216,7 +216,9 @@ export default function ChatInput({
   }, [editingMsg]);
 
   return (
-    <div className="bg-white border-t border-[#E8E8E8] px-4 py-3 shrink-0">
+    <div
+      className="bg-white border-t border-[#E8E8E8] px-4 py-3 shrink-0"
+      style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
       {replyTo && !editingMsg && (
         <div
           className="flex items-center justify-between mb-2 px-3 py-2
