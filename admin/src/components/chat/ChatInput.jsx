@@ -157,9 +157,15 @@ export default function ChatInput({
     // وضع التعديل
     if (editingMsg) {
       if (!text.trim()) return;
-      editMsg.mutate({ messageId: editingMsg._id, text: text.trim() });
-      setText("");
-      resetTextareaHeight();
+       editMsg.mutate(
+        { messageId: editingMsg._id, text: text.trim() },
+        {
+          onSuccess: () => {
+            setText("");
+            resetTextareaHeight();
+          },
+        },
+      );
       return;
     }
 
@@ -169,24 +175,36 @@ export default function ChatInput({
       fd.append("file", preview.file);
       if (text.trim()) fd.append("text", text.trim());
       if (replyTo) fd.append("replyTo", replyTo._id);
-      sendMedia.mutate({ conversationId: activeConvId, formData: fd });
-      setText("");
-      resetTextareaHeight();
-      clearPreview();
-      onClearReply?.();
+       sendMedia.mutate(
+        { conversationId: activeConvId, formData: fd },
+        {
+          onSuccess: () => {
+            setText("");
+            resetTextareaHeight();
+            clearPreview();
+            onClearReply?.();
+          },
+        },
+      );
       return;
     }
 
     // إرسال نص
     if (!text.trim()) return;
-    sendText.mutate({
-      conversationId: activeConvId,
-      text: text.trim(),
-      replyTo: replyTo?._id,
-    });
-    setText("");
-    resetTextareaHeight();
-    onClearReply?.();
+    sendText.mutate(
+      {
+        conversationId: activeConvId,
+        text: text.trim(),
+        replyTo: replyTo?._id,
+      },
+      {
+        onSuccess: () => {
+          setText("");
+          resetTextareaHeight();
+          onClearReply?.();
+        },
+      },
+    );
   }, [isSending, activeConvId, text, preview, editingMsg, replyTo]);
 
   const handleKeyDown = (e) => {

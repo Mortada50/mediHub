@@ -29,9 +29,7 @@ export const sendTextMessage = ({ conversationId, text, replyTo }) =>
   });
 
 export const sendMediaMessage = ({ conversationId, formData }) =>
-  api.post(`/chats/conversations/${conversationId}/messages/media`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  api.post(`/chats/conversations/${conversationId}/messages/media`, formData);
 
 export const markAsRead = (conversationId) =>
   api.post(`/chats/conversations/${conversationId}/read`);

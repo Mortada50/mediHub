@@ -3,6 +3,7 @@ import { Message } from "../models/Message.model.js";
 import { sendSuccess, sendError, sendPaginated } from "../utils/response.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
 import { canChat, chatDeniedMsg } from "../utils/chatPermissions.js";
+import mongoose from "mongoose";
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -81,17 +82,29 @@ export const getMyConversations = async (req, res) => {
       .sort({ lastMessageAt: -1 })
       .lean();
 
-    const conversations = await Promise.all(
-      myConversations.map(async (conv) => {
-        const unread = await Message.countDocuments({
-          conversationId: conv._id,
-          isDeleted: false,
-          "sender.userId": { $ne: userId },
-          "readBy.userId": { $ne: userId },
-        });
-        return { ...conv, unread };
-      }),
-    );
+     const unreadRows = await Message.aggregate([
+       {
+         $match: {
+           conversationId: { $in: myConversations.map((conv) => conv._id) },
+           isDeleted: false,
+           deletedFor: { $ne: new mongoose.Types.ObjectId(userId) },
+           "sender.userId": { $ne: new mongoose.Types.ObjectId(userId) },
+           "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
+         },
+       },
+       { $group: { _id: "$conversationId", unread: { $sum: 1 } } },
+     ]);
+
+     const unreadByConversationId = new Map(
+       unreadRows.map(({ _id, unread }) => [_id.toString(), unread]),
+     );
+
+     const conversations = myConversations.map((conv) => ({
+       ...conv,
+       unread: unreadByConversationId.get(conv._id.toString()) ?? 0,
+     }));
+
+    
 
     sendSuccess(res, conversations);
   } catch (error) {

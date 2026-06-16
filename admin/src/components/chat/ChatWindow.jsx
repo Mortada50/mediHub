@@ -77,8 +77,9 @@ export default function ChatWindow({
 
   // ── Scroll to bottom عند رسائل جديدة ──────────
   useEffect(() => {
+    if (isFetchingNextPage) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [activeConvId, messages.length, isFetchingNextPage]);
 
   // ── Load more عند الوصول للأعلى ──────────────
   useEffect(() => {
@@ -98,8 +99,8 @@ export default function ChatWindow({
   // ── Delete mutation ───────────────────────────
   const delMutation = useMutation({
     mutationFn: deleteMessage,
-    onSuccess: (_, { messageId, forWho }) => {
-      qc.setQueryData(["messages", activeConvId], (old) => {
+    onSuccess: (_, { messageId, forWho, conversationId }) => {
+      qc.setQueryData(["messages", conversationId], (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -120,7 +121,6 @@ export default function ChatWindow({
           })),
         };
       });
-     
     },
   });
 
@@ -256,7 +256,11 @@ export default function ChatWindow({
                 setReplyTo(null);
               }}
               onDelete={(id, fw) =>
-                delMutation.mutate({ messageId: id, forWho: fw })
+                  delMutation.mutate({
+                  messageId: id,
+                  forWho: fw,
+                  conversationId: activeConvId,
+                })
               }
             />
           ))

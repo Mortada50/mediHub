@@ -82,7 +82,17 @@ export default function MessageBubble({
           <img
             src={msg.content?.media?.url}
             alt="صورة"
-            onClick={() => window.open(msg.content.media.url, "_blank")}
+              onClick={() => {
+              const rawUrl = msg.content?.media?.url;
+              if (!rawUrl) return;
+              try {
+                const parsed = new URL(rawUrl, window.location.origin);
+                if (!["http:", "https:"].includes(parsed.protocol)) return;
+                window.open(parsed.toString(), "_blank", "noopener,noreferrer");
+              } catch {
+                // ignore invalid URLs
+              }
+            }}
             className="rounded-xl max-w-full mb-1.5 max-h-56 object-cover cursor-pointer"
           />
         )}

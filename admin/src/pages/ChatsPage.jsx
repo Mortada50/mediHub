@@ -28,7 +28,22 @@ export default function ChatsPage() {
 
   // جلب Clerk token مرة واحدة
   useEffect(() => {
-    getToken().then(setToken);
+    let cancelled = false;
+
+    getToken()
+      .then((value) => {
+        if (!cancelled) setToken(value);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("[chat] failed to fetch Clerk token", error);
+          setToken(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [getToken]);
 
   // ── Socket ──────────────────────────────────────
@@ -56,9 +71,16 @@ export default function ChatsPage() {
   // انضمام / مغادرة غرفة المحادثة
   useEffect(() => {
     if (!socket || !activeConvId) return;
-    socket.emit("join_conversation", { conversationId: activeConvId });
-    return () =>
+    const joinActiveConversation = () => {
+      socket.emit("join_conversation", { conversationId: activeConvId });
+    };
+    joinActiveConversation();
+    socket.on("connect", joinActiveConversation);
+
+    return () => {
+      socket.off("connect", joinActiveConversation);
       socket.emit("leave_conversation", { conversationId: activeConvId });
+    };
   }, [socket, activeConvId]);
 
   // ── Typing ──────────────────────────────────────
@@ -108,7 +130,7 @@ export default function ChatsPage() {
 
   return (
     <div
-      className={`flex overflow-hidden bg-background fixed pr-3 ${isSidebarOpen ? "mr-[230px]" : "mr-[80px]"} transation-all duration-300`}
+      className={`flex overflow-hidden bg-background fixed pr-3 ${isSidebarOpen ? "mr-[230px]" : "mr-[80px]"} transition-all duration-300`}
       style={{ height: "calc(100vh - 81px)", left: 0, right: 0 }}>
       {/* ── قائمة المحادثات ── */}
       <div className="w-[300px] shrink-0 flex flex-col border-l border-[#E8E8E8]">

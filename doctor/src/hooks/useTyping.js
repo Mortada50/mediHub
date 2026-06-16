@@ -34,7 +34,10 @@ export const useTyping = ({ socket, activeConvId }) => {
 
     // إيقاف تلقائي بعد 3 ثوانٍ كـ fallback
     const prevTimer = remoteTypingTimers.current.get(conversationId);
-    if (prevTimer) clearTimeout(prevTimer);
+     if (prevTimer) {
+      clearTimeout(prevTimer);
+      remoteTypingTimers.current.delete(conversationId);
+    }
     if (isTyping) {
       const timer = setTimeout(() => {
         setTypingMap((prev) => ({ ...prev, [conversationId]: false }));
@@ -42,6 +45,13 @@ export const useTyping = ({ socket, activeConvId }) => {
       }, 3000);
       remoteTypingTimers.current.set(conversationId, timer);
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      remoteTypingTimers.current.forEach(clearTimeout);
+      remoteTypingTimers.current.clear();
+    };
   }, []);
 
   // إرسال حدث الكتابة (مع debounce)

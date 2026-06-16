@@ -20,18 +20,19 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
       qc.setQueryData(["messages", cid], (old) => {
         if (!old) return old;
         const pages = old.pages ?? [];
-        const lastPage = pages[pages.length - 1];
-        if (!lastPage) return old;
+        const newestPage = pages[0];
+        if (!newestPage) return old;
 
-        // منع التكرار
-        const exists = lastPage.data?.some((m) => m._id === msg._id);
+        const exists = pages.some((page) =>
+          page.data?.some((m) => m._id === msg._id),
+        );
         if (exists) return old;
 
         return {
           ...old,
           pages: [
-            ...pages.slice(0, -1),
-            { ...lastPage, data: [...(lastPage.data || []), msg] },
+             { ...newestPage, data: [...(newestPage.data || []), msg] },
+            ...pages.slice(1),
           ],
         };
       });
@@ -48,7 +49,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
                   lastMessage: msg,
                   lastMessageAt: msg.createdAt,
                   // زيادة العداد فقط إذا المحادثة مش مفتوحة
-                  _unread: cid === activeConvId ? 0 : (c._unread || 0) + 1,
+                  unread: cid === activeConvId ? 0 : (c.unread || 0) + 1,
                 }
               : c,
           ),
@@ -164,7 +165,7 @@ export const useSocketEvents = ({ socket, activeConvId, myId }) => {
           return {
             ...old,
             data: old.data.map((c) =>
-              c._id === conversationId ? { ...c, _unread: 0 } : c,
+              c._id === conversationId ? { ...c, unread: 0 } : c,
             ),
           };
         });
