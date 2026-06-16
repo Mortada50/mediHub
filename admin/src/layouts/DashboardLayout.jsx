@@ -1,60 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/clerk-react";
-import { Outlet ,Navigate} from "react-router";
+import { Outlet, Navigate } from "react-router";
 
 import Navbar from "../components/Navbar";
-import Sidebar, { SIDEBAR_OPEN_WIDTH, SIDEBAR_CLOSED_WIDTH } from "../components/Sidebar";
+import Sidebar, {
+  SIDEBAR_OPEN_WIDTH,
+  SIDEBAR_CLOSED_WIDTH,
+} from "../components/Sidebar";
 import PageLoader from "../components/PageLoader";
 
 const NAVBAR_HEIGHT = "81px";
 
 function DashboardLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
-  const {signOut} = useClerk()
-  
-     
-     const { user, isLoaded } = useUser();
-     
-     useEffect(() => {
-       if (!isLoaded || !user) return;
+  const { signOut } = useClerk();
+  const { user, isLoaded } = useUser();
 
-       const checkRole = async () => {
-         const role = user?.publicMetadata?.role;
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-         if (role !== "admin") {
-           await signOut({ redirectUrl: "/login" });
-         }
-       };
+  useEffect(() => {
+    if (!isLoaded || !user) return;
 
-       checkRole();
-     }, [isLoaded, user, signOut]);
+    const checkRole = async () => {
+      const role = user?.publicMetadata?.role;
 
-      
+      if (role !== "admin") {
+        await signOut({ redirectUrl: "/login" });
+      }
+    };
 
-     if (!isLoaded) return <PageLoader />;
-     
-     if (!user) return <Navigate to="/login" replace />;
-     
+    checkRole();
+  }, [isLoaded, user, signOut]);
+
+  if (!isLoaded) return <PageLoader />;
+
+  if (!user) return <Navigate to="/login" replace />;
+
   return (
     user?.publicMetadata?.role === "admin" && (
       <div className="min-h-screen no-scrollbar">
-        <Navbar />
+        <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
 
         <div
           style={{ paddingTop: NAVBAR_HEIGHT }}
           className="flex min-h-screen">
           <main
-            style={{
-              marginRight: isSidebarOpen
-                ? `${SIDEBAR_OPEN_WIDTH}px`
-                : `${SIDEBAR_CLOSED_WIDTH}px`,
-              transition: "margin-right 300ms ease-in-out",
-              width: "100%",
-            }}
-            className="p-6 pt-3 pr-3">
+            className={`p-4 md:p-6 md:pt-3 pr-3 transition-all duration-300 w-full
+              ${isSidebarOpen ? "md:mr-[230px]" : "md:mr-[80px]"} mr-0
+            `}>
             <Outlet context={{ isSidebarOpen }} />
           </main>
+
+          {isSidebarOpen && (
+            <div
+              className="md:hidden fixed inset-0 bg-black/40 z-30 backdrop-blur-sm"
+              style={{ top: NAVBAR_HEIGHT }}
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
 
           <Sidebar
             isOpen={isSidebarOpen}

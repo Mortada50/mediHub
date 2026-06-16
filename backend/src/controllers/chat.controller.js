@@ -3,6 +3,7 @@ import { Message } from "../models/Message.model.js";
 import { sendSuccess, sendError, sendPaginated } from "../utils/response.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
 import { canChat, chatDeniedMsg } from "../utils/chatPermissions.js";
+import { emitToUser } from "../socket/socket.handler.js";
 import mongoose from "mongoose";
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -14,20 +15,13 @@ const buildSender = (req) => ({
 
 /**
  * POST /api/chats/conversations
- * إنشاء محادثة فردية
- *
- * body: {
- *   participantId:   string   ← mongoId الطرف الآخر
- *   participantRole: string   ← "doctor" | "patient" | "pharmacy" | "admin"
- * }
  */
 export const createConversation = async (req, res) => {
   try {
     const { participantId, participantRole } = req.body;
     const meId = req.mongoId;
-    const meRole = req.userRole; // lowercase
+    const meRole = req.userRole;
 
-    // ── validation ──
     if (!participantId || !participantRole) {
       return sendError(res, "participantId و participantRole مطلوبان", 400);
     }
@@ -36,12 +30,10 @@ export const createConversation = async (req, res) => {
       return sendError(res, "لا يمكنك مراسلة نفسك", 400);
     }
 
-    // ── هل الزوج مسموح؟ ──
     if (!canChat(meRole, participantRole)) {
       return sendError(res, chatDeniedMsg(meRole, participantRole), 403);
     }
 
-    // ── منع تكرار المحادثة الفردية ──
     const existing = await Conversation.findOne({
       isActive: true,
       "participants.userId": { $all: [meId, participantId] },
@@ -59,6 +51,9 @@ export const createConversation = async (req, res) => {
       ],
     });
 
+    const io = req.app.get("io");
+    emitToUser(io, participantId, "new_conversation", conversation);
+
     sendSuccess(res, conversation, "تم إنشاء المحادثة", 201);
   } catch (error) {
     sendError(res, error.message);
@@ -67,7 +62,6 @@ export const createConversation = async (req, res) => {
 
 /**
  * GET /api/chats/conversations
- *
  */
 export const getMyConversations = async (req, res) => {
   try {
@@ -82,29 +76,27 @@ export const getMyConversations = async (req, res) => {
       .sort({ lastMessageAt: -1 })
       .lean();
 
-     const unreadRows = await Message.aggregate([
-       {
-         $match: {
-           conversationId: { $in: myConversations.map((conv) => conv._id) },
-           isDeleted: false,
-           deletedFor: { $ne: new mongoose.Types.ObjectId(userId) },
-           "sender.userId": { $ne: new mongoose.Types.ObjectId(userId) },
-           "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
-         },
-       },
-       { $group: { _id: "$conversationId", unread: { $sum: 1 } } },
-     ]);
+    const unreadRows = await Message.aggregate([
+      {
+        $match: {
+          conversationId: { $in: myConversations.map((conv) => conv._id) },
+          isDeleted: false,
+          deletedFor: { $ne: new mongoose.Types.ObjectId(userId) },
+          "sender.userId": { $ne: new mongoose.Types.ObjectId(userId) },
+          "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
+        },
+      },
+      { $group: { _id: "$conversationId", unread: { $sum: 1 } } },
+    ]);
 
-     const unreadByConversationId = new Map(
-       unreadRows.map(({ _id, unread }) => [_id.toString(), unread]),
-     );
+    const unreadByConversationId = new Map(
+      unreadRows.map(({ _id, unread }) => [_id.toString(), unread]),
+    );
 
-     const conversations = myConversations.map((conv) => ({
-       ...conv,
-       unread: unreadByConversationId.get(conv._id.toString()) ?? 0,
-     }));
-
-    
+    const conversations = myConversations.map((conv) => ({
+      ...conv,
+      unread: unreadByConversationId.get(conv._id.toString()) ?? 0,
+    }));
 
     sendSuccess(res, conversations);
   } catch (error) {
@@ -114,7 +106,6 @@ export const getMyConversations = async (req, res) => {
 
 /**
  * GET /api/chats/conversations/:conversationId
- *
  */
 export const getConversation = async (req, res) => {
   try {
@@ -139,7 +130,6 @@ export const getConversation = async (req, res) => {
 
 /**
  * DELETE /api/chats/conversations/:conversationId
- *
  */
 export const deleteConversation = async (req, res) => {
   try {
@@ -165,8 +155,6 @@ export const deleteConversation = async (req, res) => {
 
 /**
  * GET /api/chats/conversations/:conversationId/messages
- * جلب الرسائل مع pagination (الأحدث أولاً ثم نعكسها)
- * query: page=1 & limit=30
  */
 export const getMessages = async (req, res) => {
   try {
@@ -175,7 +163,6 @@ export const getMessages = async (req, res) => {
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 30, 100);
 
-    // التحقق أن المستخدم طرف في هذه المحادثة
     const inConv = await Conversation.exists({
       _id: conversationId,
       "participants.userId": userId,
@@ -187,7 +174,6 @@ export const getMessages = async (req, res) => {
 
     const filter = {
       conversationId,
-      isDeleted: false,
       deletedFor: { $ne: userId },
     };
 
@@ -201,13 +187,11 @@ export const getMessages = async (req, res) => {
         .lean(),
     ]);
 
-    // تحديث lastSeenAt لهذا المستخدم
     await Conversation.updateOne(
       { _id: conversationId, "participants.userId": userId },
       { $set: { "participants.$.lastSeenAt": new Date() } },
     );
 
-    // نعكس الترتيب ليأتي الأقدم أولاً (الصحيح لواجهة الشات)
     sendPaginated(res, messages.reverse(), total, page, limit);
   } catch (error) {
     sendError(res, error.message);
@@ -216,8 +200,6 @@ export const getMessages = async (req, res) => {
 
 /**
  * POST /api/chats/conversations/:conversationId/messages
- *
- * body: { text, replyTo? }
  */
 export const sendTextMessage = async (req, res) => {
   try {
@@ -229,7 +211,7 @@ export const sendTextMessage = async (req, res) => {
       return sendError(res, "نص الرسالة مطلوب", 400);
     }
 
-    const conv = await Conversation.exists({
+    const conv = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": sender.userId,
       isActive: true,
@@ -246,14 +228,28 @@ export const sendTextMessage = async (req, res) => {
       replyTo: replyTo || null,
     });
 
-    // تحديث آخر رسالة في المحادثة
+    if (message.replyTo) {
+      await message.populate(
+        "replyTo",
+        "content.text content.media type sender",
+      );
+    }
+
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: message._id,
       lastMessageAt: message.createdAt,
     });
 
-    // بث الرسالة لجميع المتصلين بالغرفة عبر Socket.IO
-    req.app.get("io")?.to(conversationId).emit("new_message", message);
+    const io = req.app.get("io");
+
+    io?.to(conversationId).emit("new_message", message);
+
+    conv.participants.forEach((p) => {
+      const pId = p.userId.toString();
+      if (pId !== sender.userId.toString()) {
+        emitToUser(io, pId, "new_message", message);
+      }
+    });
 
     sendSuccess(res, message, "تم إرسال الرسالة", 201);
   } catch (error) {
@@ -263,8 +259,6 @@ export const sendTextMessage = async (req, res) => {
 
 /**
  * POST /api/chats/conversations/:conversationId/messages/media
- * إرسال صورة أو ملف  — multipart/form-data
- * fields: file (required), text? (caption), replyTo?
  */
 export const sendMediaMessage = async (req, res) => {
   try {
@@ -276,7 +270,7 @@ export const sendMediaMessage = async (req, res) => {
       return sendError(res, "لم يتم رفع أي ملف", 400);
     }
 
-    const conv = await Conversation.exists({
+    const conv = await Conversation.findOne({
       _id: conversationId,
       "participants.userId": sender.userId,
       isActive: true,
@@ -304,12 +298,28 @@ export const sendMediaMessage = async (req, res) => {
       replyTo: replyTo || null,
     });
 
+    if (message.replyTo) {
+      await message.populate(
+        "replyTo",
+        "content.text content.media type sender",
+      );
+    }
+
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: message._id,
       lastMessageAt: message.createdAt,
     });
 
-    req.app.get("io")?.to(conversationId).emit("new_message", message);
+    const io = req.app.get("io");
+
+    io?.to(conversationId).emit("new_message", message);
+
+    conv.participants.forEach((p) => {
+      const pId = p.userId.toString();
+      if (pId !== sender.userId.toString()) {
+        emitToUser(io, pId, "new_message", message);
+      }
+    });
 
     sendSuccess(res, message, "تم إرسال الملف", 201);
   } catch (error) {
@@ -319,8 +329,6 @@ export const sendMediaMessage = async (req, res) => {
 
 /**
  * PATCH /api/chats/messages/:messageId
- * تعديل رسالة نصية — المُرسِل فقط
- * body: { text }
  */
 export const editMessage = async (req, res) => {
   try {
@@ -350,10 +358,19 @@ export const editMessage = async (req, res) => {
     msg.editedAt = new Date();
     await msg.save();
 
-    req.app
-      .get("io")
-      ?.to(msg.conversationId.toString())
-      .emit("message_edited", msg);
+    const io = req.app.get("io");
+    io?.to(msg.conversationId.toString()).emit("message_edited", msg);
+
+    // ✅ تحديث قائمة المحادثات: إرسال حدث التعديل لجميع الغرف الشخصية للمشاركين
+    const conv = await Conversation.findById(msg.conversationId);
+    if (conv) {
+      conv.participants.forEach((p) => {
+        const pId = p.userId.toString();
+        if (pId !== userId.toString()) {
+          emitToUser(io, pId, "message_edited", msg);
+        }
+      });
+    }
 
     sendSuccess(res, msg, "تم تعديل الرسالة");
   } catch (error) {
@@ -363,9 +380,6 @@ export const editMessage = async (req, res) => {
 
 /**
  * DELETE /api/chats/messages/:messageId?for=me|all
- * حذف رسالة
- *   for=me  → يختفي للحاذف فقط
- *   for=all → يُحذف للجميع (المُرسِل أو الأدمن فقط)
  */
 export const deleteMessage = async (req, res) => {
   try {
@@ -379,6 +393,8 @@ export const deleteMessage = async (req, res) => {
       return sendError(res, "الرسالة غير موجودة", 404);
     }
 
+    const io = req.app.get("io");
+
     if (deleteFor === "all") {
       const isSender = msg.sender.userId.toString() === userId.toString();
       const isAdmin = userRole === "admin";
@@ -387,26 +403,38 @@ export const deleteMessage = async (req, res) => {
         return sendError(res, "لا تملك صلاحية الحذف للجميع", 403);
       }
 
-      // حذف الميديا من Cloudinary إن وُجدت
       if (msg.content?.media?.publicId) {
         await deleteFromCloudinary(msg.content.media.url);
       }
 
+      // إبقاء الرسالة وجعل نصها (محذوف)
       msg.isDeleted = true;
       msg.deletedAt = new Date();
       msg.content = { text: "تم حذف هذه الرسالة" };
       await msg.save();
 
-      req.app
-        .get("io")
-        ?.to(msg.conversationId.toString())
-        .emit("message_deleted", {
-          messageId,
-          conversationId: msg.conversationId,
-          for: "all",
+      const conv = await Conversation.findById(msg.conversationId);
+
+      io?.to(msg.conversationId.toString()).emit("message_deleted", {
+        messageId,
+        conversationId: msg.conversationId,
+        for: "all",
+      });
+
+      // ✅ حل المشكلة: إرسال حدث الحذف لجميع الغرف الشخصية لكي تصل للطرف الآخر حتى وإن كان يتصفح قائمة المحادثات فقط
+      if (conv) {
+        conv.participants.forEach((p) => {
+          const pId = p.userId.toString();
+          if (pId !== userId.toString()) {
+            emitToUser(io, pId, "message_deleted", {
+              messageId,
+              conversationId: msg.conversationId,
+              for: "all",
+            });
+          }
         });
+      }
     } else {
-      // حذف للمستخدم فقط
       const alreadyDeleted = msg.deletedFor
         .map(String)
         .includes(userId.toString());
@@ -414,6 +442,12 @@ export const deleteMessage = async (req, res) => {
         msg.deletedFor.push(userId);
         await msg.save();
       }
+
+      emitToUser(io, userId, "message_deleted", {
+        messageId,
+        conversationId: msg.conversationId,
+        for: "me",
+      });
     }
 
     sendSuccess(res, {}, "تم حذف الرسالة");
@@ -424,7 +458,6 @@ export const deleteMessage = async (req, res) => {
 
 /**
  * POST /api/chats/conversations/:conversationId/read
- *
  */
 export const markAsRead = async (req, res) => {
   try {
@@ -452,17 +485,21 @@ export const markAsRead = async (req, res) => {
       },
     );
 
-    // تحديث lastSeenAt
     await Conversation.updateOne(
       { _id: conversationId, "participants.userId": userId },
       { $set: { "participants.$.lastSeenAt": new Date() } },
     );
 
-    req.app.get("io")?.to(conversationId).emit("messages_read", {
+    const io = req.app.get("io");
+    const readPayload = {
       conversationId,
       userId,
       readAt: new Date(),
-    });
+    };
+
+    io?.to(conversationId).emit("messages_read", readPayload);
+
+    emitToUser(io, userId, "messages_read", readPayload);
 
     sendSuccess(res, {}, "تم تعليم الرسائل كمقروءة");
   } catch (error) {
@@ -472,7 +509,6 @@ export const markAsRead = async (req, res) => {
 
 /**
  * GET /api/chats/conversations/:conversationId/unread-count
- *
  */
 export const getUnreadCount = async (req, res) => {
   try {

@@ -1,15 +1,11 @@
-/**
- * useTyping.js
- * يدير حالة "يكتب..." للطرف الآخر ويبث أحداث الكتابة
- */
 import { useState, useRef, useCallback, useEffect } from "react";
 
-export const useTyping = ({ socket, activeConvId }) => {
-  // { [convId]: bool } — هل الطرف الآخر يكتب في هذه المحادثة؟
+export const useTyping = ({ socket, activeConvId, myId, receiverId }) => {
   const [typingMap, setTypingMap] = useState({});
   const remoteTypingTimers = useRef(new Map());
   const typingTimer = useRef(null);
   const isTypingRef = useRef(false);
+  const lastEmitTime = useRef(0);
   const typingConvRef = useRef(null);
 
   useEffect(() => {
@@ -20,32 +16,37 @@ export const useTyping = ({ socket, activeConvId }) => {
       isTypingRef.current &&
       socket
     ) {
-      socket.emit("typing_stop", { conversationId: prevConv });
+      socket.emit("typing_stop", { conversationId: prevConv, receiverId });
       isTypingRef.current = false;
       clearTimeout(typingTimer.current);
     }
     typingConvRef.current = activeConvId ?? null;
     return () => clearTimeout(typingTimer.current);
-  }, [activeConvId, socket]);
+  }, [activeConvId, socket, receiverId]);
 
-  // الاستماع لأحداث الكتابة القادمة
-  const handleTypingEvent = useCallback(({ conversationId, isTyping }) => {
-    setTypingMap((prev) => ({ ...prev, [conversationId]: isTyping }));
+  const handleTypingEvent = useCallback(
+    ({ conversationId, userId, isTyping }) => {
+      if (userId && myId && userId.toString() === myId.toString()) return;
 
-    // إيقاف تلقائي بعد 3 ثوانٍ كـ fallback
-    const prevTimer = remoteTypingTimers.current.get(conversationId);
-     if (prevTimer) {
-      clearTimeout(prevTimer);
-      remoteTypingTimers.current.delete(conversationId);
-    }
-    if (isTyping) {
-      const timer = setTimeout(() => {
-        setTypingMap((prev) => ({ ...prev, [conversationId]: false }));
+      setTypingMap((prev) => ({ ...prev, [conversationId]: isTyping }));
+
+      const prevTimer = remoteTypingTimers.current.get(conversationId);
+      if (prevTimer) {
+        clearTimeout(prevTimer);
         remoteTypingTimers.current.delete(conversationId);
-      }, 3000);
-      remoteTypingTimers.current.set(conversationId, timer);
-    }
-  }, []);
+      }
+
+      if (isTyping) {
+        // ✅ حل المشكلة 4: تمديد وقت إخفاء المؤشر طالما أن المستخدم يستمر بالكتابة
+        const timer = setTimeout(() => {
+          setTypingMap((prev) => ({ ...prev, [conversationId]: false }));
+          remoteTypingTimers.current.delete(conversationId);
+        }, 3000);
+        remoteTypingTimers.current.set(conversationId, timer);
+      }
+    },
+    [myId],
+  );
 
   useEffect(() => {
     return () => {
@@ -54,22 +55,24 @@ export const useTyping = ({ socket, activeConvId }) => {
     };
   }, []);
 
-  // إرسال حدث الكتابة (مع debounce)
   const emitTyping = useCallback(() => {
     if (!socket || !activeConvId) return;
 
-    if (!isTypingRef.current) {
-      socket.emit("typing_start", { conversationId: activeConvId });
+    const now = Date.now();
+    // ✅ حل المشكلة 4: إرسال الإشعار كل ثانيتين للحفاظ على المؤشر ظاهراً
+    if (!isTypingRef.current || now - lastEmitTime.current > 2000) {
+      socket.emit("typing_start", { conversationId: activeConvId, receiverId });
       isTypingRef.current = true;
+      lastEmitTime.current = now;
     }
 
     clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(() => {
-      socket.emit("typing_stop", { conversationId: activeConvId });
+      socket.emit("typing_stop", { conversationId: activeConvId, receiverId });
       isTypingRef.current = false;
       typingConvRef.current = null;
-    }, 1500);
-  }, [socket, activeConvId]);
+    }, 2000);
+  }, [socket, activeConvId, receiverId]);
 
   return { typingMap, handleTypingEvent, emitTyping };
 };

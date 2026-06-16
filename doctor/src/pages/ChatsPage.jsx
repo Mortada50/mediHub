@@ -22,11 +22,9 @@ export default function ChatsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // mongoId من publicMetadata
   const myId = session?.user?.publicMetadata?.mongoId;
   const sessionId = session?.id;
 
-  // جلب Clerk token مرة واحدة
   useEffect(() => {
     let cancelled = false;
 
@@ -46,12 +44,15 @@ export default function ChatsPage() {
     };
   }, [getToken]);
 
-  // ── Socket ──────────────────────────────────────
   const { socket, connected } = useSocket(token, sessionId);
 
-  // online / offline
   useEffect(() => {
     if (!socket) return;
+
+    socket.on("online_users", (usersArray) => {
+      setOnlineUsers(new Set(usersArray));
+    });
+
     socket.on("user_online", ({ userId }) =>
       setOnlineUsers((s) => new Set([...s, userId])),
     );
@@ -63,15 +64,15 @@ export default function ChatsPage() {
       }),
     );
     return () => {
+      socket.off("online_users");
       socket.off("user_online");
       socket.off("user_offline");
     };
   }, [socket]);
 
-  // انضمام / مغادرة غرفة المحادثة
   useEffect(() => {
     if (!socket || !activeConvId) return;
-  const joinActiveConversation = () => {
+    const joinActiveConversation = () => {
       socket.emit("join_conversation", { conversationId: activeConvId });
     };
 
@@ -84,19 +85,6 @@ export default function ChatsPage() {
     };
   }, [socket, activeConvId]);
 
-  // ── Typing ──────────────────────────────────────
-  const { typingMap, handleTypingEvent, emitTyping } = useTyping({
-    socket,
-    activeConvId,
-  });
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("typing", handleTypingEvent);
-    return () => socket.off("typing");
-  }, [socket, handleTypingEvent]);
-
-  // ── TanStack Query: قائمة المحادثات ─────────────
   const { data: convData, isLoading: loadingConvs } = useQuery({
     queryKey: ["conversations"],
     queryFn: getConversations,
@@ -106,11 +94,25 @@ export default function ChatsPage() {
   });
 
   const conversations = convData ?? [];
-
-  // ── Socket events → يُحدِّث TanStack cache ──────
-  useSocketEvents({ socket, activeConvId, myId });
-
   const activeConv = conversations.find((c) => c._id === activeConvId);
+  const receiverId = activeConv?.participants?.find(
+    (p) => p.userId?._id?.toString() !== myId?.toString(),
+  )?.userId?._id;
+
+  const { typingMap, handleTypingEvent, emitTyping } = useTyping({
+    socket,
+    activeConvId,
+    myId,
+    receiverId,
+  });
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("typing", handleTypingEvent);
+    return () => socket.off("typing", handleTypingEvent);
+  }, [socket, handleTypingEvent]);
+
+  useSocketEvents({ socket, activeConvId, myId });
 
   useEffect(() => {
     const openId = location.state?.openConversationId;
@@ -131,11 +133,15 @@ export default function ChatsPage() {
 
   return (
     <div
-      className={`flex overflow-hidden bg-background fixed pr-3 ${isSidebarOpen ? "mr-[230px]" : "mr-[80px]"} transition-all duration-300`}
+      // ✅ التعديل 1: إضافة max-md:pr-0 و max-md:mr-0 لأخذ عرض شاشة الموبايل بالكامل وتجاهل مساحة القائمة الجانبية للتطبيق
+      className={`flex overflow-hidden bg-background fixed pr-3 max-md:pr-0 ${isSidebarOpen ? "mr-[230px] max-md:mr-0" : "mr-[80px] max-md:mr-0"} transition-all duration-300`}
       style={{ height: "calc(100vh - 81px)", left: 0, right: 0 }}>
       {/* ── قائمة المحادثات ── */}
-      <div className="w-[300px] shrink-0 flex flex-col border-l border-[#E8E8E8]">
-        {/* شريط حالة الاتصال */}
+      <div
+        // ✅ التعديل 2: القائمة تختفي في الموبايل إذا تم اختيار محادثة، وإلا تأخذ العرض كامل
+        className={`shrink-0 flex-col border-l border-[#E8E8E8] transition-all duration-300
+          ${activeConvId ? "hidden md:flex md:w-[300px]" : "flex w-full md:w-[300px]"}
+        `}>
         <div
           className={`h-0.5 w-full transition-colors duration-500
             ${connected ? "bg-primary" : "bg-[#E8E8E8]"}`}
@@ -169,6 +175,11 @@ export default function ChatsPage() {
         replyTo={replyTo}
         setReplyTo={setReplyTo}
         onTyping={emitTyping}
+        // ✅ التعديل 3: تمرير دالة رجوع للاستخدام في الموبايل
+        onBack={() => {
+          setActive(null);
+          setReplyTo(null);
+        }}
       />
     </div>
   );

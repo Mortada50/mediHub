@@ -147,7 +147,7 @@ export default function ConversationList({
                   {isOnline && (
                     <span
                       className="absolute bottom-0 left-0 size-3 rounded-full
-                                     bg-accent border-2 border-white"
+                                     bg-accent bg-primary"
                     />
                   )}
                 </div>
