@@ -7,7 +7,7 @@ import {
   Check,
   CheckCheck,
   Camera,
-  File
+  File,
 } from "lucide-react";
 
 const fmtTime = (iso) =>
@@ -82,7 +82,7 @@ export default function MessageBubble({
           <img
             src={msg.content?.media?.url}
             alt="صورة"
-              onClick={() => {
+            onClick={() => {
               const rawUrl = msg.content?.media?.url;
               if (!rawUrl) return;
               try {
@@ -105,7 +105,9 @@ export default function MessageBubble({
             rel="noreferrer"
             className={`flex items-center gap-2 mb-1.5 px-2 py-1.5 rounded-lg
               ${isMe ? "bg-white/10 text-white" : "bg-background-primary text-primary"}`}>
-            <span className="text-lg"><File size={16} /></span>
+            <span className="text-lg">
+              <File size={16} />
+            </span>
             <span className="text-xs underline truncate max-w-[150px]">
               {msg.content?.media?.fileName ?? "ملف"}
             </span>
@@ -136,8 +138,8 @@ export default function MessageBubble({
       {/* ── Actions (تظهر عند hover) ── */}
       {!deleted && (
         <div
-          className={`flex items-center gap-1
-          opacity-0 group-hover:opacity-100 transition-opacity
+          className={`flex items-center gap-1 transition-opacity
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
           ${isMe ? "flex-row-reverse" : "flex-row"}`}>
           {/* رد */}
           <button

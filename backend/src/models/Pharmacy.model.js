@@ -51,7 +51,11 @@ const weeklyScheduleSchema = new mongoose.Schema(
       validate: {
         validator: function (value) {
           if (!this.isOpen || this.is24Hours) return true;
-          return value > this.openTime;
+          const toMinutes = (t) => {
+            const [h, m] = t.split(":").map(Number);
+            return h * 60 + m;
+          };
+          return toMinutes(value) > toMinutes(this.openTime);
         },
         message: "وقت الإغلاق يجب أن يكون بعد وقت الافتتاح.",
       },
@@ -228,12 +232,9 @@ pharmacySchema.pre("save", function (next) {
   next();
 });
 
-
-
 // ───── Indexes ─────
 pharmacySchema.index({ location: "2dsphere" });
 pharmacySchema.index({ "address.city": 1 });
-
 
 pharmacySchema.index({ "medicines.medicine": 1 });
 
@@ -248,8 +249,6 @@ pharmacySchema.virtual("latLng").get(function () {
 });
 
 export const Pharmacy = mongoose.model("Pharmacy", pharmacySchema);
-
-
 
 // import mongoose from "mongoose";
 // import {

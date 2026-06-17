@@ -343,7 +343,6 @@ export default function PharmacyInfoPage() {
   }
 
   const currentPharmacy = editingPharmacy ? pharmacyDraft : pharmacy;
-console.log(userProfile);
   return (
     <>
       {/* Error dialogs */}
