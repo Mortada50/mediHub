@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Navigate, Route, Routes } from "react-router";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -9,17 +9,24 @@ import RegisterPage from "./pages/RegisterPage";
 import PageLoader from "./components/PageLoader";
 import ForgetPasswordPage from "./pages/ForgetPasswordPage";
 import PendingRejectPage from "./pages/PendingRejectPage";
+import PharmacyInfoPage from "./pages/PharmacyInfoPage";
+import Schedulepage from "./pages/Schedulepage";
+import MedicationsPage from "./pages/MedicationsPage";
+import MedicationsListPage from "./pages/MedicationsListPage";
+import { setAuthToken } from "./lib/axios";
 
 function App() {
+  const { isSignedIn, isLoaded, getToken } = useAuth();
 
- const { isSignedIn, isLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
 
-  const {user, isLoaded: userLoaded} = useUser();
+  useEffect(() => {
+    setAuthToken(getToken);
+  }, [getToken]);
 
-   if (!isLoaded || !userLoaded) return <PageLoader />;
+  if (!isLoaded || !userLoaded) return <PageLoader />;
 
-   const status = user?.publicMetadata?.status;
-    
+  const status = user?.publicMetadata?.status;
 
   return (
     <Routes>
@@ -79,12 +86,14 @@ function App() {
         }>
         <Route index element={<Navigate to={"dashboard"} />} />
         <Route path="dashboard" element={<DashboardPage />} />
-
+        <Route path="pharmacy-info" element={<PharmacyInfoPage />} />
+        <Route path="schedule" element={<Schedulepage />} />
+        <Route path="medications" element={<MedicationsPage />} />
+        <Route path="medications-list" element={<MedicationsListPage />} />
         <Route path="chats" element={<ChatsPage />} />
-       
       </Route>
-    </Routes> 
+    </Routes>
   );
 }
 
-export default App
+export default App;

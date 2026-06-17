@@ -280,7 +280,7 @@ export default function ChatWindow({
         {isTyping && (
           <div className="flex items-end gap-2">
             <div
-              className="px-4 py-3 bg-white rounded-2xl rounded-bl-sm
+              className="px-4 py-3 bg-white rounded-2xl rounded-br-sm
                             border border-[#E8E8E8] shadow-sm">
               <div className="flex gap-1 items-center h-4">
                 {[0, 1, 2].map((i) => (

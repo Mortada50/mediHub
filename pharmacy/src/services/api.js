@@ -2,8 +2,6 @@ import { publicApi } from "./axios.js";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 
-
-
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL) {
@@ -88,7 +86,35 @@ export const useProfileApi = () => {
   const updateProfile = async (profile) => {
     const { data } = await api.put("/pharmacy/update-profile", profile);
     return data;
-  }
+  };
 
-  return { getProfile, updateProfile };
+  const updateManagerProfile = async (profile) => {
+    const formData = new FormData();
+
+    for (const key in profile) {
+      formData.append(key, profile[key]);
+    }
+
+    const { data } = await api.put(
+      "/pharmacy/update-manager-profile",
+      formData,
+    );
+    return data;
+  };
+
+  const updatePharmacyData = async (pharmacyData) => {
+    const { data } = await api.put(
+      "/pharmacy/update-pharmacy/data",
+      pharmacyData,
+    );
+
+    return data;
+  };
+
+  return {
+    getProfile,
+    updateProfile,
+    updateManagerProfile,
+    updatePharmacyData,
+  };
 };
