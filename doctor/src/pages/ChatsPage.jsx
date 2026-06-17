@@ -137,7 +137,6 @@ export default function ChatsPage() {
       style={{ top: "81px", bottom: 0, left: 0, right: 0 }}>
       {/* ── قائمة المحادثات ── */}
       <div
-        // ✅ التعديل 2: القائمة تختفي في الموبايل إذا تم اختيار محادثة، وإلا تأخذ العرض كامل
         className={`shrink-0 flex-col border-l border-[#E8E8E8] transition-all duration-300
           ${activeConvId ? "hidden md:flex md:w-[300px]" : "flex w-full md:w-[300px]"}
         `}>

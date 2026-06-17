@@ -4,7 +4,6 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-// ✅ التعديل 1: استيراد ArrowRight لزر الرجوع
 import {
   MessageCircle,
   VideoIcon,
@@ -41,7 +40,7 @@ export default function ChatWindow({
   replyTo,
   setReplyTo,
   onTyping,
-  onBack, 
+  onBack, // ✅ استقبال الـ prop الجديد
 }) {
   const qc = useQueryClient();
   const bottomRef = useRef(null);

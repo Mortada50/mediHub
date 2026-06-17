@@ -25,7 +25,9 @@ export const initSocket = (io) => {
         ? clerkUser.publicMetadata
         : (clerkUser.unsafeMetadata ?? {});
 
-      if (meta.status && ["pending", "rejected"].includes(meta.status)) {
+      if (
+        meta.status && ["pending", "rejected"].includes(meta.status)
+      ) {
         return next(new Error("الحساب معلق او موقوف"));
       }
 

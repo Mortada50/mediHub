@@ -138,7 +138,6 @@ export default function ChatWindow({
   // ── حالة فارغة ──
   if (!activeConvId) {
     return (
-      // ✅ التعديل 2: إخفاء صفحة الانتظار تماماً في الموبايل لكي تأخذ القائمة مساحة الشاشة بالكامل
       <div className="flex-1 flex-col items-center justify-center bg-white gap-4 hidden md:flex">
         <div className="rounded-full size-35 bg-background-primary flex items-center justify-center">
           <img
@@ -163,7 +162,6 @@ export default function ChatWindow({
         <div
           className="h-[65px] px-3 md:px-5 flex items-center gap-2 md:gap-3
                       bg-background shrink-0">
-          {/* ✅ التعديل 3: إضافة زر رجوع للموبايل، يختفي تلقائياً في الشاشات الكبيرة */}
           <button
             onClick={onBack}
             className="md:hidden size-8 flex items-center justify-center rounded-full
@@ -280,7 +278,7 @@ export default function ChatWindow({
         {isTyping && (
           <div className="flex items-end gap-2">
             <div
-              className="px-4 py-3 bg-white rounded-2xl rounded-bl-sm
+              className="px-4 py-3 bg-white rounded-2xl rounded-br-sm
                             border border-[#E8E8E8] shadow-sm">
               <div className="flex gap-1 items-center h-4">
                 {[0, 1, 2].map((i) => (

@@ -15,6 +15,8 @@ function Navbar({ onMenuClick }) {
       <div className="flex items-center gap-3">
         {/* زر فتح القائمة الجانبية (يظهر فقط في الموبايل) */}
         <button
+        type="button"
+        aria-label="فتح القائمة الجانبية"
           onClick={onMenuClick}
           className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-primary transition-colors">
           <Menu className="size-6" />

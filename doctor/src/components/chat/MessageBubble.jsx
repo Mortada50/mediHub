@@ -136,8 +136,8 @@ export default function MessageBubble({
       {/* ── Actions (تظهر عند hover) ── */}
       {!deleted && (
         <div
-          className={`flex items-center gap-1
-          opacity-0 group-hover:opacity-100 transition-opacity
+          className={`flex items-center gap-1 transition-opacity
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
           ${isMe ? "flex-row-reverse" : "flex-row"}`}>
           {/* رد */}
           <button
