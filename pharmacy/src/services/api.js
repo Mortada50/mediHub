@@ -158,3 +158,27 @@ export const useMedicineApi = () => {
   };
 };
 
+export const useScheduleApi = () => {
+  const api = useApi();
+
+  const getMySchedule = async () => {
+    const { data } = await api.get("/pharmacy/schedule");
+    return data.data;
+  };
+
+  const updateSchedule = async (scheduleData) => {
+    const { data } = await api.put("/pharmacy/schedule", scheduleData);
+    return data;
+  };
+
+  const addDayToSchedule = async (dayData) => {
+    const { data } = await api.post("/pharmacy/schedule/add-day", dayData);
+    return data;
+  };
+
+  return {
+    getMySchedule,
+    updateSchedule,
+    addDayToSchedule,
+  };
+};

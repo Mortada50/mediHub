@@ -7,7 +7,10 @@ import {
   addMedicineToPharmacy,
   getMyMedicines,
   deleteMedicineFromPharmacy,
-  updateMedicinePrice
+  updateMedicinePrice,
+  getMySchedule,
+  updateSchedule,
+  addDayToSchedule,
 } from "../controllers/pharmacy.controller.js";
 
 import { uploadAvatar } from "../config/cloudinary.js";
@@ -23,5 +26,9 @@ router.post('/add-medicine', addMedicineToPharmacy);
 router.get('/my-medicines', getMyMedicines);
 router.delete('/remove-medicine/:medicineId', deleteMedicineFromPharmacy);
 router.put('/update-medicine-price/:medicineId', updateMedicinePrice);
+
+router.get('/schedule', getMySchedule);
+router.put('/schedule', updateSchedule);
+router.post('/schedule/add-day', addDayToSchedule);
 
 export default router;

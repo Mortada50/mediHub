@@ -2,6 +2,15 @@ import { clerkClient } from "@clerk/clerk-sdk-node";
 import { sendError, sendSuccess } from "../utils/response.js";
 import { Pharmacy } from "../models/Pharmacy.model.js";
 import { deleteFromCloudinary } from "../config/cloudinary.js";
+
+// استخرج أول رسالة خطأ نظيفة من كائن ValidationError بدون مسار الحقل
+const getValidationMessage = (error) => {
+  if (error?.errors) {
+    const firstKey = Object.keys(error.errors)[0];
+    if (firstKey) return error.errors[firstKey].message;
+  }
+  return error.message;
+};
 export const updateProfile = async (req, res) => {
   try {
     const { userRole, mongoId, userStatus, clerkUser } = req;
@@ -262,5 +271,76 @@ export const updateMedicinePrice = async (req, res) => {
   } catch (error) {
     console.error("updateMedicinePrice error:", error);
     sendError(res, "حدث خطأ أثناء تحديث سعر الدواء", 500);
+  }
+};
+
+export const getMySchedule = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const pharmacy = await Pharmacy.findById(mongoId).select("weeklySchedule isOpen24Hours");
+    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+
+    sendSuccess(res, {
+      weeklySchedule: pharmacy.weeklySchedule,
+      isOpen24Hours: pharmacy.isOpen24Hours,
+    }, "تم جلب الجدول بنجاح", 200);
+  } catch (error) {
+    console.error("getMySchedule error:", error);
+    sendError(res, "حدث خطأ أثناء جلب الجدول", 500);
+  }
+};
+
+export const updateSchedule = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { weeklySchedule, isOpen24Hours } = req.body;
+
+    const updateData = {};
+    if (Array.isArray(weeklySchedule)) updateData.weeklySchedule = weeklySchedule;
+    if (typeof isOpen24Hours === "boolean") updateData.isOpen24Hours = isOpen24Hours;
+
+    const pharmacy = await Pharmacy.findById(mongoId);
+    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+
+    Object.assign(pharmacy, updateData);
+    await pharmacy.save();
+
+    sendSuccess(res, {}, "تم تحديث الجدول بنجاح", 200);
+  } catch (error) {
+    console.error("updateSchedule error:", error);
+    if (error?.name === "ValidationError") {
+      return sendError(res, getValidationMessage(error), 400);
+    }
+    sendError(res, "حدث خطأ أثناء تحديث الجدول", 500);
+  }
+};
+
+export const addDayToSchedule = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { day, dayNumber, isOpen, is24Hours, openTime, closeTime } = req.body;
+
+    if (!day || dayNumber == null) {
+      return sendError(res, "اسم اليوم ورقمه مطلوبان", 400);
+    }
+
+    const pharmacy = await Pharmacy.findById(mongoId);
+    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+
+    const alreadyExists = pharmacy.weeklySchedule.some((d) => d.day === day);
+    if (alreadyExists) {
+      return sendError(res, "هذا اليوم مضاف بالفعل إلى الجدول", 400);
+    }
+
+    pharmacy.weeklySchedule.push({ day, dayNumber, isOpen, is24Hours, openTime, closeTime });
+    await pharmacy.save();
+
+    sendSuccess(res, {}, "تمت إضافة اليوم بنجاح", 200);
+  } catch (error) {
+    console.error("addDayToSchedule error:", error);
+    if (error?.name === "ValidationError") {
+      return sendError(res, getValidationMessage(error), 400);
+    }
+    sendError(res, "حدث خطأ أثناء إضافة اليوم", 500);
   }
 };
