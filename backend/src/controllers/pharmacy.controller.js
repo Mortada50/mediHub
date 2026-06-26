@@ -167,8 +167,9 @@ export const addMedicineToPharmacy = async (req, res) => {
       return sendError(res, "معرف الدواء والسعر مطلوبان", 400);
     }
 
-    if (price < 0) {
-      return sendError(res, "السعر لا يمكن أن يكون سالباً", 400);
+    const parsedPrice = Number(price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      return sendError(res, "السعر غير صالح", 400);
     }
 
     const pharmacy = await Pharmacy.findById(mongoId);
@@ -197,6 +198,6 @@ export const addMedicineToPharmacy = async (req, res) => {
     sendSuccess(res, {}, "تمت إضافة الدواء إلى صيدليتك بنجاح", 200);
   } catch (error) {
     console.error("addMedicineToPharmacy error:", error);
-    sendError(res, "حدث خطأ أثناء إضافة الدواء", 500, error.message);
+    sendError(res, "حدث خطأ أثناء إضافة الدواء", 500);
   }
 };
