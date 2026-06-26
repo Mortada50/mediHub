@@ -5,6 +5,9 @@ import {
   updateProfile,
   updatePharmacy,
   addMedicineToPharmacy,
+  getMyMedicines,
+  deleteMedicineFromPharmacy,
+  updateMedicinePrice
 } from "../controllers/pharmacy.controller.js";
 
 import { uploadAvatar } from "../config/cloudinary.js";
@@ -17,5 +20,8 @@ router.put("/update-profile", updateProfile);
 router.put('/update-manager-profile',uploadAvatar.single("avatar"), updateManagerProfile);
 router.put('/update-pharmacy/data', updatePharmacy);
 router.post('/add-medicine', addMedicineToPharmacy);
+router.get('/my-medicines', getMyMedicines);
+router.delete('/remove-medicine/:medicineId', deleteMedicineFromPharmacy);
+router.put('/update-medicine-price/:medicineId', updateMedicinePrice);
 
 export default router;

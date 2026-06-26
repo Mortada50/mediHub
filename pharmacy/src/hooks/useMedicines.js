@@ -26,8 +26,41 @@ export const useMedicines = () => {
   } = useMutation({
     mutationFn: medicineApi.addMedicineToPharmacy,
     onSuccess: () => {
-      // We can invalidate profile or pharmacy medicines if there is a query for that
       queryClient.invalidateQueries(["profile"]);
+      queryClient.invalidateQueries(["myMedicines"]);
+    },
+  });
+
+  const {
+    data: myMedicinesData,
+    isLoading: isMyMedicinesLoading,
+    isError: isMyMedicinesError,
+    error: myMedicinesError,
+    refetch: refetchMyMedicines,
+    isFetching: isMyMedicinesFetching,
+  } = useQuery({
+    queryKey: ["myMedicines"],
+    queryFn: medicineApi.getMyMedicines,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const {
+    mutate: removeMedicineMutation,
+    isLoading: isRemovingMedicine,
+  } = useMutation({
+    mutationFn: medicineApi.removeMedicine,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["myMedicines"]);
+    },
+  });
+
+  const {
+    mutate: updateMedicinePriceMutation,
+    isLoading: isUpdatingPrice,
+  } = useMutation({
+    mutationFn: medicineApi.updateMedicinePrice,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["myMedicines"]);
     },
   });
 
@@ -43,5 +76,18 @@ export const useMedicines = () => {
     isAddingMedicine,
     isAddingError,
     addingError,
+
+    myMedicinesData,
+    isMyMedicinesLoading,
+    isMyMedicinesError,
+    myMedicinesError,
+    refetchMyMedicines,
+    isMyMedicinesFetching,
+
+    removeMedicineMutation,
+    isRemovingMedicine,
+
+    updateMedicinePriceMutation,
+    isUpdatingPrice,
   };
 };

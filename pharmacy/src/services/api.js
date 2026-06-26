@@ -133,9 +133,28 @@ export const useMedicineApi = () => {
     return data;
   };
 
+  const getMyMedicines = async () => {
+    const { data } = await api.get("/pharmacy/my-medicines");
+    return data.data;
+  };
+
+  const removeMedicine = async (medicineId) => {
+    const { data } = await api.delete(`/pharmacy/remove-medicine/${medicineId}`);
+    return data;
+  };
+
+  const updateMedicinePrice = async (medicineData) => {
+    const { medicineId, price } = medicineData;
+    const { data } = await api.put(`/pharmacy/update-medicine-price/${medicineId}`, { price });
+    return data;
+  };
+
   return {
     getAllMedicines,
     addMedicineToPharmacy,
+    getMyMedicines,
+    removeMedicine,
+    updateMedicinePrice,
   };
 };
 

@@ -201,3 +201,66 @@ export const addMedicineToPharmacy = async (req, res) => {
     sendError(res, "حدث خطأ أثناء إضافة الدواء", 500);
   }
 };
+
+export const getMyMedicines = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    // Populate the medicine details inside the pharmacy's medicines array
+    const pharmacy = await Pharmacy.findById(mongoId).populate("medicines.medicine");
+    
+    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+
+    sendSuccess(res, pharmacy.medicines, "تم جلب الأدوية بنجاح", 200);
+  } catch (error) {
+    console.error("getMyMedicines error:", error);
+    sendError(res, "حدث خطأ أثناء جلب الأدوية", 500);
+  }
+};
+
+export const deleteMedicineFromPharmacy = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { medicineId } = req.params;
+
+    const pharmacy = await Pharmacy.findByIdAndUpdate(
+      mongoId,
+      { $pull: { medicines: { medicine: medicineId } } },
+      { new: true }
+    );
+
+    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+
+    sendSuccess(res, {}, "تم حذف الدواء بنجاح", 200);
+  } catch (error) {
+    console.error("deleteMedicineFromPharmacy error:", error);
+    sendError(res, "حدث خطأ أثناء حذف الدواء", 500);
+  }
+};
+
+export const updateMedicinePrice = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { medicineId } = req.params;
+    const { price } = req.body;
+
+    if (price == null) return sendError(res, "السعر مطلوب", 400);
+
+    const parsedPrice = Number(price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      return sendError(res, "السعر غير صالح", 400);
+    }
+
+    const pharmacy = await Pharmacy.findOneAndUpdate(
+      { _id: mongoId, "medicines.medicine": medicineId },
+      { $set: { "medicines.$.price": parsedPrice } },
+      { new: true }
+    );
+
+    if (!pharmacy) return sendError(res, "الدواء غير موجود في قائمتك", 404);
+
+    sendSuccess(res, {}, "تم تحديث سعر الدواء بنجاح", 200);
+  } catch (error) {
+    console.error("updateMedicinePrice error:", error);
+    sendError(res, "حدث خطأ أثناء تحديث سعر الدواء", 500);
+  }
+};
