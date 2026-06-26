@@ -189,7 +189,7 @@ export const addMedicineToPharmacy = async (req, res) => {
 
     // Check if the medicine is already added
     const alreadyExists = pharmacy.medicines.some(
-      (m) => m.medicine.toString() === medicineId
+      (m) => m.medicine.toString() === medicineId,
     );
 
     if (alreadyExists) {
@@ -215,8 +215,9 @@ export const getMyMedicines = async (req, res) => {
   try {
     const { mongoId } = req;
     // Populate the medicine details inside the pharmacy's medicines array
-    const pharmacy = await Pharmacy.findById(mongoId).populate("medicines.medicine");
-    
+    const pharmacy =
+      await Pharmacy.findById(mongoId).populate("medicines.medicine");
+
     if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
 
     sendSuccess(res, pharmacy.medicines, "تم جلب الأدوية بنجاح", 200);
@@ -234,7 +235,7 @@ export const deleteMedicineFromPharmacy = async (req, res) => {
     const pharmacy = await Pharmacy.findOneAndUpdate(
       { _id: mongoId, "medicines.medicine": medicineId },
       { $pull: { medicines: { medicine: medicineId } } },
-      { new: true }
+      { new: true },
     );
 
     if (!pharmacy) return sendError(res, "الدواء غير موجود في قائمتك", 404);
@@ -262,7 +263,7 @@ export const updateMedicinePrice = async (req, res) => {
     const pharmacy = await Pharmacy.findOneAndUpdate(
       { _id: mongoId, "medicines.medicine": medicineId },
       { $set: { "medicines.$.price": parsedPrice } },
-      { new: true }
+      { new: true },
     );
 
     if (!pharmacy) return sendError(res, "الدواء غير موجود في قائمتك", 404);
@@ -277,13 +278,20 @@ export const updateMedicinePrice = async (req, res) => {
 export const getMySchedule = async (req, res) => {
   try {
     const { mongoId } = req;
-    const pharmacy = await Pharmacy.findById(mongoId).select("weeklySchedule isOpen24Hours");
+    const pharmacy = await Pharmacy.findById(mongoId).select(
+      "weeklySchedule isOpen24Hours",
+    );
     if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
 
-    sendSuccess(res, {
-      weeklySchedule: pharmacy.weeklySchedule,
-      isOpen24Hours: pharmacy.isOpen24Hours,
-    }, "تم جلب الجدول بنجاح", 200);
+    sendSuccess(
+      res,
+      {
+        weeklySchedule: pharmacy.weeklySchedule,
+        isOpen24Hours: pharmacy.isOpen24Hours,
+      },
+      "تم جلب الجدول بنجاح",
+      200,
+    );
   } catch (error) {
     console.error("getMySchedule error:", error);
     sendError(res, "حدث خطأ أثناء جلب الجدول", 500);
@@ -296,8 +304,10 @@ export const updateSchedule = async (req, res) => {
     const { weeklySchedule, isOpen24Hours } = req.body;
 
     const updateData = {};
-    if (Array.isArray(weeklySchedule)) updateData.weeklySchedule = weeklySchedule;
-    if (typeof isOpen24Hours === "boolean") updateData.isOpen24Hours = isOpen24Hours;
+    if (Array.isArray(weeklySchedule))
+      updateData.weeklySchedule = weeklySchedule;
+    if (typeof isOpen24Hours === "boolean")
+      updateData.isOpen24Hours = isOpen24Hours;
 
     const pharmacy = await Pharmacy.findById(mongoId);
     if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
@@ -324,16 +334,36 @@ export const addDayToSchedule = async (req, res) => {
       return sendError(res, "اسم اليوم ورقمه مطلوبان", 400);
     }
 
-    const pharmacy = await Pharmacy.findById(mongoId);
-    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+    const pharmacy = await Pharmacy.findOneAndUpdate(
+      {
+        _id: mongoId,
+        weeklySchedule: { $not: { $elemMatch: { day } } },
+      },
+      {
+        $push: {
+          weeklySchedule: {
+            day,
+            dayNumber,
+            isOpen,
+            is24Hours,
+            openTime,
+            closeTime,
+          },
+        },
+      },
+      { new: true, runValidators: true },
+    );
 
-    const alreadyExists = pharmacy.weeklySchedule.some((d) => d.day === day);
-    if (alreadyExists) {
-      return sendError(res, "هذا اليوم مضاف بالفعل إلى الجدول", 400);
+    if (!pharmacy) {
+      const exists = await Pharmacy.exists({ _id: mongoId });
+      return sendError(
+        res,
+        exists
+          ? "هذا اليوم مضاف بالفعل إلى الجدول"
+          : "لم يتم العثور على الصيدلية",
+        exists ? 400 : 404,
+      );
     }
-
-    pharmacy.weeklySchedule.push({ day, dayNumber, isOpen, is24Hours, openTime, closeTime });
-    await pharmacy.save();
 
     sendSuccess(res, {}, "تمت إضافة اليوم بنجاح", 200);
   } catch (error) {
