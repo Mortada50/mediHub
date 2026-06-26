@@ -222,13 +222,13 @@ export const deleteMedicineFromPharmacy = async (req, res) => {
     const { mongoId } = req;
     const { medicineId } = req.params;
 
-    const pharmacy = await Pharmacy.findByIdAndUpdate(
-      mongoId,
+    const pharmacy = await Pharmacy.findOneAndUpdate(
+      { _id: mongoId, "medicines.medicine": medicineId },
       { $pull: { medicines: { medicine: medicineId } } },
       { new: true }
     );
 
-    if (!pharmacy) return sendError(res, "لم يتم العثور على الصيدلية", 404);
+    if (!pharmacy) return sendError(res, "الدواء غير موجود في قائمتك", 404);
 
     sendSuccess(res, {}, "تم حذف الدواء بنجاح", 200);
   } catch (error) {
