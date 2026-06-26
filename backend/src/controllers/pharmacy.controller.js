@@ -157,3 +157,47 @@ export const updatePharmacy = async (req, res) => {
     sendError(res, "خطأ في تعديل بيانات الصيدلية", 500);
   }
 };
+
+export const addMedicineToPharmacy = async (req, res) => {
+  try {
+    const { mongoId } = req;
+    const { medicineId, price } = req.body;
+
+    if (!medicineId || price == null) {
+      return sendError(res, "معرف الدواء والسعر مطلوبان", 400);
+    }
+
+    const parsedPrice = Number(price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      return sendError(res, "السعر غير صالح", 400);
+    }
+
+    const pharmacy = await Pharmacy.findById(mongoId);
+
+    if (!pharmacy) {
+      return sendError(res, "لم يتم العثور على الصيدلية", 404);
+    }
+
+    // Check if the medicine is already added
+    const alreadyExists = pharmacy.medicines.some(
+      (m) => m.medicine.toString() === medicineId
+    );
+
+    if (alreadyExists) {
+      return sendError(res, "هذا الدواء مضاف بالفعل في صيدليتك", 400);
+    }
+
+    pharmacy.medicines.push({
+      medicine: medicineId,
+      price: Number(price),
+      isAvailable: true,
+    });
+
+    await pharmacy.save();
+
+    sendSuccess(res, {}, "تمت إضافة الدواء إلى صيدليتك بنجاح", 200);
+  } catch (error) {
+    console.error("addMedicineToPharmacy error:", error);
+    sendError(res, "حدث خطأ أثناء إضافة الدواء", 500);
+  }
+};

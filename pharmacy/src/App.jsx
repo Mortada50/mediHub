@@ -19,11 +19,10 @@ function App() {
   const { isSignedIn, isLoaded, getToken } = useAuth();
 
   const { user, isLoaded: userLoaded } = useUser();
-
   useEffect(() => {
     setAuthToken(getToken);
   }, [getToken]);
-
+  
   if (!isLoaded || !userLoaded) return <PageLoader />;
 
   const status = user?.publicMetadata?.status;

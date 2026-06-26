@@ -118,3 +118,24 @@ export const useProfileApi = () => {
     updatePharmacyData,
   };
 };
+
+export const useMedicineApi = () => {
+  const api = useApi();
+
+  const getAllMedicines = async () => {
+    const { data } = await api.get("/medicines");
+    return data.data;
+  };
+
+  const addMedicineToPharmacy = async (medicineData) => {
+    // medicineData = { medicineId, price }
+    const { data } = await api.post("/pharmacy/add-medicine", medicineData);
+    return data;
+  };
+
+  return {
+    getAllMedicines,
+    addMedicineToPharmacy,
+  };
+};
+

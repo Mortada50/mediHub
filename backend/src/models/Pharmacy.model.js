@@ -79,11 +79,6 @@ const pharmacyMedicineSchema = new mongoose.Schema(
       min: [0, "السعر لا يمكن أن يكون سالب"],
     },
 
-    stock: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
 
     isAvailable: {
       type: Boolean,
@@ -177,7 +172,7 @@ const pharmacySchema = new mongoose.Schema(
         },
         message: "الجدول يحتوي على بيانات غير صحيحة.",
       },
-    }, // ── Medicines (🔥 بعد التعديل) ──
+    },
 
     medicines: {
       type: [pharmacyMedicineSchema],
@@ -225,11 +220,10 @@ const pharmacySchema = new mongoose.Schema(
 );
 
 // ───── Hooks ─────
-pharmacySchema.pre("save", function (next) {
+pharmacySchema.pre("save", async function () {
   if (Array.isArray(this.weeklySchedule)) {
     this.weeklySchedule.sort((a, b) => a.dayNumber - b.dayNumber);
   }
-  next();
 });
 
 // ───── Indexes ─────
