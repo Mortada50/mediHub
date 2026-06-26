@@ -12,13 +12,11 @@ import PageLoader from "../components/PageLoader";
 const NAVBAR_HEIGHT = "81px";
 
 function DashboardLayout() {
-  // فتح القائمة في الكمبيوتر وإغلاقها افتراضياً في الموبايل
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   const { signOut } = useClerk();
   const { user, isLoaded } = useUser();
 
-  // مراقبة حجم الشاشة لضبط القائمة تلقائياً
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
