@@ -4,8 +4,23 @@ const patientSchema = new mongoose.Schema(
   {
     clerkUserId: {
       type: String,
-      required: true,
+      sparse: true,
       unique: true,
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    appleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ["clerk", "google", "apple"],
+      default: "google",
     },
     firstName: String,
     lastName: String,

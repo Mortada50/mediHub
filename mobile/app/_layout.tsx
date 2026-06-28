@@ -1,19 +1,17 @@
 import { Stack } from "expo-router";
 import "../global.css"
-import { ClerkProvider } from '@clerk/expo'
-import { tokenCache } from '@clerk/expo/token-cache'
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { router } from 'expo-router';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
-
-if (!publishableKey) {
-  throw new Error('Add your Clerk Publishable Key to the .env file')
-}
+// NOTE: ClerkProvider requires a custom dev build (npx expo run:android).
+// It is temporarily disabled to allow UI development on Expo Go.
+// To re-enable, uncomment the ClerkProvider import and wrap <Stack /> with it.
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -22,8 +20,20 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = await SecureStore.getItemAsync('patientToken');
+        if (token) {
+          router.replace('/(patient)/home');
+        }
+      } catch (e) {
+        // Handle error quietly
+      }
+    };
+
     if (loaded || error) {
       SplashScreen.hideAsync();
+      checkAuth();
     }
   }, [loaded, error]);
 
@@ -31,9 +41,5 @@ export default function RootLayout() {
     return null;
   }
 
-  return(
-  //  <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-   <Stack />
-  // </ClerkProvider>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
