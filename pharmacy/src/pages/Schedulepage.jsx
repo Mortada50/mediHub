@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { Calendar, Plus, AlertCircle, RefreshCw, Clock } from 'lucide-react';
-import { useSchedule } from '../hooks/useSchedule';
-import PageLoader from '../components/PageLoader';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState } from "react";
+import { Calendar, Plus, AlertCircle, RefreshCw, Clock } from "lucide-react";
+import { useSchedule } from "../hooks/useSchedule";
+import PageLoader from "../components/PageLoader";
+import toast, { Toaster } from "react-hot-toast";
 
 const ALL_DAYS = [
-  { day: 'السبت',    dayNumber: 0 },
-  { day: 'الأحد',    dayNumber: 1 },
-  { day: 'الإثنين',  dayNumber: 2 },
-  { day: 'الثلاثاء', dayNumber: 3 },
-  { day: 'الأربعاء', dayNumber: 4 },
-  { day: 'الخميس',   dayNumber: 5 },
-  { day: 'الجمعة',   dayNumber: 6 },
+  { day: "السبت", dayNumber: 0 },
+  { day: "الأحد", dayNumber: 1 },
+  { day: "الإثنين", dayNumber: 2 },
+  { day: "الثلاثاء", dayNumber: 3 },
+  { day: "الأربعاء", dayNumber: 4 },
+  { day: "الخميس", dayNumber: 5 },
+  { day: "الجمعة", dayNumber: 6 },
 ];
 
 // ─── Helper: format HH:mm to readable ────────────────────────────────────────
 const formatTime = (t) => {
-  if (!t) return '';
-  const [h, m] = t.split(':').map(Number);
-  const period = h < 12 ? 'ص' : 'م';
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  const period = h < 12 ? "ص" : "م";
   const hour12 = h % 12 || 12;
   return `${hour12}:${m.toString().padStart(2, "0")}${period}`;
 };
@@ -40,7 +40,7 @@ export default function SchedulePage() {
   const [editingDay, setEditingDay] = useState(null);
 
   const weeklySchedule = scheduleData?.weeklySchedule || [];
-  const isOpen24Hours  = scheduleData?.isOpen24Hours  ?? false;
+  const isOpen24Hours = scheduleData?.isOpen24Hours ?? false;
 
   const addedDayNames = new Set(weeklySchedule.map((d) => d.day));
 
@@ -50,10 +50,12 @@ export default function SchedulePage() {
       { isOpen24Hours: !isOpen24Hours },
       {
         onSuccess: () =>
-          toast.success(!isOpen24Hours ? 'تم تفعيل وضع 24/7' : 'تم إلغاء وضع 24/7'),
+          toast.success(
+            !isOpen24Hours ? "تم تفعيل وضع 24/7" : "تم إلغاء وضع 24/7",
+          ),
         onError: (err) =>
-          toast.error(err?.message || 'حدث خطأ أثناء تحديث الإعداد'),
-      }
+          toast.error(err?.message || "حدث خطأ أثناء تحديث الإعداد"),
+      },
     );
   };
 
@@ -65,17 +67,20 @@ export default function SchedulePage() {
         ? {
             ...d,
             isOpen: willBeOpen,
-            is24Hours: willBeOpen 
-              ? (!d.openTime || !d.closeTime ? true : false) 
+            is24Hours: willBeOpen
+              ? !d.openTime || !d.closeTime
+                ? true
+                : false
               : false,
           }
-        : d
+        : d,
     );
     updateScheduleMutation(
       { weeklySchedule: updated },
       {
-        onError: (err) => toast.error(err?.message || 'حدث خطأ أثناء تحديث اليوم'),
-      }
+        onError: (err) =>
+          toast.error(err?.message || "حدث خطأ أثناء تحديث اليوم"),
+      },
     );
   };
 
@@ -85,8 +90,9 @@ export default function SchedulePage() {
       { day, dayNumber, isOpen: true, is24Hours: true },
       {
         onSuccess: () => toast.success(`تمت إضافة يوم ${day} إلى الجدول`),
-        onError: (err) => toast.error(err?.message || 'حدث خطأ أثناء إضافة اليوم'),
-      }
+        onError: (err) =>
+          toast.error(err?.message || "حدث خطأ أثناء إضافة اليوم"),
+      },
     );
   };
 
@@ -94,13 +100,13 @@ export default function SchedulePage() {
   const handleSaveEdit = () => {
     if (!editingDay.is24Hours && editingDay.isOpen) {
       if (!editingDay.openTime || !editingDay.closeTime) {
-        toast.error('يرجى إدخال وقت الافتتاح والإغلاق');
+        toast.error("يرجى إدخال وقت الافتتاح والإغلاق");
         return;
       }
     }
 
     const updated = weeklySchedule.map((d) =>
-      d._id === editingDay._id ? { ...editingDay } : d
+      d._id === editingDay._id ? { ...editingDay } : d,
     );
 
     updateScheduleMutation(
@@ -111,8 +117,8 @@ export default function SchedulePage() {
           setEditingDay(null);
         },
         onError: (err) =>
-          toast.error(err?.message || 'حدث خطأ أثناء حفظ الجدول'),
-      }
+          toast.error(err?.message || "حدث خطأ أثناء حفظ الجدول"),
+      },
     );
   };
 
@@ -125,7 +131,9 @@ export default function SchedulePage() {
 
       {/* ── Header ── */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-primary font-black text-xl sm:text-2xl">جدول العمل الأسبوعي</h1>
+        <h1 className="text-primary font-black text-xl sm:text-2xl">
+          جدول العمل الأسبوعي
+        </h1>
         <p className="text-primary font-semibold text-xs sm:text-sm">
           حدد أوقات عمل الصيدلية لكل يوم
         </p>
@@ -140,15 +148,18 @@ export default function SchedulePage() {
           <div className="flex flex-col gap-1">
             <h3 className="font-bold text-gray-800">تعذر جلب الجدول</h3>
             <p className="text-sm text-gray-500">
-              {scheduleError?.message || 'تحقق من اتصالك بالإنترنت وأعد المحاولة'}
+              {scheduleError?.message ||
+                "تحقق من اتصالك بالإنترنت وأعد المحاولة"}
             </p>
           </div>
           <button
             onClick={refetchSchedule}
             disabled={isScheduleFetching}
-            className="flex items-center gap-2 text-sm font-semibold text-primary border border-primary/30 rounded-xl px-5 py-2.5 hover:bg-primary/5 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw size={15} className={isScheduleFetching ? 'animate-spin' : ''} />
+            className="flex items-center gap-2 text-sm font-semibold text-primary border border-primary/30 rounded-xl px-5 py-2.5 hover:bg-primary/5 transition-colors cursor-pointer disabled:opacity-50">
+            <RefreshCw
+              size={15}
+              className={isScheduleFetching ? "animate-spin" : ""}
+            />
             إعادة المحاولة
           </button>
         </div>
@@ -157,40 +168,46 @@ export default function SchedulePage() {
           {/* ── Global 24/7 Toggle ── */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-primary/10 flex items-center justify-between gap-4">
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <h2 className="font-bold text-primary text-base">تعمل 24 ساعة طوال الأسبوع ؟</h2>
+              <h2 className="font-bold text-primary text-base">
+                تعمل 24 ساعة طوال الأسبوع ؟
+              </h2>
               <p className="text-xs text-gray-500 font-semibold">
-                عند التفعيل ستظهر الصيدلية كمفتوحة في جميع الأوقات بغض النظر عن الجدول.
+                عند التفعيل ستظهر الصيدلية كمفتوحة في جميع الأوقات بغض النظر عن
+                الجدول.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-sm font-bold text-gray-700 hidden sm:block">تفعيل 24/7</span>
+              <span className="text-sm font-bold text-gray-700 hidden sm:block">
+                تفعيل 24/7
+              </span>
               <button
                 onClick={handleToggle247}
                 disabled={isUpdatingSchedule}
-                className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out cursor-pointer flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed ${isOpen24Hours ? 'bg-primary' : 'bg-gray-200'}`}
-              >
+                className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out cursor-pointer flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed ${isOpen24Hours ? "bg-primary" : "bg-gray-200"}`}>
                 <div
-                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ease-in-out shadow-sm ${isOpen24Hours ? 'right-7' : 'right-1'}`}
+                  className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ease-in-out shadow-sm ${isOpen24Hours ? "right-7" : "right-1"}`}
                 />
               </button>
             </div>
           </div>
 
           {/* ── Days Grid ── */}
-          <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 transition-opacity duration-300 ${isOpen24Hours ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+          <div
+            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 transition-opacity duration-300 ${isOpen24Hours ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
             {ALL_DAYS.map(({ day, dayNumber }) => {
               const dayItem = weeklySchedule.find((d) => d.day === day);
               const isAdded = addedDayNames.has(day);
 
               if (!isAdded) {
                 return (
-                  <div key={day} className="bg-white rounded-2xl p-4 border border-primary/10 shadow-sm flex flex-col items-center justify-between min-h-[190px]">
+                  <div
+                    key={day}
+                    className="bg-white rounded-2xl p-4 border border-primary/10 shadow-sm flex flex-col items-center justify-between min-h-[190px]">
                     <h3 className="font-bold text-gray-800">{day}</h3>
                     <button
                       onClick={() => handleAddDay({ day, dayNumber })}
                       disabled={isAddingDay || isUpdatingSchedule}
-                      className="w-10 h-10 rounded-full bg-[#E8F8F5] text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                      className="w-10 h-10 rounded-full bg-[#E8F8F5] text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                       <Plus size={24} />
                     </button>
                     <div className="h-9" />
@@ -230,7 +247,7 @@ export default function SchedulePage() {
                           <span className="pr-1"> ساعة </span> 24
                         </>
                       ) : (
-                        <span dir='rtl'>
+                        <span dir="rtl">
                           {" "}
                           <span> {formatTime(dayItem.closeTime)}</span> -
                           <span> {formatTime(dayItem.openTime)}</span>
@@ -268,13 +285,19 @@ export default function SchedulePage() {
               <div className="flex flex-col gap-6 max-w-2xl">
                 {/* 24 Hours Toggle */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-gray-700">يعمل 24 ساعة هذا اليوم</span>
+                  <span className="text-sm font-bold text-gray-700">
+                    يعمل 24 ساعة هذا اليوم
+                  </span>
                   <button
-                    onClick={() => setEditingDay((prev) => ({ ...prev, is24Hours: !prev.is24Hours }))}
-                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out cursor-pointer flex-shrink-0 ${editingDay.is24Hours ? 'bg-primary' : 'bg-gray-300'}`}
-                  >
+                    onClick={() =>
+                      setEditingDay((prev) => ({
+                        ...prev,
+                        is24Hours: !prev.is24Hours,
+                      }))
+                    }
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out cursor-pointer flex-shrink-0 ${editingDay.is24Hours ? "bg-primary" : "bg-gray-300"}`}>
                     <div
-                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ease-in-out shadow-sm ${editingDay.is24Hours ? 'right-7' : 'right-1'}`}
+                      className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ease-in-out shadow-sm ${editingDay.is24Hours ? "right-7" : "right-1"}`}
                     />
                   </button>
                 </div>
@@ -283,20 +306,34 @@ export default function SchedulePage() {
                 {!editingDay.is24Hours && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
-                      <label className="text-primary text-sm font-semibold">وقت الافتتاح</label>
+                      <label className="text-primary text-sm font-semibold">
+                        وقت الافتتاح
+                      </label>
                       <input
                         type="time"
-                        value={editingDay.openTime || ''}
-                        onChange={(e) => setEditingDay((prev) => ({ ...prev, openTime: e.target.value }))}
+                        value={editingDay.openTime || ""}
+                        onChange={(e) =>
+                          setEditingDay((prev) => ({
+                            ...prev,
+                            openTime: e.target.value,
+                          }))
+                        }
                         className="h-[48px] bg-[#F4F9F8] rounded-xl px-4 text-sm text-gray-800 font-bold border border-primary/20 focus:ring-1 focus:ring-primary focus:outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="text-primary text-sm font-semibold">وقت الإغلاق</label>
+                      <label className="text-primary text-sm font-semibold">
+                        وقت الإغلاق
+                      </label>
                       <input
                         type="time"
-                        value={editingDay.closeTime || ''}
-                        onChange={(e) => setEditingDay((prev) => ({ ...prev, closeTime: e.target.value }))}
+                        value={editingDay.closeTime || ""}
+                        onChange={(e) =>
+                          setEditingDay((prev) => ({
+                            ...prev,
+                            closeTime: e.target.value,
+                          }))
+                        }
                         className="h-[48px] bg-[#F4F9F8] rounded-xl px-4 text-sm text-gray-800 font-bold border border-primary/20 focus:ring-1 focus:ring-primary focus:outline-none"
                       />
                     </div>
@@ -308,16 +345,16 @@ export default function SchedulePage() {
                 <button
                   onClick={handleSaveEdit}
                   disabled={isUpdatingSchedule}
-                  className="bg-primary hover:bg-primary/90 text-white text-sm font-semibold py-2.5 px-8 rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isUpdatingSchedule && <RefreshCw size={14} className="animate-spin" />}
-                  {isUpdatingSchedule ? 'جاري الحفظ...' : 'حفظ'}
+                  className="bg-primary hover:bg-primary/90 text-white text-sm font-semibold py-2.5 px-8 rounded-xl transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                  {isUpdatingSchedule && (
+                    <RefreshCw size={14} className="animate-spin" />
+                  )}
+                  {isUpdatingSchedule ? "جاري الحفظ..." : "حفظ"}
                 </button>
                 <button
                   onClick={() => setEditingDay(null)}
                   disabled={isUpdatingSchedule}
-                  className="text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 py-2.5 px-6 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
-                >
+                  className="text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 py-2.5 px-6 rounded-xl transition-colors cursor-pointer disabled:opacity-50">
                   إلغاء
                 </button>
               </div>
