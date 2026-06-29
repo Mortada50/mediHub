@@ -9,11 +9,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
-
-WebBrowser.maybeCompleteAuthSession();
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,66 +34,30 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<"doctor" | "pharmacy">("doctor");
   const [loading, setLoading] = useState(false);
 
-  // --- Google OAuth ---
+  // --- Google OAuth (Server-Side Authorization Code Flow) ---
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || "https://medihub-backend-m32h.onrender.com";
-  
-  // Create redirect URI back to our app (exp://...)
-  const appRedirectUri = AuthSession.makeRedirectUri();
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: "71001537502-hncd7qf4nqbvobso32demp30n93j05kt.apps.googleusercontent.com",
-      // Redirect to backend proxy to bypass Google's exp:// restriction
-      redirectUri: `${apiUrl}/api/patient/auth/callback`,
-      responseType: AuthSession.ResponseType.IdToken,
-      scopes: ["openid", "profile", "email"],
-      // Pass the app's redirect URI in the state parameter
-      state: encodeURIComponent(appRedirectUri),
-      usePKCE: false,
-      extraParams: {
-        nonce: "defaultNonce12345",
-      }
-    },
-    {
-      authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-      tokenEndpoint: "https://oauth2.googleapis.com/token",
-    }
-  );
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      // The proxy redirects back to us with the id_token in params
-      const { id_token } = response.params;
-      if (id_token) {
-        handleGoogleLogin(id_token);
-      }
-    }
-  }, [response]);
-
-  const handleGoogleLogin = async (idToken: string) => {
+  const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${apiUrl}/api/patient/auth/google`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Bypass-Tunnel-Reminder": "true" 
-        },
-        body: JSON.stringify({ idToken }),
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        await SecureStore.setItemAsync("patientToken", data.data.token);
-        // Navigate to patient home
-        router.replace("/(patient)/home");
-      } else {
-        console.error("Login failed:", data.message);
-        // Here we could show an alert to the user
+      const startUrl = `${apiUrl}/api/patient/auth/google/start`;
+      const result = await WebBrowser.openAuthSessionAsync(startUrl, "mobile://auth");
+
+      if (result.type === "success" && result.url) {
+        const url = result.url;
+        const tokenMatch = url.match(/[?&]token=([^&]*)/);
+        const errorMatch = url.match(/[?&]error=([^&]*)/);
+
+        if (tokenMatch?.[1]) {
+          const token = decodeURIComponent(tokenMatch[1]);
+          await SecureStore.setItemAsync("patientToken", token);
+          router.replace("/(patient)/home");
+        } else if (errorMatch?.[1]) {
+          console.error("OAuth error:", decodeURIComponent(errorMatch[1]));
+        }
       }
     } catch (error) {
-      console.error("Error connecting to backend:", error);
+      console.error("Google sign-in error:", error);
     } finally {
       setLoading(false);
     }
@@ -318,8 +279,8 @@ export default function Index() {
 
           {/* ── Google Button ── */}
           <AnimatedPressable
-            disabled={!request || loading}
-            onPress={() => promptAsync()}
+            disabled={loading}
+            onPress={handleGoogleSignIn}
             onPressIn={() => { googleScale.value = withSpring(0.96); }}
             onPressOut={() => { googleScale.value = withSpring(1); }}
             style={[googleAnim, {

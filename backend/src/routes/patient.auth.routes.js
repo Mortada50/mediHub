@@ -7,7 +7,6 @@ import { sendSuccess, sendError } from "../utils/response.js";
 import { requirePatientAuth } from "../middleware/patientAuth.middleware.js";
 
 const router = express.Router();
-
 const client = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
 
 const generateToken = (mongoId) => {
@@ -16,61 +15,74 @@ const generateToken = (mongoId) => {
   });
 };
 
-// --- Google OAuth Proxy Callback ---
-// This route helps bypass Google's restriction on custom schemes (like exp://)
-// Google redirects here with the id_token in the URL hash fragment.
-// This HTML page reads the hash and redirects back to the mobile app (passed in the state parameter).
-router.get("/callback", (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head><title>Redirecting...</title></head>
-    <body>
-      <script>
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        const state = params.get("state");
-        if (state) {
-          window.location.href = decodeURIComponent(state) + "?" + hash;
-        } else {
-          document.body.innerHTML = "Authentication failed: No return URL provided.";
-        }
-      </script>
-    </body>
-    </html>
-  `);
+// ─── Step 1: Start Google OAuth (server-side Authorization Code Flow) ───
+// Mobile opens: GET /api/patient/auth/google/start
+// Backend redirects browser to Google consent page
+router.get("/google/start", (req, res) => {
+  const redirectUri = `${ENV.BACKEND_URL}/api/patient/auth/google/callback`;
+  const params = new URLSearchParams({
+    client_id: ENV.GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "openid email profile",
+    access_type: "online",
+    prompt: "select_account",
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 });
 
-router.post("/google", async (req, res) => {
+// ─── Step 2: Google redirects here with `code` ───
+// Backend exchanges code → gets user info → creates/finds Patient → redirects to mobile://auth?token=JWT
+router.get("/google/callback", async (req, res) => {
   try {
-    const { idToken } = req.body;
-    
-    if (!idToken) {
-      return sendError(res, "رمز Google مطلوب", 400);
+    const { code, error } = req.query;
+
+    if (error || !code) {
+      return res.redirect(`mobile://auth?error=${error || "auth_failed"}`);
     }
-    
+
+    const redirectUri = `${ENV.BACKEND_URL}/api/patient/auth/google/callback`;
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: ENV.GOOGLE_CLIENT_ID,
+        client_secret: ENV.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    const tokens = await tokenResponse.json();
+
+    if (!tokens.id_token) {
+      console.error("Token exchange failed:", tokens);
+      return res.redirect(`mobile://auth?error=token_exchange_failed`);
+    }
+
+    // Verify id_token and get user info
     const ticket = await client.verifyIdToken({
-      idToken,
+      idToken: tokens.id_token,
       audience: ENV.GOOGLE_CLIENT_ID,
     });
-    
+
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
-    
+
+    // Find or create patient
     let patient = await Patient.findOne({ email });
-    
+
     if (patient) {
-      // Update googleId if not present but email matches
       if (!patient.googleId) {
         patient.googleId = googleId;
         patient.authProvider = "google";
-        if (picture && !patient.avatar) {
-          patient.avatar = picture;
-        }
+        if (picture && !patient.avatar) patient.avatar = picture;
         await patient.save();
       }
     } else {
-      // Create new patient
       patient = await Patient.create({
         googleId,
         email,
@@ -79,28 +91,29 @@ router.post("/google", async (req, res) => {
         avatar: picture,
       });
     }
-    
+
     const token = generateToken(patient._id);
-    
-    sendSuccess(res, {
-      token,
-      profile: patient,
-      role: "patient",
-      status: patient.status,
-    }, "تم تسجيل الدخول بنجاح");
-    
-  } catch (error) {
-    console.error("Google auth error:", error);
-    sendError(res, "فشل تسجيل الدخول بواسطة Google", 500);
+
+    // Redirect back to mobile app with the JWT
+    res.redirect(`mobile://auth?token=${encodeURIComponent(token)}`);
+  } catch (err) {
+    console.error("Google callback error:", err);
+    res.redirect(`mobile://auth?error=server_error`);
   }
 });
 
+// ─── Get current patient profile ───
 router.get("/me", requirePatientAuth, (req, res) => {
   sendSuccess(res, {
     role: req.userRole,
     status: req.patient.status,
     profile: req.patient,
   });
+});
+
+// ─── Legacy: POST /google (kept for backward compat but no longer used) ───
+router.post("/google", async (req, res) => {
+  return sendError(res, "يرجى استخدام تدفق تسجيل الدخول الجديد", 400);
 });
 
 export default router;
