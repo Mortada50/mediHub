@@ -17,7 +17,8 @@ export const getActiveDoctors = async (req, res) => {
 
     sendSuccess(res, doctors, "تم جلب الأطباء بنجاح");
   } catch (error) {
-    sendError(res, error.message || "حدث خطأ أثناء جلب الأطباء");
+    console.error("getActiveDoctors failed:", error);
+    sendError(res, "حدث خطأ أثناء جلب الأطباء", 500);
   }
 };
 
@@ -35,7 +36,8 @@ export const getActivePharmacies = async (req, res) => {
 
     sendSuccess(res, pharmacies, "تم جلب الصيدليات بنجاح");
   } catch (error) {
-    sendError(res, error.message || "حدث خطأ أثناء جلب الصيدليات");
+    console.error("getActivePharmacies failed:", error);
+    sendError(res, "حدث خطأ أثناء جلب الصيدليات", 500);
   }
 };
 
@@ -53,7 +55,8 @@ export const getLatestArticles = async (req, res) => {
 
     sendSuccess(res, articles, "تم جلب المقالات بنجاح");
   } catch (error) {
-    sendError(res, error.message || "حدث خطأ أثناء جلب المقالات");
+     console.error("getLatestArticles failed:", error);
+     sendError(res, "حدث خطأ أثناء جلب المقالات", 500);
   }
 };
 

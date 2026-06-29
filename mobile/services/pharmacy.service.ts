@@ -8,12 +8,12 @@ const isPharmacyOpenNow = (pharm: any): boolean => {
   const now = new Date();
   // JS getDay(): 0=Sun, 1=Mon, ... 6=Sat — matches MongoDB dayNumber
   const todayNum = now.getDay();
-  const todaySchedule = (pharm.weeklySchedule ?? []).find(
-    (s: any) => s.dayNumber === todayNum
-  );
+  const schedules = pharm.weeklySchedule ?? [];
+  const yesterdayNum = (todayNum + 6) % 7;
+  const todaySchedule = schedules.find((s: any) => s.dayNumber === todayNum);
+  const yesterdaySchedule = schedules.find((s: any) => s.dayNumber === yesterdayNum);
 
-  if (!todaySchedule || !todaySchedule.isOpen) return false;
-  if (todaySchedule.is24Hours) return true;
+
 
   // Compare current time with open/close times (HH:mm format)
   const toMinutes = (t: string) => {
@@ -21,10 +21,21 @@ const isPharmacyOpenNow = (pharm: any): boolean => {
     return h * 60 + m;
   };
   const current = now.getHours() * 60 + now.getMinutes();
-  return (
-    current >= toMinutes(todaySchedule.openTime) &&
-    current <= toMinutes(todaySchedule.closeTime)
-  );
+  const matches = (schedule: any, fromPreviousDay = false) => {
+    if (!schedule || !schedule.isOpen) return false;
+    if (schedule.is24Hours) return true;
+
+    const open = toMinutes(schedule.openTime);
+    const close = toMinutes(schedule.closeTime);
+
+    if (close < open) {
+      return fromPreviousDay ? current <= close : current >= open;
+    }
+
+    return current >= open && current <= close;
+  };
+
+  return matches(todaySchedule) || matches(yesterdaySchedule, true);
 };
 
 export const pharmacyService = {

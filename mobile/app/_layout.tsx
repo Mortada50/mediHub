@@ -20,8 +20,6 @@ const queryClient = new QueryClient({
     queries: {
       // Don't refetch when the app comes to foreground — avoids burst requests
       refetchOnWindowFocus: false,
-      // Don't refetch just because the component remounted (already cached)
-      refetchOnMount: false,
       // Only retry once on failure (default is 3 which triples the requests)
       retry: 1,
       // Keep data fresh for 5 minutes globally (overridable per hook)

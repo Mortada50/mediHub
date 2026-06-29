@@ -59,15 +59,23 @@ const fetchProfile = async () => {
 // ═══════════════════════════════════════════════════════════
 export default function PatientHome() {
   const insets = useSafeAreaInsets();
-  const { data: profile, isLoading, isError, error } = useQuery({
+  const { data: profile, isLoading, isError, error, refetch: refetchProfile } = useQuery({
     queryKey: ["patientProfile"],
     queryFn: fetchProfile,
     retry: 1,
   });
 
-  const { data: doctors = [], isLoading: isLoadingDoctors, refetch: refetchDoctors } = useDoctors();
-  const { data: pharmacies = [], isLoading: isLoadingPharmacies, refetch: refetchPharmacies } = usePharmacies();
-  const { data: articles = [], isLoading: isLoadingArticles, refetch: refetchArticles } = useArticles();
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isError && (error as Error)?.message !== "no_token") {
+      setToastMessage("تعذّر تحميل البيانات. يرجى المحاولة لاحقاً.");
+    }
+  }, [isError, error]);
+
+  const { data: doctors, isLoading: isLoadingDoctors, isError: isErrorDoctors, refetch: refetchDoctors } = useDoctors();
+  const { data: pharmacies, isLoading: isLoadingPharmacies, isError: isErrorPharmacies, refetch: refetchPharmacies } = usePharmacies();
+  const { data: articles, isLoading: isLoadingArticles, isError: isErrorArticles, refetch: refetchArticles } = useArticles();
 
   // ── Pull-to-Refresh ──
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -81,6 +89,7 @@ export default function PatientHome() {
     setIsRefreshing(true);
     try {
       await Promise.all([
+        refetchProfile(),
         refetchDoctors(),
         refetchPharmacies(),
         refetchArticles(),
@@ -139,16 +148,18 @@ export default function PatientHome() {
   }
 
   const displayName = profile?.fullName || profile?.firstName || "بك";
-  const showError =
-    isError && (error as Error)?.message !== "no_token"
-      ? "تعذّر تحميل البيانات. يرجى المحاولة لاحقاً."
-      : null;
 
   return (
     <View className="flex-1 bg-[#F4FAFA]">
 
       {/* ── Global Error Toast ── */}
-      {showError && <AlertBox visible type="error" message={showError} />}
+      <AlertBox 
+        visible={!!toastMessage} 
+        type="error" 
+        message={toastMessage || ""} 
+        autoHideDuration={4000} 
+        onClose={() => setToastMessage(null)} 
+      />
 
       {/* ═══════════ HEADER BACKGROUND & GREETING ═══════════ */}
       {/*
@@ -276,6 +287,8 @@ export default function PatientHome() {
         <SectionHeader title="أطباء ميدي هب" onPressAll={() => { }} />
         {isLoadingDoctors ? (
           <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorDoctors ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
         ) : (
           <FlatList
             data={doctors}
@@ -295,6 +308,8 @@ export default function PatientHome() {
         <SectionHeader title="صيدليات ميدي هب" onPressAll={() => { }} />
         {isLoadingPharmacies ? (
           <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorPharmacies ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
         ) : (
           <FlatList
             data={pharmacies}
@@ -315,6 +330,8 @@ export default function PatientHome() {
         <SectionHeader title="مقالات تهمك" onPressAll={() => { }} />
         {isLoadingArticles ? (
           <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorArticles ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
         ) : (
           <FlatList
             data={articles}

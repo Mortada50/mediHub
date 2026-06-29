@@ -23,9 +23,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 // Format how long ago the article was posted
 const timeAgo = (dateStr: string): string => {
+  if (!dateStr) return "مؤخراً";
   const now = new Date();
   const then = new Date(dateStr);
+  if (isNaN(then.getTime())) return "مؤخراً";
+  
   const diffMs = now.getTime() - then.getTime();
+  if (diffMs < 0) return "الآن";
+
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "اليوم";

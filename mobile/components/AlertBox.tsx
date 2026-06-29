@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp, FadeOutUp, Layout } from 'react-native-reanimated';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react-native';
@@ -7,9 +7,20 @@ type AlertBoxProps = {
   visible: boolean;
   message: string;
   type?: 'error' | 'success' | 'info';
+  autoHideDuration?: number;
+  onClose?: () => void;
 };
 
-export const AlertBox: React.FC<AlertBoxProps> = ({ visible, message, type = 'error' }) => {
+export const AlertBox: React.FC<AlertBoxProps> = ({ visible, message, type = 'error', autoHideDuration, onClose }) => {
+  useEffect(() => {
+    if (visible && autoHideDuration && onClose) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, autoHideDuration);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, autoHideDuration, onClose]);
+
   if (!visible) return null;
 
   const getIcon = () => {
@@ -51,7 +62,7 @@ export const AlertBox: React.FC<AlertBoxProps> = ({ visible, message, type = 'er
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 45,
+    top: 60,
     left: 24,
     right: 24,
     zIndex: 100,

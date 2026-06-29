@@ -7,6 +7,7 @@ export const useArticles = () => {
     queryKey: ["latestArticles"],
     queryFn: articleService.fetchLatestArticles,
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes (articles don't change often)
+    refetchOnMount: false,
     retry: 2,
   });
 };

@@ -19,6 +19,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
   doctor,
   onPress,
 }) => {
+  const nameParts = doctor.name.trim().split(/\s+/);
+  const shortName =
+    nameParts.length > 1
+      ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+      : nameParts[0];
   return (
     <Pressable
       onPress={onPress}
@@ -52,11 +57,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
         className="text-[13px] text-[#1A2332] w-full text-center mb-1"
         style={{ fontFamily: "Bein-Black" }}
       >
-        {`د. ${doctor.name.split(" ").length > 1
-            ? `${doctor.name.split(" ")[0]} ${doctor.name.split(" ")[doctor.name.split(" ").length - 1]
-            }`
-            : doctor.name
-          }`}
+        {`د. ${shortName}`}
       </Text>
 
       {/* Specialty */}

@@ -7,6 +7,7 @@ export const usePharmacies = () => {
     queryKey: ["activePharmacies"],
     queryFn: pharmacyService.fetchActivePharmacies,
     staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
+    refetchOnMount: false,
     retry: 2,
   });
 };
