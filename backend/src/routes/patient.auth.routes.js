@@ -19,6 +19,7 @@ const generateToken = (mongoId) => {
 // Mobile opens: GET /api/patient/auth/google/start
 // Backend redirects browser to Google consent page
 router.get("/google/start", (req, res) => {
+  const { returnUrl } = req.query;
   const redirectUri = `${ENV.BACKEND_URL}/api/patient/auth/google/callback`;
   const params = new URLSearchParams({
     client_id: ENV.GOOGLE_CLIENT_ID,
@@ -27,6 +28,7 @@ router.get("/google/start", (req, res) => {
     scope: "openid email profile",
     access_type: "online",
     prompt: "select_account",
+    state: returnUrl || "mobile://auth", // Pass returnUrl in state
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 });
@@ -35,10 +37,11 @@ router.get("/google/start", (req, res) => {
 // Backend exchanges code → gets user info → creates/finds Patient → redirects to mobile://auth?token=JWT
 router.get("/google/callback", async (req, res) => {
   try {
-    const { code, error } = req.query;
+    const { code, error, state } = req.query;
+    const returnUrl = state || "mobile://auth";
 
     if (error || !code) {
-      return res.redirect(`mobile://auth?error=${error || "auth_failed"}`);
+      return res.redirect(`${returnUrl}?error=${error || "auth_failed"}`);
     }
 
     const redirectUri = `${ENV.BACKEND_URL}/api/patient/auth/google/callback`;
@@ -95,10 +98,10 @@ router.get("/google/callback", async (req, res) => {
     const token = generateToken(patient._id);
 
     // Redirect back to mobile app with the JWT
-    res.redirect(`mobile://auth?token=${encodeURIComponent(token)}`);
+    res.redirect(`${returnUrl}?token=${encodeURIComponent(token)}`);
   } catch (err) {
     console.error("Google callback error:", err);
-    res.redirect(`mobile://auth?error=server_error`);
+    res.redirect(`${returnUrl || "mobile://auth"}?error=server_error`);
   }
 });
 
