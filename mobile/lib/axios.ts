@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL || "https://medihub-backend-m32h.onrender.com";
+const baseURL = process.env.EXPO_PUBLIC_API_URL || "http://172.17.1.97:3000";
 
 export const api = axios.create({
   baseURL,

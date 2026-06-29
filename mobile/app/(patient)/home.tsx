@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Animated,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store";
@@ -20,9 +21,11 @@ import { SectionHeader } from "../../components/SectionHeader";
 import { DoctorCard, Doctor } from "../../components/DoctorCard";
 import { PharmacyCard, Pharmacy } from "../../components/PharmacyCard";
 import { ArticleCard, Article } from "../../components/ArticleCard";
-import { BottomNavBar } from "../../components/BottomNavBar";
 import { AlertBox } from "../../components/AlertBox";
 import api from "../../lib/axios";
+import { useDoctors } from "../../hooks/useDoctors";
+import { usePharmacies } from "../../hooks/usePharmacies";
+import { useArticles } from "../../hooks/useArticles";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -38,88 +41,8 @@ const BANNER_ITEMS: BannerItem[] = [
   { id: "5", image: require("../../assets/images/Banner Slider1.png") },
 ];
 
-const MOCK_DOCTORS: Doctor[] = [
-  {
-    id: "1",
-    name: "د. خالد ناصر",
-    specialty: "باطنية وقلب",
-    location: "تعز - المطفر",
-    image: require("../../assets/images/doctor.png"),
-  },
-  {
-    id: "2",
-    name: "د. سارة أحمد",
-    specialty: "أطفال",
-    location: "صنعاء - الصفاء",
-    image: require("../../assets/images/doctor.png"),
-  },
-  {
-    id: "3",
-    name: "د. علي محمد",
-    specialty: "نساء وولادة",
-    location: "تعز - برياضة",
-    image: require("../../assets/images/doctor.png"),
-  },
-  {
-    id: "4",
-    name: "د. نورة سالم",
-    specialty: "جلدية",
-    location: "عدن - المنصورة",
-    image: require("../../assets/images/doctor.png"),
-  },
-];
 
-const MOCK_PHARMACIES: Pharmacy[] = [
-  {
-    id: "1",
-    name: "صيدلية فارما",
-    isOpen: true,
-    location: "تعز - برياضة",
-    image: require("../../assets/images/pharmacy.png"),
-  },
-  {
-    id: "2",
-    name: "صيدلية النور",
-    isOpen: false,
-    location: "تعز - الجوبان",
-    image: require("../../assets/images/pharmacy.png"),
-  },
-  {
-    id: "3",
-    name: "صيدلية الشفاء",
-    isOpen: true,
-    location: "صنعاء - الصفاء",
-    image: require("../../assets/images/pharmacy.png"),
-  },
-  {
-    id: "4",
-    name: "صيدلية الأمل",
-    isOpen: false,
-    location: "عدن - كريتر",
-    image: require("../../assets/images/pharmacy.png"),
-  },
-];
 
-const MOCK_ARTICLES: Article[] = [
-  {
-    id: "1",
-    title: "كيف تحافظ على صحة قلبك في ظل ضغوط الحياة اليومية؟",
-    category: "صحة قلبية",
-    categoryColor: "#E11D48",
-    author: "د. سارة أحمد",
-    timeAgo: "منذ 3 أيام",
-    image: require("../../assets/images/Banner Slider1.png"),
-  },
-  {
-    id: "2",
-    title: "فوائد ممارسة الرياضة يومياً على صحة الجسم والعقل",
-    category: "لياقة بدنية",
-    categoryColor: "#2B9C8E",
-    author: "د. خالد ناصر",
-    timeAgo: "منذ أسبوع",
-    image: require("../../assets/images/Banner Slider1.png"),
-  },
-];
 
 // ═══════════════════════════════════════════════════════════
 //  API — Fetch profile
@@ -136,20 +59,55 @@ const fetchProfile = async () => {
 // ═══════════════════════════════════════════════════════════
 export default function PatientHome() {
   const insets = useSafeAreaInsets();
-  const { data: profile, isLoading, isError, error } = useQuery({
+  const { data: profile, isLoading, isError, error, refetch: refetchProfile } = useQuery({
     queryKey: ["patientProfile"],
     queryFn: fetchProfile,
     retry: 1,
   });
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isError && (error as Error)?.message !== "no_token") {
+      setToastMessage("تعذّر تحميل البيانات. يرجى المحاولة لاحقاً.");
+    }
+  }, [isError, error]);
+
+  const { data: doctors, isLoading: isLoadingDoctors, isError: isErrorDoctors, refetch: refetchDoctors } = useDoctors();
+  const { data: pharmacies, isLoading: isLoadingPharmacies, isError: isErrorPharmacies, refetch: refetchPharmacies } = usePharmacies();
+  const { data: articles, isLoading: isLoadingArticles, isError: isErrorArticles, refetch: refetchArticles } = useArticles();
+
+  // ── Pull-to-Refresh ──
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const lastRefreshRef = useRef(0);
+  const onRefresh = useCallback(async () => {
+    // Prevent rapid successive refreshes (1.5s cooldown)
+    const now = Date.now();
+    if (now - lastRefreshRef.current < 1500) return;
+    lastRefreshRef.current = now;
+
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchProfile(),
+        refetchDoctors(),
+        refetchPharmacies(),
+        refetchArticles(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetchDoctors, refetchPharmacies, refetchArticles]);
+
   // ── Animated Collapsible Header ──
+  // NOTE: useNativeDriver must be false here because RefreshControl requires
+  // the scroll position to be driven on the JS thread.
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const HEADER_MAX_HEIGHT = 230;
   const HEADER_MIN_HEIGHT = insets.top + 80;
   const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-  // These animations cannot be expressed in NativeWind — kept as Animated interpolations
   const headerTranslateY = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
     outputRange: [0, -HEADER_SCROLL_DISTANCE],
@@ -190,16 +148,18 @@ export default function PatientHome() {
   }
 
   const displayName = profile?.fullName || profile?.firstName || "بك";
-  const showError =
-    isError && (error as Error)?.message !== "no_token"
-      ? "تعذّر تحميل البيانات. يرجى المحاولة لاحقاً."
-      : null;
 
   return (
     <View className="flex-1 bg-[#F4FAFA]">
 
       {/* ── Global Error Toast ── */}
-      {showError && <AlertBox visible type="error" message={showError} />}
+      <AlertBox 
+        visible={!!toastMessage} 
+        type="error" 
+        message={toastMessage || ""} 
+        autoHideDuration={4000} 
+        onClose={() => setToastMessage(null)} 
+      />
 
       {/* ═══════════ HEADER BACKGROUND & GREETING ═══════════ */}
       {/*
@@ -305,9 +265,19 @@ export default function PatientHome() {
         }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["#2B9C8E"]}
+            tintColor="#2B9C8E"
+            progressBackgroundColor="#ffffff"
+            progressViewOffset={HEADER_MAX_HEIGHT}
+          />
+        }
       >
         {/* ── Banner Slider ── */}
         <BannerSlider items={BANNER_ITEMS} />
@@ -315,58 +285,74 @@ export default function PatientHome() {
         {/* ── Doctors ── */}
         <View className="h-8" />
         <SectionHeader title="أطباء ميدي هب" onPressAll={() => { }} />
-        <FlatList
-          data={MOCK_DOCTORS}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-          renderItem={({ item }) => (
-            <DoctorCard doctor={item} onPress={() => { }} />
-          )}
-        />
+        {isLoadingDoctors ? (
+          <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorDoctors ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
+        ) : (
+          <FlatList
+            data={doctors}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+            ListEmptyComponent={<Text style={{ fontFamily: "Bein", color: "#8A9AA9" }}>لا يوجد أطباء متاحين حالياً</Text>}
+            renderItem={({ item }) => (
+              <DoctorCard doctor={item} onPress={() => { }} />
+            )}
+          />
+        )}
 
         {/* ── Pharmacies ── */}
         <View className="h-8" />
         <SectionHeader title="صيدليات ميدي هب" onPressAll={() => { }} />
-        <FlatList
-          data={MOCK_PHARMACIES}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-          renderItem={({ item }) => (
-            <PharmacyCard pharmacy={item} onPress={() => { }} />
-          )}
-        />
+        {isLoadingPharmacies ? (
+          <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorPharmacies ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
+        ) : (
+          <FlatList
+            data={pharmacies}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+            ListEmptyComponent={<Text style={{ fontFamily: "Bein", color: "#8A9AA9" }}>لا توجد صيدليات متاحة حالياً</Text>}
+            renderItem={({ item }) => (
+              <PharmacyCard pharmacy={item} onPress={() => { }} />
+            )}
+          />
+        )}
 
         
+        {/* ── Articles ── */}
         <View className="h-8" />
         <SectionHeader title="مقالات تهمك" onPressAll={() => { }} />
-        <FlatList
-          data={MOCK_ARTICLES}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={SCREEN_WIDTH * 0.85 + 10} // card width + gap
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-          renderItem={({ item }) => (
-            /*
-              Wrap ArticleCard in a fixed-width View so the card never collapses
-              or stretches regardless of whether an image is present.
-            */
-            <View style={{ width: SCREEN_WIDTH * 0.85 }}>
-              <ArticleCard article={item} onPress={() => { }} />
-            </View>
-          )}
-        />
+        {isLoadingArticles ? (
+          <ActivityIndicator size="small" color="#2B9C8E" style={{ marginVertical: 20 }} />
+        ) : isErrorArticles ? (
+          <Text style={{ fontFamily: "Bein", color: "#E11D48", paddingHorizontal: 20 }}>تعذّر تحميل البيانات</Text>
+        ) : (
+          <FlatList
+            data={articles}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={SCREEN_WIDTH * 0.85 + 10}
+            decelerationRate="fast"
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+            ListEmptyComponent={<Text style={{ fontFamily: "Bein", color: "#8A9AA9" }}>لا توجد مقالات حالياً</Text>}
+            renderItem={({ item }) => (
+              <View style={{ width: SCREEN_WIDTH * 0.85 }}>
+                <ArticleCard article={item} onPress={() => { }} />
+              </View>
+            )}
+          />
+        )}
 
         <View className="h-5" />
       </Animated.ScrollView>
 
-      {/* ═══════════ BOTTOM NAV ═══════════ */}
-      <BottomNavBar activeTab="home" />
     </View>
   );
 }

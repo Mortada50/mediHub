@@ -22,7 +22,7 @@ export const PharmacyCard: React.FC<PharmacyCardProps> = ({
   return (
     <Pressable
       onPress={onPress}
-      className="w-[130px] bg-white rounded-[20px] px-3 py-4 items-center border border-[#EBF5F4]"
+      className="w-[140px] bg-white rounded-[20px] px-3 py-4 items-center border border-[#EBF5F4]"
       style={({ pressed }) => [
         {
           opacity: pressed ? 0.92 : 1,
@@ -46,10 +46,10 @@ export const PharmacyCard: React.FC<PharmacyCardProps> = ({
       {/* Name */}
       <Text
         numberOfLines={1}
-        className="text-[13px] text-[#1A2332] text-center mb-2"
+        className="text-[13px] text-[#1A2332] text-start mb-2"
         style={{ fontFamily: "Bein-Black" }}
       >
-        {pharmacy.name}
+       ص. {pharmacy.name}
       </Text>
 
       {/* Open / Closed Badge */}

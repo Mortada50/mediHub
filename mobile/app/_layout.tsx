@@ -15,7 +15,18 @@ I18nManager.forceRTL(true);
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Don't refetch when the app comes to foreground — avoids burst requests
+      refetchOnWindowFocus: false,
+      // Only retry once on failure (default is 3 which triples the requests)
+      retry: 1,
+      // Keep data fresh for 5 minutes globally (overridable per hook)
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 
 // NOTE: ClerkProvider requires a custom dev build (npx expo run:android).
 // It is temporarily disabled to allow UI development on Expo Go.
