@@ -13,6 +13,7 @@ import { initSocket } from "./socket/socket.handler.js";
 import webhookRoutes from "./webhooks/clerk.webhook.js";
 import authRoutes from "./routes/auth.routes.js";
 import patientAuthRoutes from "./routes/patient.auth.routes.js";
+import patientDataRoutes from "./routes/patient.data.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import doctorRoutes from "./routes/doctor.routes.js";
 import pharmacyRoutes from "./routes/pharmacy.routes.js";
@@ -70,6 +71,7 @@ app.use("/api", generalLimiter);
 // ───── API Routes ─────
 app.use("/api/auth", authRoutes);
 app.use("/api/patient/auth", patientAuthRoutes);
+app.use("/api/patient/data", patientDataRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);

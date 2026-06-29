@@ -2,7 +2,7 @@ import React from "react";
 import { View, Pressable, StyleSheet, Platform } from "react-native";
 import { Home, User, MessageCircle, Search, Droplet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { useRouter } from "expo-router";
 export type NavTab = "home" | "profile" | "chat" | "search" | "drops";
 
 type BottomNavBarProps = {
@@ -23,6 +23,32 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   onTabPress,
 }) => {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handlePress = (tab: NavTab) => {
+    if (onTabPress) {
+      onTabPress(tab);
+      return;
+    }
+
+    switch (tab) {
+      case "home":
+        router.push("/(patient)/home");
+        break;
+      case "search":
+        router.push("/(patient)/medicines");
+        break;
+      case "chat":
+        router.push("/(patient)/chat");
+        break;
+      case "drops":
+        router.push("/(patient)/blood-donation");
+        break;
+      case "profile":
+        router.push("/(patient)/profile");
+        break;
+    }
+  };
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16 }]}>
@@ -32,7 +58,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           return (
             <Pressable
               key={tab}
-              onPress={() => onTabPress?.(tab)}
+              onPress={() => handlePress(tab)}
               style={({ pressed }) => [styles.tabBtn, { opacity: pressed ? 0.7 : 1 }]}
             >
               <Icon

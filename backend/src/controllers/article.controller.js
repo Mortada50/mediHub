@@ -74,7 +74,7 @@ export const addNewArticle = async (req, res) => {
   try {
     const { userRole, mongoId } = req;
     const { title, description, content, category, isFeatured = false } = req.body;
-
+    
     if (!title || !description || !content || !category) {
       return sendError(res, "العنوان والوصف والتصنيف والمحتوى مطلوب", 400);
     }
@@ -92,8 +92,10 @@ export const addNewArticle = async (req, res) => {
       const admin = await Admin.findById(mongoId);
       if (!admin) return sendError(res, "المسؤل غير موجود", 404);
 
-      authorName = admin?.name;
+      authorName = admin?.fullName;
       authorAvatar = admin?.avatar;
+    }else{
+      return sendError(res, "ليس لديك صلاحية لانشاء مقالة", 403);
     }
 
     const article = new Article({
