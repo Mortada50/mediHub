@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
+import * as LinkingExpo from "expo-linking";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import Animated, {
@@ -40,8 +41,9 @@ export default function Index() {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const startUrl = `${apiUrl}/api/patient/auth/google/start`;
-      const result = await WebBrowser.openAuthSessionAsync(startUrl, "mobile://auth");
+      const returnUrl = LinkingExpo.createURL("auth");
+      const startUrl = `${apiUrl}/api/patient/auth/google/start?returnUrl=${encodeURIComponent(returnUrl)}`;
+      const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
 
       if (result.type === "success" && result.url) {
         const url = result.url;
