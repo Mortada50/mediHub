@@ -5,9 +5,17 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { I18nManager } from 'react-native';
+
+// Force RTL layout for the Arabic app
+I18nManager.allowRTL(true);
+I18nManager.forceRTL(true);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
 
 // NOTE: ClerkProvider requires a custom dev build (npx expo run:android).
 // It is temporarily disabled to allow UI development on Expo Go.
@@ -41,5 +49,9 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </QueryClientProvider>
+  );
 }

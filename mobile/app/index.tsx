@@ -8,10 +8,8 @@ import {
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
-import * as LinkingExpo from "expo-linking";
-import * as SecureStore from "expo-secure-store";
-import { router } from "expo-router";
+import { usePatientAuth } from "../hooks/usePatientAuth";
+import { AlertBox } from "../components/AlertBox";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -33,37 +31,8 @@ const PHARMACY_REGISTER_URL = "https://medihub.example.com/register/pharmacy";
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<"doctor" | "pharmacy">("doctor");
-  const [loading, setLoading] = useState(false);
-
-  // --- Google OAuth (Server-Side Authorization Code Flow) ---
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || "https://medihub-backend-m32h.onrender.com";
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      const returnUrl = LinkingExpo.createURL("auth");
-      const startUrl = `${apiUrl}/api/patient/auth/google/start?returnUrl=${encodeURIComponent(returnUrl)}`;
-      const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
-
-      if (result.type === "success" && result.url) {
-        const url = result.url;
-        const tokenMatch = url.match(/[?&]token=([^&]*)/);
-        const errorMatch = url.match(/[?&]error=([^&]*)/);
-
-        if (tokenMatch?.[1]) {
-          const token = decodeURIComponent(tokenMatch[1]);
-          await SecureStore.setItemAsync("patientToken", token);
-          router.replace("/(patient)/home");
-        } else if (errorMatch?.[1]) {
-          console.error("OAuth error:", decodeURIComponent(errorMatch[1]));
-        }
-      }
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  const { handleGoogleSignIn, handleSkipLogin, isLoading, error } = usePatientAuth();
 
   // --- Entrance Animations ---
   const fadeAnim = useSharedValue(0);
@@ -166,6 +135,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#EAF5F4" }}>
+      <AlertBox visible={!!error} message={error || ""} type="error" />
 
       {/* ── Animated Background Blobs ── */}
       <View style={{ position: "absolute", width: "100%", height: "100%", overflow: "hidden" }}>
@@ -211,10 +181,10 @@ export default function Index() {
         style={[containerAnim, { flex: 1, paddingHorizontal: 24, paddingTop: 35, paddingBottom: 20 }]}
       >
         {/* ── Logo ── */}
-        <Animated.View style={[logoAnim, { alignItems: "center", marginTop: 16, marginBottom: 4 }]}>
+        <Animated.View style={[logoAnim, { alignItems: "center", marginTop: 10, marginBottom: 4 }]}>
           <Image
             source={require("../assets/images/logo.png")}
-            style={{ width: SCREEN_WIDTH * 1.0, height: 150 }}
+            style={{ width: SCREEN_WIDTH * 1.0, height: 120 }}
             resizeMode="contain"
           />
         </Animated.View>
@@ -235,17 +205,17 @@ export default function Index() {
           <View style={{
             position: "absolute",
             bottom: 0,
-            width: SCREEN_WIDTH * 0.75,
-            height: SCREEN_WIDTH * 0.75,
-            borderRadius: (SCREEN_WIDTH * 0.75) / 2,
+            width: SCREEN_WIDTH * 0.70,
+            height: SCREEN_WIDTH * 0.70,
+            borderRadius: (SCREEN_WIDTH * 0.70) / 2,
             backgroundColor: "#ffffff",
             opacity: 0.25,
           }} />
           <Image
             source={require("../assets/images/Auth Hero.png")}
             style={{
-              width: SCREEN_WIDTH * 0.88,
-              height: SCREEN_WIDTH * 0.96,
+              width: SCREEN_WIDTH * 0.85,
+              height: SCREEN_WIDTH * 0.85,
             }}
             resizeMode="contain"
           />
@@ -277,11 +247,9 @@ export default function Index() {
             تسجيل الدخول
           </Text>
 
-       
-
           {/* ── Google Button ── */}
           <AnimatedPressable
-            disabled={loading}
+            disabled={isLoading}
             onPress={handleGoogleSignIn}
             onPressIn={() => { googleScale.value = withSpring(0.96); }}
             onPressOut={() => { googleScale.value = withSpring(1); }}
@@ -339,6 +307,8 @@ export default function Index() {
               المتابعة باستخدام Apple
             </Text>
           </AnimatedPressable>
+
+          
 
           {/* ── External Registration Links ── */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 18, gap: 20 }}>
