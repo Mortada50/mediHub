@@ -10,7 +10,7 @@ import PageLoader from "./components/PageLoader";
 import ForgetPasswordPage from "./pages/ForgetPasswordPage";
 import PendingRejectPage from "./pages/PendingRejectPage";
 import PharmacyInfoPage from "./pages/PharmacyInfoPage";
-import SchedulePage from "./pages/SchedulePage";
+import Schedulepage from "./pages/Schedulepage";
 import MedicationsPage from "./pages/MedicationsPage";
 import MedicationsListPage from "./pages/MedicationsListPage";
 import { setAuthToken } from "./lib/axios";
@@ -86,7 +86,7 @@ function App() {
         <Route index element={<Navigate to={"dashboard"} />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="pharmacy-info" element={<PharmacyInfoPage />} />
-        <Route path="schedule" element={<SchedulePage />} />
+        <Route path="schedule" element={<Schedulepage />} />
         <Route path="medications" element={<MedicationsPage />} />
         <Route path="medications-list" element={<MedicationsListPage />} />
         <Route path="chats" element={<ChatsPage />} />

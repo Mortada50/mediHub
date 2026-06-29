@@ -23,7 +23,7 @@ const formatTime = (t) => {
   return `${hour12}:${m.toString().padStart(2, "0")}${period}`;
 };
 
-export default function SchedulePage() {
+export default function Schedulepage() {
   const {
     scheduleData,
     isScheduleLoading,
