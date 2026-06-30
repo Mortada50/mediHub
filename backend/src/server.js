@@ -24,6 +24,7 @@ import locationRoutes from "./routes/location.routes.js";
 import scheduleRoutes from "./routes/schedule.routes.js";
 import leavesRoutes from "./routes/leaves.routes.js";
 import chatRoutes    from "./routes/chat.routes.js";      
+import favoriteRoutes from "./routes/favorite.routes.js";
 
 const app = express();
 const httpServer = createServer(app);                    
@@ -82,6 +83,7 @@ app.use("/api/location", locationRoutes);
 app.use("/api/schedule", scheduleRoutes);
 app.use("/api/leaves", leavesRoutes);
 app.use("/api/chats", chatRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true, message: "Hello mediHub" });

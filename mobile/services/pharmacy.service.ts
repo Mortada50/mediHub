@@ -6,13 +6,14 @@ const isPharmacyOpenNow = (pharm: any): boolean => {
   if (pharm.isOpen24Hours) return true;
 
   const now = new Date();
-  // JS getDay(): 0=Sun, 1=Mon, ... 6=Sat — matches MongoDB dayNumber
-  const todayNum = now.getDay();
+  // JS getDay(): 0=Sun, 1=Mon, ... 6=Sat
+  // Backend dayNumber: 0=Sat, 1=Sun, 2=Mon, ... 6=Fri
+  const jsDay = now.getDay();
+  const todayNum = (jsDay + 1) % 7;
   const schedules = pharm.weeklySchedule ?? [];
   const yesterdayNum = (todayNum + 6) % 7;
   const todaySchedule = schedules.find((s: any) => s.dayNumber === todayNum);
   const yesterdaySchedule = schedules.find((s: any) => s.dayNumber === yesterdayNum);
-
 
 
   // Compare current time with open/close times (HH:mm format)

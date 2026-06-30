@@ -9,6 +9,7 @@ import {
   addNewMedicine,
   updateMedicine,
   deleteMedicine,
+  getMedicineById,
 } from "../controllers/medicine.controller.js";
 
 import {uploadMedicineImages} from "../config/cloudinary.js"
@@ -16,9 +17,10 @@ import {uploadMedicineImages} from "../config/cloudinary.js"
 
 const router = express.Router();
 
-router.use(requireAuth, loadUser);
-
 router.get("/", getAllMedicines);
+router.get("/:medicineId", getMedicineById);
+
+router.use(requireAuth, loadUser);
 
 router.use(requireRole("admin"))
 

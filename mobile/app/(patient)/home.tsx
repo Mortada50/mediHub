@@ -220,7 +220,7 @@ export default function PatientHome() {
 
       {/* ═══════════ FIXED TOP ROW (Logo & Bell) ═══════════ */}
       <View
-        className="absolute top-0 left-0 right-0 flex-row justify-between items-center px-5"
+        className="absolute top-0 left-0 right-0 flex-row justify-between items-center pl-5 pr-3"
         style={{ paddingTop: insets.top + 16, zIndex: 10 }}
       >
         {/* Logo */}
