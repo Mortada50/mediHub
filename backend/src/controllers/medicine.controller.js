@@ -328,3 +328,19 @@ export const deleteMedicine = async (req, res) => {
     console.log(error);
   }
 }
+
+export const getMedicineById = async (req, res) => {
+  try {
+    const { medicineId } = req.params;
+    const medicine = await Medicine.findById(medicineId);
+    
+    if (!medicine) {
+      return sendError(res, "الدواء غير موجود", 404);
+    }
+    
+    return sendSuccess(res, medicine, "تم جلب تفاصيل الدواء بنجاح");
+  } catch (error) {
+    console.log(error);
+    return sendError(res, "حدث خطأ أثناء جلب تفاصيل الدواء", 500, error.message);
+  }
+};

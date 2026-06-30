@@ -1,5 +1,6 @@
 import React from "react";
 import { Tabs } from "expo-router";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { BottomNavBar } from "../../components/BottomNavBar";
 
 export default function PatientLayout() {
@@ -7,7 +8,13 @@ export default function PatientLayout() {
     <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={(props) => {
-        const routeName = props.state.routes[props.state.index].name;
+        const route = props.state.routes[props.state.index];
+        const routeName = route.name;
+        
+        const focusedRouteName = getFocusedRouteNameFromRoute(route);
+        if (routeName === "medicines" && focusedRouteName && focusedRouteName !== "index") {
+          return null;
+        }
         
         let activeTab = "home";
         if (routeName === "profile") activeTab = "profile";

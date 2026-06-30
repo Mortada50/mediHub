@@ -12,8 +12,8 @@ export const getActiveDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find({ status: "active" })
       .select("fullName speciality avatar address clinicName rating yearOfExperience appointmentFee")
-      .sort({ "rating.average": -1 }) // Sort by highest rating
-      .limit(20);
+      .sort({ createdAt: -1 }) // Sort by highest rating
+      .limit(10);
 
     sendSuccess(res, doctors, "تم جلب الأطباء بنجاح");
   } catch (error) {
@@ -31,8 +31,8 @@ export const getActivePharmacies = async (req, res) => {
   try {
     const pharmacies = await Pharmacy.find({ status: "active" })
       .select("pharmacyName avatar address isOpen24Hours weeklySchedule rating")
-      .sort({ "rating.average": -1 })
-      .limit(20);
+      .sort({ createdAt : -1 })
+      .limit(10);
 
     sendSuccess(res, pharmacies, "تم جلب الصيدليات بنجاح");
   } catch (error) {

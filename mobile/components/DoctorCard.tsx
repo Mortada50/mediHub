@@ -76,8 +76,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
         <Text
           numberOfLines={1}
           ellipsizeMode="tail"
-          className="text-[11px] text-[#2B9C8E] text-center flex-1"
-          style={{ fontFamily: "Bein", writingDirection: "rtl" }}
+          className="text-[11px] text-[#2B9C8E]"
+          style={{ fontFamily: "Bein" }}
         >
           {doctor.location}
         </Text>

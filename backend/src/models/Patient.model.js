@@ -50,6 +50,10 @@ const patientSchema = new mongoose.Schema(
       type: Date,
       // todo: check the date of birth
     },
+    isBloodDonor: {
+      type: Boolean,
+      default: false,
+    },
     address: addressSchema,
     medicalHistory: {
       bloodType: {
