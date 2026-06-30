@@ -7,11 +7,16 @@ export const toggleFavorite = async (req, res) => {
     const { itemId, itemType } = req.body;
     const patientId = req.patient._id;
 
+    const allowedTypes = ["Medicine", "Doctor", "Pharmacy", "Article"];
+
     if (!itemId || !itemType) {
       return sendError(res, "يجب تحديد العنصر ونوعه", 400);
     }
 
-    // حذف المفضلة إن وُجدت (atomic delete)
+    if (!allowedTypes.includes(itemType)) {
+      return sendError(res, "Invalid itemType", 400); 
+    }
+
     const deleted = await Favorite.findOneAndDelete({
       user: patientId,
       item: itemId,

@@ -1,10 +1,4 @@
-/**
- * app/(patient)/medicine/[id].tsx
- * ─────────────────────────────────────────────
- * تفاصيل الدواء — Medicine Detail Screen
- * NativeWind (className) · RTL · Arabic-first
- * ─────────────────────────────────────────────
- */
+
 
 import React, { useRef, useState, useCallback } from "react";
 import {
@@ -29,6 +23,7 @@ import {
     ChevronDown,
     ChevronUp,
     MapPin,
+    Pill,
 } from "lucide-react-native";
 import { favoriteService } from "../../../services/favorite.service";
 import { medicineService } from "../../../services/medicine.service";
@@ -87,6 +82,16 @@ const PaginationDot = ({ isActive }: { isActive: boolean }) => {
 const ImageCarousel = ({ images }: { images: string[] }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
+
+    if (images.length === 0) {
+        return (
+            <View className="w-full h-[260px] items-center justify-center bg-white px-8 py-2 mb-4">
+                <View className="w-20 h-20 rounded-full bg-[`#EAF5F4`] items-center justify-center">
+                    <Pill size={34} color="`#2B9C8E`" />
+                </View>
+            </View>
+        );
+    }
 
     const onViewableItemsChanged = useRef(
         ({ viewableItems }: { viewableItems: ViewToken[] }) => {

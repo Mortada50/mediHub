@@ -332,6 +332,11 @@ export const deleteMedicine = async (req, res) => {
 export const getMedicineById = async (req, res) => {
   try {
     const { medicineId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(medicineId)) {
+      return sendError(res, "معرف الدواء غير صحيح", 400); 
+    }
+    
     const medicine = await Medicine.findById(medicineId);
     
     if (!medicine) {

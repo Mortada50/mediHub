@@ -5,6 +5,8 @@ const userOrIpKey = (req) => {
   const userId =
     req.auth?.userId ||
     req.user?._id?.toString() ||
+    req.patient?._id?.toString() ||
+    req.mongoId?.toString() ||
     req.patientUser?._id?.toString();
   return userId ? `user_${userId}` : ipKeyGenerator(req);
 };
