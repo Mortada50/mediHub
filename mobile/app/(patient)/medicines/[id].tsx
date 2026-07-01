@@ -173,7 +173,7 @@ const InfoChip = ({ label, value }: { label: string; value: string }) => (
         >
             {value}
         </Text>
-        
+
     </View>
 );
 
@@ -558,9 +558,11 @@ export default function MedicineScreen() {
                 <Pressable
                     style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}
                     className="bg-primary rounded-[22px] h-[56px] flex-row items-center justify-center"
-                    onPress={() => {
-                        // router.push(`/(patient)/medicine/${medicine._id}/pharmacies`);
-                    }}
+                    onPress={() =>
+                        router.push(
+                            `/medicines/search-results?id=${medicine.id}&name=${encodeURIComponent(medicine.nameAr)}`
+                        )
+                    }
                 >
                     <MapPin size={18} color="#fff" style={{ marginLeft: 8 }} />
                     <Text

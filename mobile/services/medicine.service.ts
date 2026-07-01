@@ -85,4 +85,19 @@ export const medicineService = {
       throw error;
     }
   },
+  
+  fetchPharmaciesWithMedicine: async (medicineId: string, lat?: number, lng?: number): Promise<any[]> => {
+    try {
+      let url = `/api/patient/data/medicine/${medicineId}/pharmacies`;
+      if (lat !== undefined && lng !== undefined) {
+        url += `?lat=${lat}&lng=${lng}`;
+      }
+      const response: any = await api.get(url);
+      return response.data || [];
+    } catch (error) {
+      console.error(`Error fetching pharmacies for medicine ${medicineId}:`, error);
+      throw error;
+    }
+  },
 };
+

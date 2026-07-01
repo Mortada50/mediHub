@@ -87,15 +87,15 @@ const MedicineRow: React.FC<MedicineRowProps> = ({
           {/* Prescription badge */}
           <View
             className={`shrink-0 px-3 py-0.5 rounded-full ${medicine.requiresPrescription
-                ? "bg-[#FEE2E2]"
-                : "bg-[#E7ECEF]"
+              ? "bg-[#FEE2E2]"
+              : "bg-[#E7ECEF]"
               }`}
           >
             <Text
               numberOfLines={1}
               className={`text-[9px] ${medicine.requiresPrescription
-                  ? "text-[#DC2626]"
-                  : "text-[#5C6B7A]"
+                ? "text-[#DC2626]"
+                : "text-[#5C6B7A]"
                 }`}
               style={{ fontFamily: "Bein" }}
             >
@@ -162,7 +162,7 @@ export default function MedicinesScreen() {
   // track which ids are pending locally
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
-  const categories = [ALL_CATEGORY, ...DRUGCATEGORIES].reverse();
+  const categories = [...DRUGCATEGORIES, ALL_CATEGORY];
 
   const { data: medicines = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["medicines"],
@@ -211,7 +211,7 @@ export default function MedicinesScreen() {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["favorites", "Medicine"] });
       const previousFavorites = queryClient.getQueryData<string[]>(["favorites", "Medicine"]);
-      
+
       queryClient.setQueryData<string[]>(["favorites", "Medicine"], (old = []) => {
         if (old.includes(id)) {
           return old.filter((f) => f !== id);
@@ -219,7 +219,7 @@ export default function MedicinesScreen() {
           return [...old, id];
         }
       });
-      
+
       return { previousFavorites };
     },
     onError: (err: any, id, context) => {
@@ -272,7 +272,7 @@ export default function MedicinesScreen() {
           />
         }
         contentContainerStyle={{
-          paddingTop: insets.top + 16,
+          paddingTop: insets.top,
           paddingHorizontal: 20,
           paddingBottom: 20,
         }}
@@ -289,7 +289,10 @@ export default function MedicinesScreen() {
                 placeholder="بحث عن دوائك عربي/إنجليزي"
                 placeholderTextColor="#7FA8A3"
                 className="flex-1 text-right text-[15px] text-[#1A2332] mr-3"
-                style={{ fontFamily: "Bein" }}
+                style={{
+                  fontFamily: "Bein",
+
+                }}
               />
             </View>
 
@@ -306,16 +309,14 @@ export default function MedicinesScreen() {
                 return (
                   <Pressable
                     onPress={() => setActiveCategory(item)}
-                    className={`px-4 h-[35px] rounded-full items-center justify-center border ${
-                      isActive
+                    className={`px-4 h-[35px] rounded-full items-center justify-center border ${isActive
                         ? "bg-[#2B9C8E] border-[#2B9C8E]"
                         : "bg-white border-[#2B9C8E]"
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`text-[13px] ${
-                        isActive ? "text-white" : "text-[#2B9C8E]"
-                      }`}
+                      className={`text-[13px] ${isActive ? "text-white" : "text-[#2B9C8E]"
+                        }`}
                       style={{ fontFamily: "Bein-Black" }}
                     >
                       {item}
