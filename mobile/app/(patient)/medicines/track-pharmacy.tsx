@@ -104,9 +104,16 @@ function buildLeafletHtml(
       .addTo(map)
       .bindPopup('<div style="font-family:sans-serif;font-size:13px;text-align:center;padding:4px;"><b>موقعك الحالي</b></div>');
 
+    const pharmNameSafe = ${JSON.stringify(pharmName).replace(/</g, '\\u003c')};
+    const popupDiv = document.createElement('div');
+    popupDiv.style.cssText = 'font-family:sans-serif;font-size:13px;text-align:center;padding:4px 8px;';
+    const popupB = document.createElement('b');
+    popupB.textContent = pharmNameSafe;
+    popupDiv.appendChild(popupB);
+
     const pharmMarker = L.marker([${pharmLat}, ${pharmLng}], { icon: pharmIcon })
       .addTo(map)
-      .bindPopup('<div style="font-family:sans-serif;font-size:13px;text-align:center;padding:4px 8px;"><b>${pharmName.replace(/'/g, "\\'")}</b></div>');
+      .bindPopup(popupDiv);
 
     pharmMarker.openPopup();
 
@@ -171,7 +178,8 @@ export default function TrackPharmacyScreen() {
         const fetchRoute = async () => {
             try {
                 const resp = await axios.get(
-                    `http://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${pharmLng},${pharmLat}?overview=full&geometries=geojson`
+                    `http://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${pharmLng},${pharmLat}?overview=full&geometries=geojson`,
+                    { timeout: 10000 }
                 );
                 if (resp.data?.routes?.length > 0) {
                     const route = resp.data.routes[0];

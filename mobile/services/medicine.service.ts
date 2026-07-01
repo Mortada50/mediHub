@@ -93,7 +93,7 @@ export const medicineService = {
         url += `?lat=${lat}&lng=${lng}`;
       }
       const response: any = await api.get(url);
-      return response.data || [];
+      return Array.isArray(response.data?.data) ? response.data.data : [];
     } catch (error) {
       console.error(`Error fetching pharmacies for medicine ${medicineId}:`, error);
       throw error;

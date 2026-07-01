@@ -223,7 +223,7 @@ const WarningBanner = ({ text }: { text: string }) => (
             </Text>
         </View>
         <Text
-            className="text-[13px] text-[#92400E] text-right leading-[20px]"
+            className="text-[13px] text-[#92400E] leading-[20px]"
             style={{ fontFamily: "Bein" }}
         >
             {text}
@@ -469,7 +469,7 @@ export default function MedicineScreen() {
                     <View className="items-start mb-3">
                         {medicine.nameAr && (
                             <Text
-                                className="text-[30px] text-gray-600 text-right leading-[42px]"
+                                className="text-[30px] text-gray-600 leading-[42px]"
                                 style={{ fontFamily: "Bein-Black" }}
                             >
                                 {medicine.nameAr}
@@ -477,7 +477,7 @@ export default function MedicineScreen() {
                         )}
                         {(medicine.nameEn || medicine.genericName) && (
                             <Text
-                                className="text-[14px] text-[#6B7A8A] text-right mt-0.5"
+                                className="text-[14px] text-[#6B7A8A] mt-0.5"
                                 style={{ fontFamily: "Bein" }}
                             >
                                 {[medicine.nameEn, medicine.genericName]

@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useRef, useMemo } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
     View,
     Text,
@@ -57,17 +57,17 @@ const formatClosingTimeText = (timeStr?: string) => {
     if (!timeStr || timeStr === "23:59" || timeStr === "24:00" || timeStr === "00:00") {
         return "مفتوح"; // 24 hours
     }
-    
+
     const parts = timeStr.split(":");
     if (parts.length < 2) return `مفتوح حتى ${timeStr}`;
-    
+
     let h = parseInt(parts[0], 10);
     const m = parts[1];
     const ampm = h >= 12 ? "م" : "ص";
-    
+
     h = h % 12;
     h = h ? h : 12;
-    
+
     return `مفتوح حتى ${h}:${m} ${ampm}`;
 };
 
@@ -146,7 +146,7 @@ const PharmacyListCard = ({
                 <View className="flex-1 justify-between py-1">
                     <View className="items-start">
                         <Text
-                            className="text-[16px] text-gray-700 text-right leading-5 mb-1"
+                            className="text-[16px] text-gray-700 leading-5 mb-1"
                             style={{ fontFamily: "Bein-Black" }}
                         >
                             {pharmacy.name}
@@ -177,27 +177,27 @@ const PharmacyListCard = ({
                         </View>
                         <View className="w-[1px] h-3 bg-[#D0EDEA]" />
                         {activeFilter === "قريب مني" ? (
-                         <View className="flex-row-reverse items-center gap-1.5">
-                            <Text
-                                className="text-[11px] text-[#7A8A9A]"
-                                style={{ fontFamily: "Bein" }}
-                            >
-                                ~{pharmacy.distanceKm}كم 
-                            </Text>
-                            <MapPin size={13} color="#2B9C8E" />
-                        </View>   
+                            <View className="flex-row-reverse items-center gap-1.5">
+                                <Text
+                                    className="text-[11px] text-[#7A8A9A]"
+                                    style={{ fontFamily: "Bein" }}
+                                >
+                                    ~{pharmacy.distanceKm}كم
+                                </Text>
+                                <MapPin size={13} color="#2B9C8E" />
+                            </View>
                         ) : (
-                                <View className="flex-row-reverse items-center gap-1.5">
-                                    <Text
-                                        className="text-[11px] text-[#7A8A9A]"
-                                        style={{ fontFamily: "Bein" }}
-                                    >
-                                        <Text className="text-[11px]">{pharmacy.price} ريال</Text>
-                                    </Text>
-                                    <DollarSign size={13} color="#2B9C8E" />
-                                </View>
+                            <View className="flex-row-reverse items-center gap-1.5">
+                                <Text
+                                    className="text-[11px] text-[#7A8A9A]"
+                                    style={{ fontFamily: "Bein" }}
+                                >
+                                    <Text className="text-[11px]">{pharmacy.price} ريال</Text>
+                                </Text>
+                                <DollarSign size={13} color="#2B9C8E" />
+                            </View>
                         )}
-                        
+
                     </View>
                 </View>
             </View>
@@ -327,6 +327,7 @@ function buildAllPharmaciesMapHtml(
     selectedId: string | null,
     routeCoords: number[][]
 ): string {
+
     const pharmData = pharmacies
         .filter(p => p.location?.coordinates?.length === 2)
         .map(p => ({
@@ -350,7 +351,17 @@ function buildAllPharmaciesMapHtml(
 </head>
 <body>
 <div id="map"></div>
+
 <script>
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 var PHARMS = ${JSON.stringify(pharmData)};
 var ROUTE  = ${JSON.stringify(routeLatLngs)};
 var USER_LAT = ${userLat ?? 'null'};
@@ -378,15 +389,41 @@ PHARMS.forEach(function(p) {
   var isSelected = p.id === SELECTED_ID;
   var bg = isSelected ? '#2B9C8E' : '#64B5AE';
   var size = isSelected ? 46 : 36;
+
   var pinDiv = document.createElement('div');
-  pinDiv.style.cssText = 'width:'+size+'px;height:'+size+'px;background:'+bg+';border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 3px 10px '+bg+'70;display:flex;align-items:center;justify-content:center;';
-  pinDiv.innerHTML = '<svg style="transform:rotate(45deg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
-  var icon = L.divIcon({ className: '', html: pinDiv.outerHTML, iconSize: [size,size], iconAnchor: [size/2, size], popupAnchor: [0, -(size+4)] });
-  var marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
-  marker.bindPopup('<b style="font-family:sans-serif;font-size:13px">' + p.name + '</b>');
-  marker.on('click', function() {
-    if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(p.id);
+  pinDiv.style.cssText =
+    'width:'+size+'px;height:'+size+'px;background:'+bg+';border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 3px 10px '+bg+'70;display:flex;align-items:center;justify-content:center;';
+
+  pinDiv.innerHTML =
+    '<svg style="transform:rotate(45deg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+
+  var icon = L.divIcon({
+    className: '',
+    html: pinDiv.outerHTML,
+    iconSize: [size,size],
+    iconAnchor: [size/2, size],
+    popupAnchor: [0, -(size+4)]
   });
+
+  var marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
+
+ 
+  marker.bindPopup(
+    '<b style="font-family:sans-serif;font-size:13px">' +
+    escapeHtml(p.name) +
+    '</b>'
+  );
+
+
+  marker.on('click', function() {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: "PHARMACY_SELECT",
+        id: String(p.id)
+      }));
+    }
+  });
+
   if (isSelected) marker.openPopup();
   allLatLngs.push([p.lat, p.lng]);
 });
@@ -455,10 +492,12 @@ export default function MedicineSearchResultsScreen() {
     }, []);
 
     const handleFilterChange = async (filter: SortFilter) => {
-        setActiveFilter(filter);
+
         if (filter === "قريب مني" && !userLocation) {
-            await requestUserLocation();
+            const loc = await requestUserLocation();
+            if (!loc) return;
         }
+        setActiveFilter(filter);
     };
 
     const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null);
@@ -481,7 +520,8 @@ export default function MedicineSearchResultsScreen() {
         try {
             const [pharmLng, pharmLat] = pharmacy.location.coordinates;
             const resp = await axios.get(
-                `http://router.project-osrm.org/route/v1/driving/${loc.lng},${loc.lat};${pharmLng},${pharmLat}?overview=full&geometries=geojson`
+                `http://router.project-osrm.org/route/v1/driving/${loc.lng},${loc.lat};${pharmLng},${pharmLat}?overview=full&geometries=geojson`,
+                { timeout: 10000 }
             );
             const route = resp.data?.routes?.[0];
             if (route) {
@@ -535,14 +575,14 @@ export default function MedicineSearchResultsScreen() {
                             className="text-[20px] text-gray-600"
                             style={{
                                 fontFamily: "Bein-Black",
-                                lineHeight: 22,
+                                lineHeight: 25,
                             }}
                         >
                             {medicineName}
                         </Text>
 
                         <Text
-                            className="text-[13px] text-[#7A8A9A]"
+                            className="text-[12px] text-[#7A8A9A]"
                             style={{
                                 fontFamily: "Bein",
                                 lineHeight: 15,
@@ -767,7 +807,9 @@ export default function MedicineSearchResultsScreen() {
                             pharmacy={item}
                             showMapButton={true}
                             onInquire={() => {
-                                // router.push(`/(patient)/chat?pharmacyId=${item.id}`);
+                                if (item.phone) {
+                                    Linking.openURL(`tel:${item.phone}`);
+                                }
                             }}
                             onTrackOnMap={() => {
                                 router.push(`/(patient)/medicines/track-pharmacy?pharmacy=${encodeURIComponent(JSON.stringify(item))}&userLocation=${encodeURIComponent(JSON.stringify(userLocation))}`);

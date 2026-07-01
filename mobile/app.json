@@ -40,7 +40,14 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to find nearby pharmacies and show you routes to them.",
+          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to find nearby pharmacies and show you routes to them."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
